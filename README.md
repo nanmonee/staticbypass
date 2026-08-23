@@ -75,7 +75,6 @@ pip install -r requirements.txt
 
 ## Currently Implemented
 
-*PS = PowerShell. "All" = C, C#, PS, VBA, Rust, Go.*
 
 | Category      | Name            | Languages                | Description |
 |:-------------:|:---------------:|:------------------------:|:------------|
@@ -119,18 +118,13 @@ pip install -r requirements.txt
 ```
 staticbypass
 ├── c
+    └── delivery
     └── preprocessors
     └── transformers
     └── obfuscators
     └── postprocessors
-├── cs
-    └── ...
-├── ps1
-    └── ...
-├── vba
-    └── ...
-├── rs
-    └── ...
+    └── templates
+...
 ├── wordlists
     └── ...
 ├── bin
