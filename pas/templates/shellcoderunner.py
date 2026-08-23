@@ -1,7 +1,7 @@
 class shellcoderunner:
 
     def imports(self) -> list[str]:
-        return []
+        return ['Classes', 'windows', 'sysutils']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -25,10 +25,7 @@ program injector;
 
 {{$mode delphi}}
 
-uses
-    Classes,windows,sysutils;
-
-{imports}
+uses {imports};
 
 {codeblocks}
 

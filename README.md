@@ -75,59 +75,45 @@ pip install -r requirements.txt
 
 ## Currently Implemented
 
-| Delivery  | C  | C# | PowerShell | VBA | Rust | Go | Description |
-|:---------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
-| embedded      | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Shellcode is stored within the executable |
-| webdelivery   | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | Download string or raw bytes from specified url |
-| regkey        | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | Retrieve shellcode from registry key |
-| embedtext     | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | Store shellcode string inside word document |
+*PS = PowerShell. "All" = C, C#, PS, VBA, Rust, Go.*
 
-| Pre-processor | C  | C# | PowerShell | VBA | Rust | Go | Description |
-|:-------------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
-| mkpivm64      | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
-
-| Transformer   | C  | C# | PowerShell | VBA | Rust | Go | Description |
-|:-------------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
-| AESEncrypt    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | AES Encryption |
-| TinyAES       | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | AES Encryption without libraries |
-| XOREncrypt    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | XOR Encryption |
-| RC4Encrypt    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | RC4 Encryption |
-| RSAEncrypt    | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | RSA Encryption |
-| Rotate        | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Rotate each byte by n bits |
-| Shuffle       | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Shuffle bytes reversibly |
-| zlibcompress  | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Compression with zlib |
-
-| Obfuscator    | C  | C# | PowerShell | VBA | Rust | Go | Description |
-|:-------------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
-| Base64Encode  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Base64 Encode |
-| DictObfuscate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Convert bytes into randomly picked dictionary words. Uses wordlists/english.txt |
-| IPv4Obfuscate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Convert bytes into IPv4 addresses |
-| IPv6Obfuscate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Convert bytes into IPv6 addresses |
-| MACObfuscate  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Convert bytes into MAC addresses |
-| UUIDEncode    | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | Convert bytes into UUIDv4 strings |
-| EmojiEncode   | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | Convert bytes into emoji |
-| Brainfuck     | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Convert bytes into a brainfuck string (slow) |
-| Whitespace    | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Convert bytes into tabs and spaces |
-
-| Template      | C  | C# | PowerShell | VBA | Rust | Go | Description |
-|:-------------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
-| shellcoderunner | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Simple shellcode runner using CreateThread |
-| processhollow   | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Process hollowing template targeting svchost.exe |
-| service         | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Template for running executable as service |
-| processinject   | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Search for explorer.exe and create a remote thread |
-| delayedhollow   | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Process hollowing with delay |
-| hellsgate       | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Dynamic API resolution using HellsGate technique |
-| threadhijack    | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Hijack running thread in existing process |
-| bzip2           | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Process hollowing using legitimate bzip2 code as cover |
-| sqlite3         | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Process hollowing using legitimate sqlite3 code as cover |
-
-| Postprocessor | C  | C# | PowerShell | VBA | Rust | Go | Description |
-|:-------------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
-| strip         | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | Strips symbols from executable |
-| sign          | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | Sign executable with self-signed certificate |
-| obfell        | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | Powershell obfuscator by @Jael-G |
-| junkpile      | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | Powershell obfuscator by @bobby-tablez |
-
+| Category      | Name            | Languages                | Description |
+|:-------------:|:---------------:|:------------------------:|:------------|
+| Delivery      | embedded        | All                      | Shellcode stored within the executable |
+|               | webdelivery     | C, C#, PS, VBA, Rust     | Download string or raw bytes from specified URL |
+|               | regkey          | C#, PS                   | Retrieve shellcode from registry key |
+|               | embedtext       | VBA                      | Store shellcode string inside Word document |
+| Pre-processor | mkpivm64        | All                      | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+| Transformer   | AESEncrypt      | C, C#, PS, Rust, Go, PS  | AES Encryption |
+|               | TinyAES         | C                        | AES Encryption without libraries |
+|               | XOREncrypt      | All                      | XOR Encryption |
+|               | RC4Encrypt      | All                      | RC4 Encryption |
+|               | RSAEncrypt      | C#                       | RSA Encryption |
+|               | Rotate          | C                        | Rotate each byte by n bits |
+|               | Shuffle         | C                        | Shuffle bytes reversibly |
+|               | zlibcompress    | C                        | Compression with zlib |
+| Obfuscator    | Base64Encode    | All                      | Base64 Encode |
+|               | DictObfuscate   | All                      | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | All                      | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | All                      | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | All                      | Convert bytes into MAC addresses |
+|               | UUIDEncode      | C, C#, PS, Rust, Go      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | C, C#, PS                | Convert bytes into emoji |
+|               | Brainfuck       | C                        | Convert bytes into a brainfuck string (slow) |
+|               | Whitespace      | C                        | Convert bytes into tabs and spaces |
+| Template      | shellcoderunner | All                      | Simple shellcode runner using CreateThread |
+|               | processhollow   | C, C#, PS, Rust, Go, PS  | Process hollowing targeting svchost.exe |
+|               | service         | C                        | Template for running executable as service |
+|               | processinject   | C                        | Search for explorer.exe and create a remote thread |
+|               | delayedhollow   | C                        | Process hollowing with delay |
+|               | hellsgate       | C                        | Dynamic API resolution using HellsGate technique |
+|               | threadhijack    | C                        | Hijack running thread in existing process |
+|               | bzip2           | C                        | Process hollowing using legitimate bzip2 code as cover |
+|               | sqlite3         | C                        | Process hollowing using legitimate sqlite3 code as cover |
+| Postprocessor | strip           | C, C#, Rust, Pascal      | Strip symbols from executable |
+|               | sign            | C, Rust, Go, Pascal      | Sign executable with self-signed certificate |
+|               | obfell          | PS                       | PowerShell obfuscator by @Jael-G |
+|               | junkpile        | PS                       | PowerShell obfuscator by @bobby-tablez |
 
 ## Project Structure
 ```

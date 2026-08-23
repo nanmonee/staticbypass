@@ -99,7 +99,10 @@ def main() -> None:
     compilerOptions += deliveryObject.compilerOptions()
 
     # Remove duplicates while retaining order
-    imports = '\n'.join(list(dict.fromkeys(imports)))
+    if args.language == 'pas':
+        imports = ','.join(list(dict.fromkeys(imports)))
+    else:
+        imports = '\n'.join(list(dict.fromkeys(imports)))
 
     formattedCode = templateCode.format(imports=imports, shellcode='', codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
     compiler = importlib.import_module(f'{args.language}.utils.compiler')

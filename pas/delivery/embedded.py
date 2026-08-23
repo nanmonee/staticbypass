@@ -19,6 +19,9 @@ class embedded:
         return shellcodestring.format(shellcode=f'{self.name}()')
 
     def codeblock(self) -> str:
+
+
+
         if self.type == 'bytes':
             return f"""
 function {self.name}: TBytes;
@@ -35,6 +38,17 @@ end;
 function {self.name}: String;
 var
     obfuscated: String;
+
+begin
+    {self.shellcode}
+    Result := obfuscated;
+end;
+"""
+        elif self.type == 'list':
+            return f"""
+function {self.name}: TStringArray;
+var
+    obfuscated: array of String;
 
 begin
     {self.shellcode}
