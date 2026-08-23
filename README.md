@@ -2,7 +2,7 @@
 
 ## Features
 - Takes in a raw shellcode file, applies encryptors and obfuscators, formats it, places it into a template, and compiles it
-- Supports C, C#, PowerShell, VBA, Rust, and Go
+- Supports C, C#, PowerShell, VBA, Rust, Go, and Pascal
 - Automates placing VBA code into a word document
 - Supports AES, XOR, and RC4 encryption, and Dictionary, UUID, IPv4, IPv6, and MAC address obfuscation
 - Designed to bypass static detection methods
@@ -62,7 +62,7 @@ python3 staticbypass.py -s ~/shellcode.bin -e XOREncrypt,key=hellotherehellother
 ## Installation
 ### Install pre-reqs
 ```
-sudo apt install mono-devel mingw-w64 wine osslsigncode
+sudo apt install mono-devel mingw-w64 wine osslsigncode libz-mingw-w64-dev
 ```
 
 ### Download project
@@ -95,6 +95,7 @@ pip install -r requirements.txt
 | RSAEncrypt    | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | RSA Encryption |
 | Rotate        | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Rotate each byte by n bits |
 | Shuffle       | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Shuffle bytes reversibly |
+| zlibcompress  | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Compression with zlib |
 
 | Obfuscator    | C  | C# | PowerShell | VBA | Rust | Go | Description |
 |:-------------:|:--:|:--:|:----------:|:---:|:----:|:--:|:-----------:|
