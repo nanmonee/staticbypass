@@ -54,7 +54,7 @@ begin
     SetLength(decrypted, Length(encrypted));
     I := 0;
     J := 0;
-    for K := 0 to Length(encrypted) do
+    for K := 0 to Length(encrypted) - 1 do
     begin
         I := (I + 1) and $FF;
         J := (J + S[I]) and $FF;

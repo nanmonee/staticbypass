@@ -36,7 +36,7 @@ var
 begin
     {bytes_to_pas(self.key, 'key')}
     SetLength(decrypted, Length(encrypted));
-    for i := 0 to Length(encrypted) do
+    for i := 0 to Length(encrypted) - 1 do
     begin
         decrypted[i] := byte(Ord(encrypted[i]) xor Ord(key[i mod Length(key)]))
     end;

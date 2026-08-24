@@ -21,7 +21,7 @@ class shellcoderunner:
 
 }}
 
-program injector;
+program output;
 
 {{$mode delphi}}
 
@@ -29,7 +29,7 @@ uses {imports};
 
 {codeblocks}
 
-procedure inject_shell;
+procedure main;
 
 var
     shellcode : array of byte;
@@ -52,6 +52,6 @@ begin
 end;
 
 begin
-    inject_shell;
+    main;
 end.
 """
