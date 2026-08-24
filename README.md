@@ -79,7 +79,7 @@ pip install -r requirements.txt
 | Category      | Name            | Languages                | Description |
 |:-------------:|:---------------:|:------------------------:|:------------|
 | Delivery      | embedded        | All                      | Shellcode stored within the executable |
-|               | webdelivery     | C, C#, PS, VBA, Rust     | Download string or raw bytes from specified URL |
+|               | webdelivery     | All                      | Download string, raw bytes, or list from specified URL |
 |               | regkey          | C#, PS                   | Retrieve shellcode from registry key |
 |               | embedtext       | VBA                      | Store shellcode string inside Word document |
 | Pre-processor | mkpivm64        | All                      | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
@@ -96,7 +96,7 @@ pip install -r requirements.txt
 |               | IPv4Obfuscate   | All                      | Convert bytes into IPv4 addresses |
 |               | IPv6Obfuscate   | All                      | Convert bytes into IPv6 addresses |
 |               | MACObfuscate    | All                      | Convert bytes into MAC addresses |
-|               | UUIDEncode      | C, C#, PS, Rust, Go      | Convert bytes into UUIDv4 strings |
+|               | UUIDEncode      | All                      | Convert bytes into UUIDv4 strings |
 |               | EmojiEncode     | C, C#, PS                | Convert bytes into emoji |
 |               | Brainfuck       | C                        | Convert bytes into a brainfuck string (slow) |
 |               | Whitespace      | C                        | Convert bytes into tabs and spaces |

