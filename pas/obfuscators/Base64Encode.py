@@ -21,7 +21,6 @@ class Base64Encode:
 
     def codeblock(self) -> str:
         return f"""
-
 function CryptStringToBinaryA(pszString: PAnsiChar; cchString: DWORD; dwFlags: DWORD; pbBinary: PByte; var pcbBinary: DWORD; pdwSkip: PDWORD; pdwFlags: PDWORD): BOOL; stdcall; external 'crypt32.dll' name 'CryptStringToBinaryA';
 
 function {self.name}(encoded: String): TBytes;

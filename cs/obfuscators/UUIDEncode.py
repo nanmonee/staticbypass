@@ -15,6 +15,7 @@ class UUIDEncode:
 
     def obfuscate(self, decoded: bytes) -> list[str]:
         encoded = []
+        self.decodedlength = len(decoded)
         for i in range(0, len(decoded), 16):
             chunk = decoded[i:i+16]
             if len(chunk) < 16:
@@ -34,13 +35,6 @@ class UUIDEncode:
                 Guid uuid = new Guid(encoded[i]);
                 uuid.ToByteArray().CopyTo(decoded, i*16);
             }}
-
-            for (int i=decoded.Length - 1; i > 0; i--){{
-                if (decoded[i] != 0x90){{
-                    byte[] output = decoded.Skip(0).Take(i+1).ToArray();
-                    return output;
-                }}
-            }}
-            return decoded;
+            return decoded[..{self.decodedlength}];
         }}
 """

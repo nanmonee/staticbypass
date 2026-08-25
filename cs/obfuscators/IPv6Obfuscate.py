@@ -14,6 +14,7 @@ class IPv6Obfuscate:
 
     def obfuscate(self, decoded: bytes) -> list[str]:
         encoded = []
+        self.decodedlength = len(decoded)
         for i in range(0, len(decoded), 16):
             chunk = decoded[i:i+16]
             if len(chunk) < 16:
@@ -37,13 +38,6 @@ class IPv6Obfuscate:
                 }}
             }}
 
-            for (int i=decoded.Length - 1; i > 0; i--){{
-                if (decoded[i] != 0x90){{
-                    byte[] output = decoded.Skip(0).Take(i+1).ToArray();
-                    return output;
-                }}
-            }}
-
-            return decoded;
+            return decoded[..{self.decodedlength}];
         }}
 """

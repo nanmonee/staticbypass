@@ -38,7 +38,6 @@ var
     ThreadId: LongWord;
 
 begin
-
     {shellcode}
     {transformers}
 

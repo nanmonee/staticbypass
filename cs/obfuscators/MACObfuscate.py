@@ -14,6 +14,7 @@ class MACObfuscate:
 
     def obfuscate(self, decoded: bytes) -> list[str]:
         encoded = []
+        self.decodedlength = len(decoded)
         for i in range(0, len(decoded), 6):
             chunk = decoded[i:i+6]
             if len(chunk) < 6:
@@ -35,14 +36,6 @@ class MACObfuscate:
                     decoded[i*6+j] = (byte)Convert.ToInt32(octets[j], 16);
                 }}
             }}
-
-            for (int i=decoded.Length - 1; i > 0; i--){{
-                if (decoded[i] != 0x90){{
-                    byte[] output = decoded.Skip(0).Take(i+1).ToArray();
-                    return output;
-                }}
-            }}
-
-            return decoded;
+            return decoded[..{self.decodedlength}];
         }}
 """
