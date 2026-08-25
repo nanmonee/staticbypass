@@ -9,10 +9,10 @@ class zlibcompress:
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
 
     def imports(self) -> list[str]:
-        return ['#include <zlib.h>']
+        return ['use std::io::Read;','use flate2::read::ZlibDecoder;']
 
     def compilerOptions(self) -> list[str]:
-        return ['-lz']
+        return ['flate2 = "1.1.9"']
 
     def encode(self, plaintext: bytes) -> bytes:
         self.uncompressedLength = len(plaintext)
@@ -21,15 +21,14 @@ class zlibcompress:
         return compressed
 
     def transformer(self, shellcodestring: str) -> str:
-        return shellcodestring.format(shellcode=f'{self.name}({{shellcode}})')
+        return shellcodestring.format(shellcode=f'{self.name}(&{{shellcode}})')
 
     def codeblock(self) -> str:
         return f"""
-unsigned char * {self.name}(unsigned char * compressed){{
-    uLong uncompressedlength = {self.uncompressedLength};
-    uLong compressedlength = {self.compressedLength};
-    unsigned char * uncompressed = malloc(uncompressedlength);
-    int result = uncompress(uncompressed, &uncompressedlength, compressed, compressedlength);
-    return uncompressed;
+fn {self.name}(compressed: &[u8]) -> Vec<u8>{{
+    let mut zlibstream = ZlibDecoder::new(&compressed[..]);
+    let mut decompressed = Vec::new();
+    zlibstream.read_to_end(&mut decompressed).unwrap();
+    decompressed
 }}
 """
