@@ -1,19 +1,21 @@
 import subprocess
-import platform
+import shutil
 
 def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     if output[-4:] == '.exe':
-        sourcefile = f'{output[:-4]}.cs'
+        sourcefolder = output[:-4]
+        sourcefile = f'{output[:-4]}/Program.cs'
         outfile = output
     else:
-        sourcefile = f'{output}.cs'
+        sourcefolder = output
+        sourcefile = f'{output}/Program.cs'
         outfile = f'{output}.exe'
-    print(f'Writing source code to {sourcefile}')
+    shutil.rmtree(sourcefolder)
+    result = subprocess.run(['dotnet', 'new', 'console', '-o', sourcefolder], check=True)
     open(sourcefile,'w').write(code)
-    if platform.system() == 'Windows':
-        result = subprocess.run(['C:\\windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe', sourcefile, f'-out:{outfile}'] + compilerOptions, check=True)
-    elif platform.system() == 'Linux':
-        result = subprocess.run(['mcs', sourcefile, f'-out:{outfile}'] + compilerOptions, check=True)
+    print(f'Writing source code to {sourcefile}')
+    result = subprocess.run(['dotnet', 'publish', '-c', 'Release', '-r','win-x64', '--self-contained', 'true', '-p:PublishSingleFile=true'], cwd=sourcefolder, check=True)
+    shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{outfile}', outfile)
     if result.returncode == 0:
         print(f'Payload saved to {outfile}')
     return outfile
