@@ -10,7 +10,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         sourcefolder = output
         sourcefile = f'{output}/Program.cs'
         outfile = f'{output}.exe'
-    shutil.rmtree(sourcefolder)
+    shutil.rmtree(sourcefolder, ignore_errors=True)
     result = subprocess.run(['dotnet', 'new', 'console', '-o', sourcefolder], check=True)
     open(sourcefile,'w').write(code)
     print(f'Writing source code to {sourcefile}')
