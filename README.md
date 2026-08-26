@@ -1,7 +1,7 @@
 # StaticBypass - Template-based, modular, multi-language, shellcode obfuscator and compiler
 
 ## Features
-- Takes in a raw shellcode file, applies encryptors and obfuscators, formats it, places it into a template, and compiles it
+- Takes in a raw shellcode or executable file, applies encryptors and obfuscators, formats it, places it into a template, and compiles it
 - Supports C, C#, PowerShell, VBA, Rust, Go, and Pascal
 - Automates placing VBA code into a word document
 - Supports AES, XOR, and RC4 encryption, and Dictionary, UUID, IPv4, IPv6, and MAC address obfuscation
@@ -35,29 +35,26 @@ options:
 
 ## Examples
 ```
-# Generate a process hollowing shellcode in csharp that obfuscates the shellcode using AES and XOR Encryption then Base64 encode it
-python3 staticbypass.py --obfuscator Base64Encode --transformers XOREncrypt AESEncrypt --shellcode ~/shellcode.bin --template processhollow --language cs
+# Generic Defender Bypass
+python3 staticbypass.py --obfuscator DictObfuscate --transformers XOREncrypt RC4Encrypt AESEncrypt --shellcode ~/shellcode.bin --template shellcoderunner --language cs
 
-# Generate a shellcode runner in c that uses mkpivm64 to execute the shellcode in a VM then RC4 Encrypt it and strip it after compiling
-python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e RC4Encrypt -t shellcoderunner -l c -a strip
+# Process hollow in  that uses mkpivm64 to execute the shellcode in a VM then RC4 Encrypt it and strip it after compiling
+python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shellcoderunner -l c -a strip
 
-# Generate a powershell script that uses process hollowing and AES Encryption
-python3 staticbypass.py -s ~/shellcode.bin -e AESEncrypt -t processhollow -l ps1
+# Donut an executable then AESEncrypt it and UUIDEncode it and compile it with rust
+python3 staticbypass.py -s mimikatz.exe -b donut -e AESEncrypt -t shellcoderunner -l rust
 
-# Generate a vba script that uses process hollowing and RC4 Encryption
-python3 staticbypass.py -s ~/shellcode.bin -e RC4Encrypt -t processhollow -l vba
-
-# Generate a rust executable that uses process hollowing and XOR Encryption with a hardcoded key
-python3 staticbypass.py -s ~/shellcode.bin -e XOREncrypt,key=hellotherehellothere -t processhollow -l vba
+# Generate a vba script that uses writes text into the word document
+python3 staticbypass.py -s ~/shellcode.bin -e DictObfuscate -a embedtext -t processhollow -l vba
 ```
-
 
 ## Roadmap
 - Add obfuscator support for the different programming languages
 - Add more templates e.g. early bird apc injection, heap allocation
-- Add pascal support
 - Refactor code
 - Add arguments to templates and other categories
+- Add guardrails
+- Finish install script
 
 ## Installation
 ### Install pre-reqs
@@ -91,7 +88,7 @@ pip install -r requirements.txt
 |               | RSAEncrypt      | C#                       | RSA Encryption |
 |               | Rotate          | C                        | Rotate each byte by n bits |
 |               | Shuffle         | C                        | Shuffle bytes reversibly |
-|               | zlibcompress    | C, Go, Rust              | Compression with zlib |
+|               | zlibcompress    | C, C#, Go, Rust, Pascal  | Compression with zlib |
 | Obfuscator    | Base64Encode    | All                      | Base64 Encode |
 |               | DictObfuscate   | All                      | Convert bytes into randomly picked dictionary words |
 |               | IPv4Obfuscate   | All                      | Convert bytes into IPv4 addresses |
