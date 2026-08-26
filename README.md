@@ -88,7 +88,7 @@ pip install -r requirements.txt
 |               | RSAEncrypt      | C#                       | RSA Encryption |
 |               | Rotate          | C                        | Rotate each byte by n bits |
 |               | Shuffle         | C                        | Shuffle bytes reversibly |
-|               | zlibcompress    | C, C#, Go, Rust, Pascal  | Compression with zlib |
+|               | zlibcompress    | C, C#, Go, Rust, Pascal, PS  | Compression with zlib |
 | Obfuscator    | Base64Encode    | All                      | Base64 Encode |
 |               | DictObfuscate   | All                      | Convert bytes into randomly picked dictionary words |
 |               | IPv4Obfuscate   | All                      | Convert bytes into IPv4 addresses |
