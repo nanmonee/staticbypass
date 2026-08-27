@@ -13,7 +13,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         outfile = f'{output}.exe'
     shutil.rmtree(sourcefolder, ignore_errors=True)
     custom_env = os.environ.copy()
-    custom_env['TERM'] = 'xterm'
+    custom_env['TERM'] = 'dumb'
     result = subprocess.run(['dotnet', 'new', 'console', '-o', sourcefolder],env=custom_env, check=True)
     open(sourcefile,'w').write(code)
     print(f'Writing source code to {sourcefile}')
