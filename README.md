@@ -99,7 +99,8 @@ pip install -r requirements.txt
 |               | Brainfuck       | C                        | Convert bytes into a brainfuck string (slow) |
 |               | Whitespace      | C                        | Convert bytes into tabs and spaces |
 | Template      | shellcoderunner | All                      | Simple shellcode runner using CreateThread |
-|               | processhollow   | C, C#, PS, Rust, Go, PS  | Process hollowing targeting svchost.exe |
+|               | processstomp    | C, C#, PS, Rust, Go, VBA | Process hollowing via overwriting entrypoint |
+|               | spawnandinject  | C, C#, PS, Rust, Go      | Spawn process and inject into remote thread |
 |               | service         | C                        | Template for running executable as service |
 |               | processinject   | C                        | Search for explorer.exe and create a remote thread |
 |               | delayedhollow   | C                        | Process hollowing with delay |

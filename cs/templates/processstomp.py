@@ -1,7 +1,13 @@
-class processhollow:
+class processstomp:
 
     def imports(self) -> list[str]:
-        return ["using System;","using System.Collections.Generic;","using System.Linq;","using System.Text;","using System.Threading.Tasks;","using System.Diagnostics;","using System.Runtime.InteropServices;"]
+        return ["using System;",
+                "using System.Collections.Generic;",
+                "using System.Linq;",
+                "using System.Text;",
+                "using System.Threading.Tasks;",
+                "using System.Diagnostics;",
+                "using System.Runtime.InteropServices;"]
 
     def compilerOptions(self) -> list[str]:
         return []

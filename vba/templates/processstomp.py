@@ -1,4 +1,4 @@
-class processhollow:
+class processstomp:
 
     def imports(self) -> list[str]:
         return ['Private Declare PtrSafe Function ZwQueryInformationProcess Lib "NTDLL" (ByVal hProcess As LongPtr, ByVal procInformationClass As Long, ByRef procInformation As PROCESS_BASIC_INFORMATION, ByVal ProcInfoLen As Long, ByRef retlen As Long) As Long',

