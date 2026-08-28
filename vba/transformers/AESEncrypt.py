@@ -55,7 +55,7 @@ Function {self.name}(ByRef cipherBytes() As Byte) As Byte()
     Dim keyObj() As Byte, plain() As Byte, modeCBC() As Byte
     Dim objLen As Long, cbResult As Long, outLen As Long, inLen As Long
     Dim pIn As LongPtr
-    inLen = {self.ciphertextSize}
+    inLen = UBound(cipherBytes) - LBound(cipherBytes) + 1
     
     pIn = VarPtr(cipherBytes(LBound(cipherBytes)))
 
@@ -81,18 +81,15 @@ Function {self.name}(ByRef cipherBytes() As Byte) As Byte()
 
     ' Plaintext is always shorter than ciphertext (padding is 1..16 bytes),
     ' so sizing the buffer to the ciphertext length is always safe.
-    ReDim plain({self.plaintextSize})
+    ReDim plain(inLen)
     
     status = BCryptDecrypt(hKey, pIn, inLen, 0, _
                            VarPtr(iv(0)), UBound(iv) - LBound(iv) + 1, _
                            VarPtr(plain(0)), inLen, cbResult, BCRYPT_BLOCK_PADDING)
+
     If status <> STATUS_SUCCESS Then Err.Raise vbObjectError, , "BCryptDecrypt failed: 0x" & Hex$(status)
     
-    If cbResult = 0 Then
-        Erase plain
-    ElseIf cbResult < inLen Then
-        ReDim Preserve plain(0 To cbResult - 1)
-    End If
+    ReDim Preserve plain(0 To cbResult - 1)
 
     {self.name} = plain
 

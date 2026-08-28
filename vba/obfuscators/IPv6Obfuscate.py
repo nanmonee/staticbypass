@@ -14,6 +14,7 @@ class IPv6Obfuscate:
 
     def obfuscate(self, decoded: bytes) -> list[str]:
         encoded = []
+        self.decodedLength = len(decoded)
         for i in range(0, len(decoded), 16):
             chunk = decoded[i:i+16]
             if len(chunk) < 16:
@@ -34,13 +35,15 @@ Private Function {self.name}(addresses)
     arrayLength = UBound(addresses) - LBound(addresses) + 1
     Redim outArray(arrayLength * 16)
     Dim i As Long
-    For i=LBound(addresses) To UBound(addresses) - 1
+    For i=LBound(addresses) To UBound(addresses)
         quartets = Split(addresses(i), ":")
         For j=LBound(quartets) To UBound(quartets)
             outArray(i*16 + j*2) = CLng("&h" & quartets(j)) \\ 256
             outArray(i*16 + j*2 + 1) = CLng("&h" & quartets(j)) And 255
         Next j
     Next i
+
+    Redim Preserve outArray(0 To {self.decodedLength} - 1)
 
     {self.name} = outArray
 End Function

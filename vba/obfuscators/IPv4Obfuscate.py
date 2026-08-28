@@ -14,6 +14,7 @@ class IPv4Obfuscate:
 
     def obfuscate(self, decoded: bytes) -> list[str]:
         encoded = []
+        self.decodedLength = len(decoded)
         for i in range(0, len(decoded), 4):
             chunk = decoded[i:i+4]
             if len(chunk) < 4:
@@ -35,12 +36,14 @@ Private Function {self.name}(addresses)
     arrayLength = UBound(addresses) - LBound(addresses) + 1
     Redim outArray(arrayLength * 4)
     Dim i As Long
-    For i=LBound(addresses) To UBound(addresses) - 1
+    For i=LBound(addresses) To UBound(addresses)
         octets = Split(addresses(i), ".")
         For j=LBound(octets) To UBound(octets)
             outArray(i*4 + j) = CLng(octets(j))
         Next j
     Next i
+
+    Redim Preserve outArray(0 To {self.decodedLength} - 1)
 
     {self.name} = outArray
 End Function
