@@ -100,7 +100,7 @@ pip install -r requirements.txt
 |               | Whitespace      | C                        | Convert bytes into tabs and spaces |
 | Template      | shellcoderunner | All                      | Simple shellcode runner using CreateThread |
 |               | processstomp    | C, C#, PS, Rust, Go, VBA | Process hollowing via overwriting entrypoint |
-|               | spawnandinject  | C, C#, PS, Rust, Go      | Spawn process and inject into remote thread |
+|               | spawnandinject  | All                      | Spawn process and inject into remote thread |
 |               | service         | C                        | Template for running executable as service |
 |               | processinject   | C                        | Search for explorer.exe and create a remote thread |
 |               | delayedhollow   | C                        | Process hollowing with delay |
