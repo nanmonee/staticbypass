@@ -16,3 +16,4 @@ output.go
 output.pas
 output.o
 libimpoutput.a
+output.nim
