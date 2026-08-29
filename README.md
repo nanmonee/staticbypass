@@ -82,6 +82,7 @@ pip install -r requirements.txt
 | Pre-processor | mkpivm64        | All                      | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
 |               | donut           | All                      | Convert executable to shellcode |
 |               | xorencrypt      | All                      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | All                      | Rotate shellcode with self-decoding stub (requires RWX) |
 | Transformer   | AESEncrypt      | All                      | AES Encryption |
 |               | TinyAES         | C                        | AES Encryption without libraries |
 |               | XOREncrypt      | All                      | XOR Encryption |
