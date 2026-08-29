@@ -1,9 +1,5 @@
-import tempfile
-import subprocess
 import os
-import platform
 from keystone import *
-
 
 class xorencrypt:
 
