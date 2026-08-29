@@ -82,14 +82,14 @@ pip install -r requirements.txt
 | Pre-processor | mkpivm64        | All                      | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
 |               | donut           | All                      | Convert executable to shellcode |
 |               | xorencrypt      | All                      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
-| Transformer   | AESEncrypt      | C, C#, PS, Rust, Go, PS  | AES Encryption |
+| Transformer   | AESEncrypt      | All                      | AES Encryption |
 |               | TinyAES         | C                        | AES Encryption without libraries |
 |               | XOREncrypt      | All                      | XOR Encryption |
 |               | RC4Encrypt      | All                      | RC4 Encryption |
 |               | RSAEncrypt      | C#                       | RSA Encryption |
 |               | Rotate          | C                        | Rotate each byte by n bits |
 |               | Shuffle         | C                        | Shuffle bytes reversibly |
-|               | zlibcompress    | C, C#, Go, Rust, Pascal, PS  | Compression with zlib |
+|               | zlibcompress    | C, C#, Go, Rust, Pascal, PS, Nim | Compression with zlib |
 | Obfuscator    | Base64Encode    | All                      | Base64 Encode |
 |               | DictObfuscate   | All                      | Convert bytes into randomly picked dictionary words |
 |               | IPv4Obfuscate   | All                      | Convert bytes into IPv4 addresses |
@@ -109,7 +109,7 @@ pip install -r requirements.txt
 |               | threadhijack    | C                        | Hijack running thread in existing process |
 |               | bzip2           | C                        | Process hollowing using legitimate bzip2 code as cover |
 |               | sqlite3         | C                        | Process hollowing using legitimate sqlite3 code as cover |
-| Postprocessor | strip           | C, C#, Rust, Pascal      | Strip symbols from executable |
-|               | sign            | C, Rust, Go, Pascal      | Sign executable with self-signed certificate |
+| Postprocessor | strip           | C, C#, Rust, Pascal, Nim | Strip symbols from executable |
+|               | sign            | C, Rust, Go, Pascal, Nim | Sign executable with self-signed certificate |
 |               | obfell          | PS                       | PowerShell obfuscator by @Jael-G |
 |               | junkpile        | PS                       | PowerShell obfuscator by @bobby-tablez |
