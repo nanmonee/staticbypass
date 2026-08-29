@@ -20,4 +20,4 @@ cd /tmp/fpc-3.2.2/
 sudo make crossinstall OS_TARGET=win64 CPU_TARGET=x86_64 INSTALL_PREFIX=/usr
 
 # Install nim requirements
-nimble install winim
+nimble install winim nimcrypto zippy

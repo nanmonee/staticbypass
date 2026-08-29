@@ -1,7 +1,6 @@
 import os
 from keystone import *
 
-
 class xorencrypt:
 
     def apply(self, shellcode: bytes) -> bytes:
