@@ -81,6 +81,7 @@ pip install -r requirements.txt
 |               | embedtext       | VBA                      | Store shellcode string inside Word document |
 | Pre-processor | mkpivm64        | All                      | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
 |               | donut           | All                      | Convert executable to shellcode |
+|               | xorencrypt      | All                      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
 | Transformer   | AESEncrypt      | C, C#, PS, Rust, Go, PS  | AES Encryption |
 |               | TinyAES         | C                        | AES Encryption without libraries |
 |               | XOREncrypt      | All                      | XOR Encryption |

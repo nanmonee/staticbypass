@@ -1,3 +1,4 @@
+keystone-engine==0.9.2
 lxml==6.1.1
 olefile==0.47
 pillow==12.3.0
