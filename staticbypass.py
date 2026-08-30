@@ -28,7 +28,7 @@ def main() -> None:
     parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim"}, required=True, help='Language used to write and compile')
     parser.add_argument('-f', "--obfuscator", type=str, required=False, help='Obfuscators transform the transformed shellcode bytes into other formats, such as strings.')
     parser.add_argument('-b', "--preprocessors", type=str, required=False, help='Preprocessors modify the shellcode but are self decoding.')
-    parser.add_argument('-a', "--postprocessors", type=str, required=False, help='Postprocessors obfuscate the resulting exe or script, e.g. packers')
+    parser.add_argument('-a', "--postprocessors", type=str, nargs='*', required=False, help='Postprocessors obfuscate the resulting exe or script, e.g. packers')
     parser.add_argument('-d', "--delivery", type=str, required=False, default="embedded", help='Delivery defines where the obfuscated shellcode is retrieved')
     parser.add_argument('-o', "--output", type=str, required=False, default="output", help='Output file name')
     args = parser.parse_args()
@@ -111,9 +111,9 @@ def main() -> None:
     outfile = compiler.compile(formattedCode, args.output, compilerOptions)
 
     if args.postprocessors:
-        postprocessorsList = args.postprocessors.split(',')
-        for postprocessorItem in postprocessorsList:
-            postprocessorObject = load_module(args.language, 'postprocessors', postprocessorItem)()
+        for postprocessor in args.postprocessors:
+            postprocessorItem, arguments = parse_module_args(postprocessor)
+            postprocessorObject = load_module(args.language, 'postprocessors', postprocessorItem)(arguments)
             postprocessorFunction = getattr(postprocessorObject, 'apply')
             postprocessorFunction(outfile)
 

@@ -112,5 +112,6 @@ pip install -r requirements.txt
 |               | sqlite3         | C                        | Process hollowing using legitimate sqlite3 code as cover |
 | Postprocessor | strip           | C, C#, Rust, Pascal, Nim | Strip symbols from executable |
 |               | sign            | C, Rust, Go, Pascal, Nim | Sign executable with self-signed certificate |
+|               | sigthief        | C, Rust, Go, Pascal, Nim | Steal certificate chain from another file |
 |               | obfell          | PS                       | PowerShell obfuscator by @Jael-G |
 |               | junkpile        | PS                       | PowerShell obfuscator by @bobby-tablez |
