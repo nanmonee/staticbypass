@@ -7,3 +7,9 @@ def str_to_c(string: str, name: str) -> str:
 def list_to_c(itemList: list[str], name: str) -> str:
     encodedString = ",".join([f'"{x}"' for x in itemList])
     return f'static const unsigned char *{name}[] = {{{encodedString}}};'
+
+def dict_to_c(dictionary: dict[str, int], name: str) -> str:
+    codeblock = ''
+    for key, value in dictionary.items():
+        codeblock += f'\tset("{key}", {value});\n'
+    return codeblock
