@@ -51,7 +51,7 @@ static unsigned idx(char *word) {{
         hash = hash * 33 + *p;
     }}
     for (hash %= 256; dictionary[hash].word && strcmp(dictionary[hash].word, word); hash = (hash + 1) % 256);
-    return h;
+    return hash;
 }}
 
 void set(char *word, int value) {{ 
