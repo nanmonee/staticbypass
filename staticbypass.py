@@ -106,6 +106,8 @@ def main() -> None:
     else:
         imports = '\n'.join(list(dict.fromkeys(imports)))
 
+    compilerOptions = list(dict.fromkeys(compilerOptions))
+
     formattedCode = templateCode.format(imports=imports, shellcode='', codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
     compiler = importlib.import_module(f'{args.language}.utils.compiler')
     outfile = compiler.compile(formattedCode, args.output, compilerOptions)

