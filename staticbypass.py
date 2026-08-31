@@ -27,7 +27,7 @@ def main() -> None:
     parser.add_argument('-t', "--template", type=str, required=True, help='Template that the shellcode and deobfuscation code will be placed into.')
     parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim"}, required=True, help='Language used to write and compile')
     parser.add_argument('-f', "--obfuscator", type=str, required=False, help='Obfuscators transform the transformed shellcode bytes into other formats, such as strings.')
-    parser.add_argument('-b', "--preprocessors", type=str, required=False, help='Preprocessors modify the shellcode but are self decoding.')
+    parser.add_argument('-b', "--preprocessors", type=str, nargs = '*', required=False, help='Preprocessors modify the shellcode but are self decoding.')
     parser.add_argument('-a', "--postprocessors", type=str, nargs='*', required=False, help='Postprocessors obfuscate the resulting exe or script, e.g. packers')
     parser.add_argument('-d', "--delivery", type=str, required=False, default="embedded", help='Delivery defines where the obfuscated shellcode is retrieved')
     parser.add_argument('-o', "--output", type=str, required=False, default="output", help='Output file name')
@@ -56,9 +56,9 @@ def main() -> None:
     imports = []
 
     if args.preprocessors:
-        preprocessorsList = args.preprocessors.split(',')
-        for preprocessorItem in preprocessorsList:
-            preprocessorObject = load_module(args.language, 'preprocessors', preprocessorItem)()
+        for preprocessor in args.preprocessors:
+            preprocessorItem, arguments = parse_module_args(preprocessor)
+            preprocessorObject = load_module(args.language, 'preprocessors', preprocessorItem)(arguments)
             shellcode = preprocessorObject.apply(shellcode)
             #shellcode = preprocessorFunction(shellcode)
 

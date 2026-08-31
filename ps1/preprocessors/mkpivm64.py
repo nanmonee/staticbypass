@@ -5,6 +5,9 @@ import platform
 
 class mkpivm64:
 
+    def __init__(self, arguments: dict) -> None:
+        pass
+
     def apply(self, shellcode: bytes) -> bytes:
         fd, filename = tempfile.mkstemp()
         with os.fdopen(fd, 'wb') as f:

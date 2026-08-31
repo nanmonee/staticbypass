@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import serialization
 
 class sign:
 
-    def __init__(self, arguments: dict):
+    def __init__(self, arguments: dict) -> None:
         if 'keyfile' in arguments:
             self.keyfile = arguments['keyfile']
 

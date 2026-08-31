@@ -5,7 +5,7 @@ import time
 
 class resourcecopy:
 
-    def __init__(self, arguments: dict):
+    def __init__(self, arguments: dict) -> None:
         if 'inputfile' in arguments:
             self.inputfile = arguments['inputfile']
         else:

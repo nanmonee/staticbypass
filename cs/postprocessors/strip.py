@@ -3,7 +3,7 @@ import platform
 
 class strip:
 
-    def __init__(self, arguments: dict):
+    def __init__(self, arguments: dict) -> None:
         pass
 
     def apply(self, outfile: str) -> None:
