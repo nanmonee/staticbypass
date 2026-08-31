@@ -6,11 +6,11 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     if output[-4:] == '.exe':
         sourcefolder = output[:-4]
         sourcefile = f'{output[:-4]}/Program.cs'
-        outfile = output
+        outfile = f'{output.split('/')[-1]}'
     else:
         sourcefolder = output
         sourcefile = f'{output}/Program.cs'
-        outfile = f'{output}.exe'
+        outfile = f'{output.split('/')[-1]}.exe'
     shutil.rmtree(sourcefolder, ignore_errors=True)
     custom_env = os.environ.copy()
     custom_env['TERM'] = 'dumb'

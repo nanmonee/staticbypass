@@ -24,10 +24,13 @@ class webdelivery:
         else:
             print('No url specified')
             exit(0)
+        if 'https' in self.url:
+            self.client = 'newHttpClient(sslContext=newContext(verifyMode=CVerifyNone))'
+        else:
+            self.client = f'newHttpClient()'
 
     def imports(self) -> list[str]:
-        return ['import std/httpclient', 
-                'import strutils']
+        return ['import chronos/apps/http/httpclient']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -39,31 +42,33 @@ class webdelivery:
         if self.type == 'bytes':
             return f"""
 proc {self.name}(): seq[byte] =
-    var client = newHttpClient()
+    let flags = {{HttpClientFlag.NoVerifyHost, HttpClientFlag.NoVerifyServerName}}
+    let httpSession = HttpSessionRef.new(flags = flags)
     try:
-        let response = client.getContent("{self.url}")
-        var obfuscated = newSeq[byte](response.len)
-        for i in 0 ..< response.len:
-            obfuscated[i] = response[i].byte
-        result = obfuscated
+        let resp = waitFor httpSession.fetch(parseUri("{self.url}"))
+        result = resp.data
     finally:
-        client.close()
+        waitFor httpSession.closeWait()
 """
         elif self.type == 'str':
             return f"""
 proc {self.name}(): string =
-    var client = newHttpClient()
+    let flags = {{HttpClientFlag.NoVerifyHost, HttpClientFlag.NoVerifyServerName}}
+    let httpSession = HttpSessionRef.new(flags = flags)
     try:
-        let response = client.getContent("{self.url}")
-        result = response
+        let resp = waitFor httpSession.fetch(parseUri("{self.url}"))
+        result = bytesToString(resp.data)
     finally:
-        client.close()
+        waitFor httpSession.closeWait()
 """
         elif self.type == 'list':
             return f"""
 proc {self.name}(): seq[string] =
-    var client = newHttpClient()
-    let response = client.getContent("{self.url}")
-    result = response.split('\\n')
-    client.close()
+    let flags = {{HttpClientFlag.NoVerifyHost, HttpClientFlag.NoVerifyServerName}}
+    let httpSession = HttpSessionRef.new(flags = flags)
+    try:
+        let resp = waitFor httpSession.fetch(parseUri("{self.url}"))
+        result = bytesToString(resp.data).split('\\n')
+    finally:
+        waitFor httpSession.closeWait()
 """
