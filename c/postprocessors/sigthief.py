@@ -14,7 +14,6 @@ class sigthief:
         else:
             print('Inputfile or sigfile required')
             exit(0)
-        self.flItms = {}
 
     def apply(self, outfile: str) -> None:
         if self.inputfile:

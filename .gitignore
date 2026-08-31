@@ -17,3 +17,4 @@ output.pas
 output.o
 libimpoutput.a
 output.nim
+bin/ResourceHacker.ini
