@@ -113,5 +113,6 @@ pip install -r requirements.txt
 | Postprocessor | strip           | C, C#, Rust, Pascal, Nim | Strip symbols from executable |
 |               | sign            | C, Rust, Go, Pascal, Nim | Sign executable with self-signed certificate |
 |               | sigthief        | C, Rust, Go, Pascal, Nim | Steal certificate chain from another file |
+|               | resoucecopy     | C, Rust, Go, Pascal, Nim | Copy resources from another executable |
 |               | obfell          | PS                       | PowerShell obfuscator by @Jael-G |
 |               | junkpile        | PS                       | PowerShell obfuscator by @bobby-tablez |
