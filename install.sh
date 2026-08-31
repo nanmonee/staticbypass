@@ -11,8 +11,6 @@ curl -L https://dot.net/v1/dotnet-install.sh | bassh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 rustup target add x86_64-pc-windows-gnu
-rustup update stable
-rustup target add x86_64-pc-windows-gnu
 
 # Build fpc
 wget https://sourceforge.net/projects/freepascal/files/Source/3.2.2/fpc-3.2.2.source.zip/download -O /tmp/fpc-3.2.2.source.zip

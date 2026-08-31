@@ -46,8 +46,10 @@ Private Function {self.name}()
     url = "{self.url}"
     
     ' Create the HTTP object (MSXML2 is built into Windows)
-    Set http = CreateObject("MSXML2.XMLHTTP")
+    Set http = CreateObject("MSXML2.ServerXMLHTTP")
     
+    http.setOption 2, 13056
+
     ' Open the connection: Method, URL, Asynchronous (False = Wait for response)
     http.Open "GET", url, False
     
