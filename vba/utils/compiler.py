@@ -6,7 +6,6 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     open(f'{output}.vba', 'w').write(code)
     print(f'Macro saved to {output}.vba')
     result = create_word_doc(code, outfile)
-    print(f'Macro saved to {outfile}')
 
     for compilerOption in compilerOptions:
         key, value = compilerOption.split('=')

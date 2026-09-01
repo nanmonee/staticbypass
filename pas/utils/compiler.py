@@ -1,12 +1,9 @@
 import subprocess
 
 def compile(code: str, output: str, compilerOptions: list[str]) -> str:
-    if output[-4:] == '.exe':
-        sourcefile = f'{output[:-4]}.pas'
-        outfile = output
-    else:
-        sourcefile = f'{output}.pas'
-        outfile = f'{output}.exe'
+    outfilename = output.rsplit('.', 2)[0]
+    sourcefile = f'{outfilename}.pas'
+    outfile = f'{outfilename}.exe'
     # Write template to temporary file for compilation
     print(f'Writing source code to {sourcefile}')
     open(sourcefile,'w').write(code)
