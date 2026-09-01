@@ -30,7 +30,7 @@ class spawnandinject:
 
 fn main() {{
 
-    {shellcode}
+    
     {transformers}
 
     unsafe

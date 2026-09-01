@@ -20,7 +20,7 @@ class threadhijack:
 int main(void)
 {{
 
-    {shellcode}
+    
     {transformers}
     
     int pid = 0;

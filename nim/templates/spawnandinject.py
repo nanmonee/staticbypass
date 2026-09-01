@@ -12,7 +12,7 @@ class spawnandinject:
 {codeblocks}
 
 proc main() =
-    {shellcode}
+    
     {transformers}
 
     var si: STARTUPINFOA

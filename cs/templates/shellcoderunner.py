@@ -33,7 +33,7 @@ namespace ConsoleApp1
 
         static void Main(string[] args)
         {{
-            {shellcode}
+            
             {transformers}
             int size = shellcode.Length;
 

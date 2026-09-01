@@ -38,7 +38,7 @@ var
     ThreadId: LongWord;
 
 begin
-    {shellcode}
+    
     {transformers}
 
     addr := VirtualAlloc(nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);

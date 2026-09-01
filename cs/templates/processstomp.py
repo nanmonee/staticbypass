@@ -112,7 +112,7 @@ namespace ClassLibrary1
 
             IntPtr addressOfEntryPoint = (IntPtr)(entrypoint_rva + (UInt64)svchostBase);
 
-            {shellcode};
+            ;
 
             {transformers}
 

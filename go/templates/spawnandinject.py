@@ -19,7 +19,7 @@ import (
 
 func main() {{
 
-    {shellcode}
+    
     {transformers}
 
 	// Load DLLs and Procedures

@@ -19,7 +19,7 @@ import (
 
 func main() {{
 
-    {shellcode}
+    
     {transformers}
 
 	addr, _ := windows.VirtualAlloc(uintptr(0), uintptr(len(shellcode)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)

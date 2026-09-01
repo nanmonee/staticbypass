@@ -554,7 +554,7 @@ BOOL GetVxTableEntry(PVOID pModuleBase, PIMAGE_EXPORT_DIRECTORY pImageExportDire
 BOOL Payload(PVX_TABLE pVxTable) {{
 	NTSTATUS status = 0x00000000;
 
-	{shellcode}
+	
     {transformers}
 
 	// Allocate memory for the shellcode

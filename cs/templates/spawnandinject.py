@@ -124,7 +124,7 @@ namespace ClassLibrary1
 
             CreateProcess(null, "C:\\\\Windows\\\\System32\\\\svchost.exe", IntPtr.Zero, IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
 
-            {shellcode};
+            ;
 
             {transformers}
 

@@ -13,7 +13,7 @@ class processstomp:
 {codeblocks}
 
 
-{shellcode}
+
 {transformers}
 
 

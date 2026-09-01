@@ -36,7 +36,7 @@ void ServiceControlHandler(DWORD control) {{
 
 void runShellcode(){{
 
-    {shellcode}
+    
     {transformers}
 
     LPVOID buffer = NULL;

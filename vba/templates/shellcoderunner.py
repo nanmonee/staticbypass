@@ -21,7 +21,7 @@ Sub AutoOpen()
   Dim data As Long
   Dim res As LongPtr
 
-  {shellcode}
+  
   {transformers}
 
   ' &H3000 = 0x3000 = MEM_COMMIT | MEM_RESERVE

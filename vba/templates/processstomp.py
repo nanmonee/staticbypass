@@ -125,7 +125,7 @@ Function hollow()
     ' Buffer for malicious crypted shellcode needs to go here
     Dim shellcode As Variant
 
-    {shellcode}
+    
     {transformers}
     Dim scSize As Long
     scSize = UBound(shellcode)

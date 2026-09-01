@@ -12,7 +12,7 @@ class shellcoderunner:
 {codeblocks}
 
 proc main() =
-    {shellcode}
+    
     {transformers}
 
     let address = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE)

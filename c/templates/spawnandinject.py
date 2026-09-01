@@ -17,7 +17,7 @@ class spawnandinject:
 
 int main()
 {{
-    {shellcode}
+    
     {transformers}
     
     STARTUPINFOA si = {{

@@ -108,7 +108,7 @@ def main() -> None:
 
     compilerOptions = list(dict.fromkeys(compilerOptions))
 
-    formattedCode = templateCode.format(imports=imports, shellcode='', codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
+    formattedCode = templateCode.format(imports=imports, codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
     compiler = importlib.import_module(f'{args.language}.utils.compiler')
     outfile = compiler.compile(formattedCode, args.output, compilerOptions)
 

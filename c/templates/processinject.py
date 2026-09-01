@@ -67,7 +67,7 @@ int main(void) {{
     int pid = 0;
     HANDLE hProc = NULL;
 
-    {shellcode}
+    
     {transformers}
 
     HANDLE hProcSnap;

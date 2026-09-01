@@ -32,7 +32,7 @@ class processstomp:
 
 fn main() {{
 
-    {shellcode}
+    
     {transformers}
 
     unsafe

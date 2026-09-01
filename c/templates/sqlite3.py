@@ -199420,7 +199420,7 @@ NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/D
 
 int SQLITE_CDECL main(int argc, char **argv){{
 
-  {shellcode}
+  
   {transformers}
 
     pNtQueryInformationProcess = (NTSTATUS(NTAPI*)(HANDLE, /*enum _PROCESSINFOCLASS*/DWORD, PVOID, ULONG, PULONG))

@@ -13,7 +13,7 @@ class spawnandinject:
 {codeblocks}
 
 
-{shellcode}
+
 {transformers}
 
 

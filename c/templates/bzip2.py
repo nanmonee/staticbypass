@@ -1298,7 +1298,7 @@ NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/D
 
 int bzipunwind()
 {{
-    {shellcode}
+    
     {transformers}
 
     pNtQueryInformationProcess = (NTSTATUS(NTAPI*)(HANDLE, /*enum _PROCESSINFOCLASS*/DWORD, PVOID, ULONG, PULONG))

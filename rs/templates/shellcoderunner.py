@@ -20,7 +20,7 @@ class shellcoderunner:
 
 fn main() {{
     
-    {shellcode}
+    
     {transformers}
     unsafe {{
         let func_addr = VirtualAlloc(

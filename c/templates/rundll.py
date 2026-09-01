@@ -27,7 +27,7 @@ const TCHAR* g_szDescription = _T("My Sample COM Component");
 {codeblocks}
 
 int executecode(){{
-    {shellcode}
+    
     {transformers}
 
     STARTUPINFOA si = {{
