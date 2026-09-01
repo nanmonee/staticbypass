@@ -6,7 +6,9 @@ import platform
 class mkpivm64:
 
     def __init__(self, arguments: dict) -> None:
-        pass
+        self.arguments = []
+        if 'pack' in arguments:
+            self.arguments.append('--pack')
 
     def apply(self, shellcode: bytes) -> bytes:
         fd, filename = tempfile.mkstemp()
@@ -14,9 +16,9 @@ class mkpivm64:
             f.write(shellcode)
         outtf, outfilename = tempfile.mkstemp()
         if platform.system() == 'Linux':
-            result = subprocess.run(['wine', './bin/mkpivm64.exe', f'{filename}', '-o', f'{outfilename}'])
+            result = subprocess.run(['wine', './bin/mkpivm64.exe'] + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
         else:
-            result = subprocess.run(['./bin/mkpivm64.exe', f'{filename}', '-o', f'{outfilename}'])
+            result = subprocess.run(['./bin/mkpivm64.exe']  + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
         if result.returncode == 0:
             output = os.fdopen(outtf, 'rb').read()
         os.remove(filename)

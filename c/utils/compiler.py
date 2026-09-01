@@ -7,7 +7,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         outfile = f'{filename}.dll'
     else:
         sourcefile = f'{filename}.c'
-        outfile = f'{filename}'
+        outfile = f'{filename}.exe'
     print(f'Writing source code to {sourcefile}')
     open(sourcefile,'w').write(code)
     result = subprocess.run(['x86_64-w64-mingw32-gcc' , sourcefile, '-o', outfile, '--static'] + compilerOptions, check=True)
