@@ -17,8 +17,8 @@ def parse_module_args(argument_string: str) -> tuple[str, dict]:
     if (len(split) != 1):
         for item in split[1:]:
             if '=' in item:
-                splitItems = item.split('=')
-                arguments[splitItems[0]] = splitItems[1]
+                key, _, value = item.partition('=')
+                arguments[key] = value
             else:
                 arguments[item] = True
     return module, arguments
@@ -63,7 +63,6 @@ def main() -> None:
             preprocessorItem, arguments = parse_module_args(preprocessor)
             preprocessorObject = load_module(args.language, 'preprocessors', preprocessorItem)(arguments)
             shellcode = preprocessorObject.apply(shellcode)
-            #shellcode = preprocessorFunction(shellcode)
 
     shellcodeSize = len(shellcode)
 
@@ -95,7 +94,6 @@ def main() -> None:
     compilerOptions += templateObject.compilerOptions()
     imports = templateObject.imports() + imports
 
-
     deliveryItem, arguments = parse_module_args(args.delivery)
     deliveryObject = load_module(args.language, 'delivery', deliveryItem)(shellcode, arguments)
     codeblocks += deliveryObject.codeblock()
@@ -113,9 +111,6 @@ def main() -> None:
 
     formattedCode = templateCode.format(imports=imports, codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
     compiler = importlib.import_module(f'{args.language}.utils.compiler')
-
-    
-
     outfile = compiler.compile(formattedCode, args.output, compilerOptions)
 
     if args.postprocessors:

@@ -7,8 +7,9 @@ class mkpivm64:
 
     def __init__(self, arguments: dict) -> None:
         self.arguments = []
-        if 'pack' in arguments:
-            self.arguments.append('--pack')
+        if 'mode' in arguments:
+            if arguments['mode'] == 'pack':
+                self.arguments.append('--pack')
 
     def apply(self, shellcode: bytes) -> bytes:
         fd, filename = tempfile.mkstemp()

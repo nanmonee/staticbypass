@@ -15,7 +15,7 @@ class donut:
             f.write(shellcode)
         outtf, outfilename = tempfile.mkstemp()
         
-        result = subprocess.run(['wine', './bin/donut.exe', '-i', filename, '-b', '1', '-k', '2', '-o', outfilename] + self.arguments, check=True)
+        result = subprocess.run(['donut', '-i', filename, '-a', '2', '-o', outfilename] + self.arguments, check=True)
         
         if result.returncode == 0:
             output = os.fdopen(outtf, 'rb').read()
