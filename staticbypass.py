@@ -113,6 +113,9 @@ def main() -> None:
 
     formattedCode = templateCode.format(imports=imports, codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
     compiler = importlib.import_module(f'{args.language}.utils.compiler')
+
+    
+
     outfile = compiler.compile(formattedCode, args.output, compilerOptions)
 
     if args.postprocessors:
