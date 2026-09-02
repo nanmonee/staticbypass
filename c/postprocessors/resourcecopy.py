@@ -1,7 +1,4 @@
-import subprocess
-import tempfile
-from pe_tools import parse_pe, KnownResourceTypes
-import time
+import lief
 
 class resourcecopy:
 
@@ -13,6 +10,8 @@ class resourcecopy:
             exit(0)
 
     def apply(self, outfile: str) -> None:
-        resourcetf, resourcefilename = tempfile.mkstemp(suffix='.res')
-        result = subprocess.run(['wine', 'bin/ResourceHacker.exe','-open', self.inputfile, '-action', 'extract', '-save', resourcefilename, '-mask', ',,'],capture_output=True,  check=True)
-        result = subprocess.run(['wine', 'bin/ResourceHacker.exe', '-open', outfile, '-action', 'addoverwrite', '-resource', resourcefilename, '-save', outfile, '-mask', ',,'],capture_output=True, check=True)
+        source_binary = lief.PE.parse(self.inputfile)
+        target_binary = lief.PE.parse(outfile)
+
+        target_binary.set_resources(source_binary.resources)
+        target_binary.write(outfile)
