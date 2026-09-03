@@ -8,7 +8,7 @@ class Base64Encode:
         self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
 
     def imports(self) -> list[str]:
-        return ['"encoding/base64"']
+        return ['encoding/base64']
 
     def compilerOptions(self) -> list[str]:
         return ["encoding/base64"]

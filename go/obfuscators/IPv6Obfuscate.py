@@ -7,8 +7,8 @@ class IPv6Obfuscate:
         self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
 
     def imports(self) -> list[str]:
-        return ['"strings"',
-                '"strconv"']
+        return ['strings',
+                'strconv']
 
     def compilerOptions(self) -> list[str]:
         return []

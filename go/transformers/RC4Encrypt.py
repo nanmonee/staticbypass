@@ -14,7 +14,7 @@ class RC4Encrypt:
             self.key = os.urandom(16)
 
     def imports(self) -> list[str]:
-        return ['"crypto/rc4"']
+        return ['crypto/rc4']
 
     def compilerOptions(self) -> list[str]:
         return []

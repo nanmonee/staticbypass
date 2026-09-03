@@ -21,7 +21,7 @@ class DictObfuscate:
             self.dictdecode[word] = i
 
     def imports(self) -> list[str]:
-        return ['"strings"']
+        return ['strings']
 
     def compilerOptions(self) -> list[str]:
         return []

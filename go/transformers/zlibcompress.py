@@ -13,7 +13,9 @@ class zlibcompress:
             self.key = os.urandom(16)
 
     def imports(self) -> list[str]:
-        return ['"compress/zlib"', '"io"', '"bytes"']
+        return ['compress/zlib', 
+                'io', 
+                'bytes']
 
     def compilerOptions(self) -> list[str]:
         return []

@@ -11,8 +11,8 @@ class spawnandinject:
             self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
-        return ['"golang.org/x/sys/windows"',
-                '"syscall"']
+        return ['golang.org/x/sys/windows',
+                'syscall']
 
     def compilerOptions(self) -> list[str]:
         return ["golang.org/x/sys/windows"]

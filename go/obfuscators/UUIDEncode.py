@@ -8,7 +8,7 @@ class UUIDEncode:
         self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
 
     def imports(self) -> list[str]:
-        return ['"github.com/google/uuid"']
+        return ['github.com/google/uuid']
 
     def compilerOptions(self) -> list[str]:
         return ['github.com/google/uuid']

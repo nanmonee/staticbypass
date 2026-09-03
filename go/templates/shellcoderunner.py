@@ -3,8 +3,8 @@ class shellcoderunner:
         pass
 
     def imports(self) -> list[str]:
-        return ['"unsafe"',
-                '"golang.org/x/sys/windows"']
+        return ['unsafe',
+                'golang.org/x/sys/windows']
 
     def compilerOptions(self) -> list[str]:
         return ["golang.org/x/sys/windows"]

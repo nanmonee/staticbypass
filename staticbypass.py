@@ -105,6 +105,8 @@ def main() -> None:
     # Remove duplicates while retaining order
     if args.language == 'pas':
         imports = ','.join(list(dict.fromkeys(imports)))
+    elif args.language == 'go':
+        imports = '\n'.join([f'"{x}"' for x in list(dict.fromkeys(imports))])
     else:
         imports = '\n'.join(list(dict.fromkeys(imports)))
     formattedCode = templateObject.template(imports, codeblocks, transformers, shellcodeSize)

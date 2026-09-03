@@ -19,8 +19,8 @@ class AESEncrypt:
             self.iv = os.urandom(16)
 
     def imports(self) -> list[str]:
-        return ['"crypto/aes"', 
-                '"crypto/cipher"']
+        return ['crypto/aes', 
+                'crypto/cipher']
 
     def compilerOptions(self) -> list[str]:
         return []
