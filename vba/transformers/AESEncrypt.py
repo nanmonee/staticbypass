@@ -56,7 +56,7 @@ Function {self.name}(ByRef cipherBytes() As Byte) As Byte()
     Dim objLen As Long, cbResult As Long, outLen As Long, inLen As Long
     Dim pIn As LongPtr
     inLen = UBound(cipherBytes) - LBound(cipherBytes) + 1
-    
+
     pIn = VarPtr(cipherBytes(LBound(cipherBytes)))
 
     ' 1) Open the AES algorithm provider

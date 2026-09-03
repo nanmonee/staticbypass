@@ -22,7 +22,7 @@ class EmojiEncode:
         return shellcodestring.format(shellcode=f'{self.name}({{shellcode}})')
 
     def codeblock(self) -> str:
-        return """
+        return f"""
         public static byte[] {name}(string encoded)
         {{
             byte[] decoded = new byte[encoded.Length/2];

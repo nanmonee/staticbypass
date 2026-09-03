@@ -1,4 +1,6 @@
 class shellcoderunner:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ['"unsafe"',
@@ -7,8 +9,8 @@ class shellcoderunner:
     def compilerOptions(self) -> list[str]:
         return ["golang.org/x/sys/windows"]
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 package main
     
 import (

@@ -27,12 +27,11 @@ class DictObfuscate:
         return []
 
     def obfuscate(self, decoded: bytes) -> str:
-        encoded = ''
+        encoded = []
         self.length = len(decoded)
-        for i in range(0, len(decoded) - 1):
-            encoded += self.dictencode[decoded[i]] + ' '
-        encoded += self.dictencode[decoded[-1]]
-        return encoded
+        for i in range(0, len(decoded)):
+            encoded.append(self.dictencode[decoded[i]])
+        return ' '.join(encoded)
 
     def transformer(self, shellcodestring: str) -> str:
         return shellcodestring.format(shellcode=f'{self.name}({{shellcode}})')
@@ -41,7 +40,7 @@ class DictObfuscate:
         return f"""
 Private Function {self.name}(strData)
     {dict_to_vba(self.dictdecode, 'dictionary')}
-    Dim outArray({self.length}) As Byte
+    Dim outArray({self.length} - 1) As Byte
     
     Dim words() As String
 

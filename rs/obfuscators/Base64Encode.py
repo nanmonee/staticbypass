@@ -21,7 +21,7 @@ class Base64Encode:
         return shellcodestring.format(shellcode=f'{self.name}(&{{shellcode}})')
 
     def codeblock(self) -> str:
-        return """
+        return f"""
 fn {name}(encoded: &str) -> Vec<u8> {{
     BASE64_STANDARD.decode(encoded).unwrap()
 }}

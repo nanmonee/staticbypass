@@ -88,12 +88,6 @@ def main() -> None:
         compilerOptions += obfuscatorObject.compilerOptions()
         shellcode = obfuscatedShellcode
 
-    # Load template options
-    templateObject = load_module(args.language, 'templates', args.template)()
-    templateCode = templateObject.template()
-    compilerOptions += templateObject.compilerOptions()
-    imports = templateObject.imports() + imports
-
     deliveryItem, arguments = parse_module_args(args.delivery)
     deliveryObject = load_module(args.language, 'delivery', deliveryItem)(shellcode, arguments)
     codeblocks += deliveryObject.codeblock()
@@ -101,15 +95,20 @@ def main() -> None:
     imports += deliveryObject.imports()
     compilerOptions += deliveryObject.compilerOptions()
 
+    compilerOptions = list(dict.fromkeys(compilerOptions))
+
+    # Load template options
+    template, arguments = parse_module_args(args.template)
+    templateObject = load_module(args.language, 'templates', template)(arguments)
+    compilerOptions += templateObject.compilerOptions()
+    imports = templateObject.imports() + imports
     # Remove duplicates while retaining order
     if args.language == 'pas':
         imports = ','.join(list(dict.fromkeys(imports)))
     else:
         imports = '\n'.join(list(dict.fromkeys(imports)))
+    formattedCode = templateObject.template(imports, codeblocks, transformers, shellcodeSize)
 
-    compilerOptions = list(dict.fromkeys(compilerOptions))
-
-    formattedCode = templateCode.format(imports=imports, codeblocks=codeblocks, transformers=transformers, shellcodeSize=shellcodeSize)
     compiler = importlib.import_module(f'{args.language}.utils.compiler')
     outfile = compiler.compile(formattedCode, args.output, compilerOptions)
 

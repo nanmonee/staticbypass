@@ -33,6 +33,7 @@ class embedtext:
         return f"""
 Function {self.name}() As {self.type}
     obfuscated = ActiveDocument.Paragraphs(1).Range.Text
+    obfuscated = Replace(obfuscated, vbCr, " ")
     {self.name} = RTrim(obfuscated)
 End Function
 """

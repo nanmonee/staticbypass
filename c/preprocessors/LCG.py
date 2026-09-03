@@ -18,7 +18,6 @@ class LCG:
             state = (state * m) - c
             state = state & 0xFFFFFFFFFFFFFFFF 
             encoded.append((state & 0xff) ^ shellcode[i])
-
         decoder_asm = f"""
     lea rdi, [rip + encrypted]
     mov rdx, {hex(len(encoded))}

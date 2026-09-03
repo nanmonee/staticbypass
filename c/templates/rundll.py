@@ -1,4 +1,6 @@
 class rundll:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -11,8 +13,8 @@ class rundll:
         return ['-luser32',
                 '-shared']
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 // Use __declspec(dllexport) and WINAPI (stdcall) for the export

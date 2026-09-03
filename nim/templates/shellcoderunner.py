@@ -1,4 +1,6 @@
 class shellcoderunner:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ['import winim/lean']
@@ -6,8 +8,8 @@ class shellcoderunner:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 {codeblocks}
 

@@ -1,4 +1,6 @@
 class processstomp:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -9,8 +11,8 @@ class processstomp:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 {codeblocks}

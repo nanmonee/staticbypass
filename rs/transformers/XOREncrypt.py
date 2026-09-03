@@ -26,12 +26,12 @@ class XOREncrypt:
         return shellcodestring.format(shellcode=f'{self.name}(&{{shellcode}})')
 
     def codeblock(self) -> str:
-        return """
-fn {name}(a: &[u8]) -> Vec<u8>{{
-    {key}
+        return f"""
+fn {self.name}(a: &[u8]) -> Vec<u8>{{
+    {bytes_to_rs(self.key, 'key')}
     a.iter()
         .enumerate()
         .map(|(i, &byte)| byte ^ key[i % key.len()])
         .collect()
 }}
-""".format(name = self.name, key=bytes_to_rs(self.key, 'key'), ciphertextSize = self.ciphertextSize)
+"""

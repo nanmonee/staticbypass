@@ -2,6 +2,8 @@ import tempfile
 import os
 
 class rundll:
+    def __init__(self, arguments):
+        pass
 
     def __init__(self) -> None:
         with open('dllmain.c', 'w') as f:
@@ -51,8 +53,8 @@ BOOL WINAPI DllMain(
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 package main
 
 import "C"

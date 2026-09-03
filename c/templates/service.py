@@ -1,4 +1,6 @@
 class service:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -8,8 +10,8 @@ class service:
         return ['-municode', 
                 '-mwindows']
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 

@@ -1,4 +1,6 @@
 class shellcoderunner:
+    def __init__(self, arguments):
+        pass
 
     def imports(self) -> list[str]:
         return ['Private Declare PtrSafe Function VirtualAlloc Lib "kernel32" (ByVal lpAddress As LongPtr, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As LongPtr',
@@ -8,8 +10,8 @@ class shellcoderunner:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def template(self) -> str:
-        return """
+    def template(self, imports, codeblocks, transformers, shellcodeSize) -> str:
+        return f"""
 {imports}
 
 {codeblocks}
