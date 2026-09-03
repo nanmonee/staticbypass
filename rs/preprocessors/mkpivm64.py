@@ -1,7 +1,6 @@
 import tempfile
 import subprocess
 import os
-import platform
 
 class mkpivm64:
 
@@ -16,10 +15,7 @@ class mkpivm64:
         with os.fdopen(fd, 'wb') as f:
             f.write(shellcode)
         outtf, outfilename = tempfile.mkstemp()
-        if platform.system() == 'Linux':
-            result = subprocess.run(['wine', './bin/mkpivm64.exe'] + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
-        else:
-            result = subprocess.run(['./bin/mkpivm64.exe']  + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
+        result = subprocess.run(['./bin/mkpivm64'] + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
         if result.returncode == 0:
             output = os.fdopen(outtf, 'rb').read()
         os.remove(filename)
