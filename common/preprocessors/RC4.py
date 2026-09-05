@@ -5,20 +5,6 @@ import os
 
 class RC4:
 
-    def find_bad(self, src):
-        ks = Ks(KS_ARCH_X86, KS_MODE_64)
-        ks.syntax = KS_OPT_SYNTAX_INTEL
-        for n, raw in enumerate(src.splitlines(), 1):
-            line = raw.split(";")[0].strip()
-            if not line or line.endswith(":") or line.startswith("."):
-                continue                       # skip labels, blanks, .byte/directives
-            try:
-                ks.asm(line)
-            except KsError as e:
-                if e.errno == KS_ERR_ASM_SYMBOL_MISSING:
-                    continue                   # unresolved label, not a real problem
-                print(f"line {n:>3}: {line}   -> errno {e.errno}")
-
     def __init__(self, arguments: dict) -> None:
         pass
 
@@ -98,14 +84,5 @@ class RC4:
             "key:"
             f".byte {','.join(f'0x{b:02X}' for b in key)};"
         )
-
-        print(decoder_asm)
-
-        self.find_bad(decoder_asm.replace(';', '\n').replace(':', ':\n'))
-
-        try:
-            encoding, count = ks.asm(decoder_asm)
-        except KsError as e:
-            print(f"Assembly failed at statement index: {e.stat_count}")
-            print(f"Error details: {e}")
+        encoding, count = ks.asm(decoder_asm)
         return bytes(encoding)

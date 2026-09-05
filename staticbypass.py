@@ -62,7 +62,7 @@ def main() -> None:
     if args.preprocessors:
         for preprocessor in args.preprocessors:
             preprocessorItem, arguments = parse_module_args(preprocessor)
-            preprocessorObject = load_module(args.language, 'preprocessors', preprocessorItem)(arguments)
+            preprocessorObject = load_module('common', 'preprocessors', preprocessorItem)(arguments)
             shellcode = preprocessorObject.apply(shellcode)
 
     shellcodeSize = len(shellcode)

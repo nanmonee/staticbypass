@@ -86,6 +86,12 @@ pip install -r requirements.txt
 |               | donut           | All                      | Convert executable to shellcode |
 |               | xorencrypt      | All                      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
 |               | rotate          | All                      | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | All                      | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | All                      | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | All                      | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | All                      | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+| Guardrails    | hostname        | C                        | Terminate execution depending on GetComputerNameA |
+|               | username        | C                        | Terminate execution depending on GetUserNameA |
 | Transformer   | AESEncrypt      | All                      | AES Encryption |
 |               | TinyAES         | C                        | AES Encryption without libraries |
 |               | XOREncrypt      | All                      | XOR Encryption |
@@ -116,6 +122,6 @@ pip install -r requirements.txt
 | Postprocessor | strip           | C, C#, Rust, Pascal, Nim | Strip symbols from executable |
 |               | sign            | C, Rust, Go, Pascal, Nim | Sign executable with self-signed certificate |
 |               | sigthief        | C, Rust, Go, Pascal, Nim | Steal certificate chain from another file |
-|               | resoucecopy     | C, Rust, Go, Pascal, Nim | Copy resources from another executable |
+|               | resourcecopy    | C, Rust, Go, Pascal, Nim | Copy resources from another executable |
 |               | obfell          | PS                       | PowerShell obfuscator by @Jael-G |
 |               | junkpile        | PS                       | PowerShell obfuscator by @bobby-tablez |
