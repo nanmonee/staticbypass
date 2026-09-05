@@ -30,6 +30,7 @@ def main() -> None:
     parser.add_argument('-t', "--template", type=str, required=True, help='Template that the shellcode and deobfuscation code will be placed into.')
     parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim"}, required=True, help='Language used to write and compile')
     parser.add_argument('-f', "--obfuscator", type=str, required=False, help='Obfuscators transform the transformed shellcode bytes into other formats, such as strings.')
+    parser.add_argument('-g', "--guardrails", type=str, required=False, help='Guardrails stop execution if some condition is met.')
     parser.add_argument('-b', "--preprocessors", type=str, nargs = '*', required=False, help='Preprocessors modify the shellcode but are self decoding.')
     parser.add_argument('-a', "--postprocessors", type=str, nargs='*', required=False, help='Postprocessors obfuscate the resulting exe or script, e.g. packers')
     parser.add_argument('-d', "--delivery", type=str, required=False, default="embedded", help='Delivery defines where the obfuscated shellcode is retrieved')
@@ -87,6 +88,15 @@ def main() -> None:
         imports += obfuscatorObject.imports()
         compilerOptions += obfuscatorObject.compilerOptions()
         shellcode = obfuscatedShellcode
+
+    # Add guardrails
+    if args.guardrails:
+        guardrail, arguments = parse_module_args(args.guardrails)
+        guardrailObject = load_module(args.language, 'guardrails', guardrail)(arguments)
+        transformers = guardrailObject.transformer(transformers)
+        codeblocks += guardrailObject.codeblock()
+        imports += guardrailObject.imports()
+        compilerOptions += guardrailObject.compilerOptions()
 
     deliveryItem, arguments = parse_module_args(args.delivery)
     deliveryObject = load_module(args.language, 'delivery', deliveryItem)(shellcode, arguments)
