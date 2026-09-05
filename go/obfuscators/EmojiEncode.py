@@ -14,6 +14,7 @@ class EmojiEncode:
 
     def obfuscate(self, decoded: bytes) -> str:
         encoded = ""
+        self.size = len(decoded)
         for i in range(0, len(decoded)):
             encoded += chr(0x1f400 + decoded[i])
         return encoded
@@ -23,12 +24,11 @@ class EmojiEncode:
 
     def codeblock(self) -> str:
         return f"""
-        public static byte[] {name}(string encoded)
-        {{
-            byte[] decoded = new byte[encoded.Length/2];
-            for (int i=0; i< encoded.Length/2; i++ ){{
-                decoded[i] = (byte)(char.ConvertToUtf32(encoded.Substring(i*2, 2), 0) & 255);
-            }}
-            return decoded;
-        }}
-""".format(name = self.name)
+func {self.name}(encoded string) []byte {{
+    decoded := make([]byte, {self.size})
+    for i, character := range encoded {{
+        decoded[i/4] = byte(int(character) & 255)
+    }}
+    return decoded
+}}
+"""

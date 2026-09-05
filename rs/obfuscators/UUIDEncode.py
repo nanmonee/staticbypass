@@ -29,7 +29,7 @@ class UUIDEncode:
     def codeblock(self) -> str:
         return f"""
 fn {self.name}(encoded: &Vec<String>) -> Vec<u8> {{
-    let mut decoded: [u8; {self.size}] = [0; {self.size}];
+    let mut decoded = vec![0; {self.size}];
     for (i, uuidstring) in encoded.iter().enumerate(){{
         let  binaryuuid = Uuid::parse_str(uuidstring);
         for (j, uuidbyte) in binaryuuid.unwrap().as_bytes().iter().enumerate(){{
@@ -39,6 +39,6 @@ fn {self.name}(encoded: &Vec<String>) -> Vec<u8> {{
             decoded[i*16+j] = *uuidbyte;
         }}
     }}
-    decoded.to_vec()
+    decoded
 }}
 """

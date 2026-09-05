@@ -28,7 +28,7 @@ class IPv4Obfuscate:
     def codeblock(self) -> str:
         return f"""
 fn {self.name}(encoded: &Vec<String>) -> Vec<u8> {{
-    let mut decoded: [u8; {self.size}] = [0; {self.size}];
+    let mut decoded = vec![0; {self.size}];
     for (i, ip) in encoded.iter().enumerate(){{
         let octets: Vec<&str> = ip.split('.').collect();
         for (j, octet) in octets.iter().enumerate(){{
@@ -38,6 +38,6 @@ fn {self.name}(encoded: &Vec<String>) -> Vec<u8> {{
             decoded[i*4 + j] =  octet.parse::<u8>().unwrap();
         }}
     }}
-    decoded.to_vec()
+    decoded
 }}
 """

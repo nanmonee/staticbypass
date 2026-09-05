@@ -5,7 +5,7 @@ import random
 class Rotate:
 
     def __init__(self, arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         if 'bits' in arguments:
             self.bits = int(arguments['bits'])
         else:

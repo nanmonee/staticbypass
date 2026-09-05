@@ -5,7 +5,7 @@ from c.utils.formatters import *
 class embedded:
 
     def __init__(self, shellcode: str | bytes | list[str], arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         shellcodeType = type(shellcode).__name__
         if 'section' in arguments:
             const = not (arguments['section'] == 'data')

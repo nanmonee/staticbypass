@@ -6,7 +6,7 @@ from vba.utils.formatters import dict_to_vba
 class DictObfuscate:
 
     def __init__(self, arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         if 'seed' in arguments:
             self.rng = random.Random(arguments['seed'])
         else:

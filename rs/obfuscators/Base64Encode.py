@@ -22,8 +22,7 @@ class Base64Encode:
 
     def codeblock(self) -> str:
         return f"""
-fn {name}(encoded: &str) -> Vec<u8> {{
+fn {self.name}(encoded: &str) -> Vec<u8> {{
     BASE64_STANDARD.decode(encoded).unwrap()
 }}
-""".format(name = self.name)
-            
+"""

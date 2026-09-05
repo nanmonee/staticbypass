@@ -13,7 +13,7 @@ class RSAEncrypt:
 
     def __init__(self, arguments: dict) -> None:
         self.key = RSA.generate(2048)
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         self.private_key = self.privKeyXML(self.key.export_key(format='DER', pkcs=1))
 
     def imports(self) -> list[str]:

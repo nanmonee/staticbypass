@@ -14,21 +14,22 @@ class EmojiEncode:
 
     def obfuscate(self, decoded: bytes) -> str:
         encoded = ""
+        self.size = len(decoded)
+        print(decoded)
         for i in range(0, len(decoded)):
             encoded += chr(0x1f400 + decoded[i])
         return encoded
 
     def transformer(self, shellcodestring: str) -> str:
-        return shellcodestring.format(shellcode=f'{self.name}({{shellcode}})')
+        return shellcodestring.format(shellcode=f'{self.name}(&{{shellcode}})')
 
     def codeblock(self) -> str:
         return f"""
-        public static byte[] {name}(string encoded)
-        {{
-            byte[] decoded = new byte[encoded.Length/2];
-            for (int i=0; i< encoded.Length/2; i++ ){{
-                decoded[i] = (byte)(char.ConvertToUtf32(encoded.Substring(i*2, 2), 0) & 255);
-            }}
-            return decoded;
-        }}
-""".format(name = self.name)
+fn {self.name}(encoded: &str) -> Vec<u8> {{
+    let mut decoded = vec![0; {self.size}];
+    for (i, character) in encoded.chars().enumerate() {{
+        decoded[i] = (character as u32 & 255) as u8;
+    }}
+    decoded
+}}
+"""

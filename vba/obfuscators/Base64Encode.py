@@ -6,7 +6,7 @@ import string
 class Base64Encode:
 
     def __init__(self, arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
 
     def imports(self) -> list[str]:
         return ['Private Declare PtrSafe Function CryptStringToBinaryA Lib "Crypt32.dll" (ByVal pszString As String, ByVal cchString As Long, ByVal dwFlags As Long, ByVal pbBinary As LongPtr, ByRef pcbBinary As Long, ByRef pdwSkip As Long, ByRef pdwFlags As Long) As Long']

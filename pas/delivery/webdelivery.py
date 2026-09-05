@@ -4,7 +4,7 @@ import string
 class webdelivery:
 
     def __init__(self, shellcode: str | bytes | list[str], arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         if 'outfile' in arguments:
             outfile = arguments['outfile']
         else:

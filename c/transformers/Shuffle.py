@@ -4,7 +4,7 @@ import random
 class Shuffle:
 
     def __init__(self, arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         self.state = random.randint(0, 2**32)
 
     def imports(self) -> list[str]:

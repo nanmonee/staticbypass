@@ -28,7 +28,7 @@ class MACObfuscate:
     def codeblock(self) -> str:
         return f"""
 fn {self.name}(encoded: &Vec<String>) -> Vec<u8> {{
-    let mut decoded: [u8; {self.size}] = [0; {self.size}];
+    let mut decoded = vec![0; {self.size}];
     for (i, mac) in encoded.iter().enumerate(){{
         let macbytes: Vec<&str> = mac.split('-').collect();
         for (j, macbyte) in macbytes.iter().enumerate(){{
@@ -38,6 +38,6 @@ fn {self.name}(encoded: &Vec<String>) -> Vec<u8> {{
             decoded[i*6 + j] =  u8::from_str_radix(macbyte, 16).unwrap();
         }}
     }}
-    decoded.to_vec()
+    decoded
 }}
 """
