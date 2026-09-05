@@ -10,7 +10,7 @@ class embedded:
         self.shellcode = globals()[f'{type(shellcode).__name__}_to_pas'](shellcode, 'obfuscated')
 
     def imports(self) -> list[str]:
-        return []
+        return ['Character']
 
     def compilerOptions(self) -> list[str]:
         return []

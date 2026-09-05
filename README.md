@@ -100,7 +100,7 @@ pip install -r requirements.txt
 |               | IPv6Obfuscate   | All                      | Convert bytes into IPv6 addresses |
 |               | MACObfuscate    | All                      | Convert bytes into MAC addresses |
 |               | UUIDEncode      | All                      | Convert bytes into UUIDv4 strings |
-|               | EmojiEncode     | C, C#, PS, Rust, Nim, Go | Convert bytes into emoji |
+|               | EmojiEncode     | C, C#, PS, Rust, Nim, Go, Pas | Convert bytes into emoji |
 |               | Brainfuck       | C                        | Convert bytes into a brainfuck string (slow) |
 |               | Whitespace      | C                        | Convert bytes into tabs and spaces |
 | Template      | shellcoderunner | All                      | Simple shellcode runner using CreateThread |

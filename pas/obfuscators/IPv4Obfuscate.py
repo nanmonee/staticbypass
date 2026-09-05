@@ -4,7 +4,7 @@ import string
 class IPv4Obfuscate:
 
     def __init__(self, arguments: dict) -> None:
-        self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(16))
 
     def imports(self) -> list[str]:
         return []
@@ -37,7 +37,6 @@ var
     decoded: TBytes;
     j: Integer;
 begin
-
     SetLength(decoded, {self.size*4});
     for i:= Low(encoded) To High(encoded) do
     begin

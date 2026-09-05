@@ -25,6 +25,7 @@ class shellcoderunner:
 
 program output;
 
+{{$codepage UTF8}}
 {{$mode delphi}}
 
 uses {imports};
