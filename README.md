@@ -90,8 +90,8 @@ pip install -r requirements.txt
 |               | LCG             | All                      | XOR encrypt shellcode with LCG Subtraction key generation |
 |               | RC4             | All                      | Self-decrypting RC4 shellcode stub |
 |               | SBOX            | All                      | XOR encrypt shellcode with SBOX and LCG Addition key generation |
-| Guardrails    | hostname        | C                        | Terminate execution depending on GetComputerNameA |
-|               | username        | C                        | Terminate execution depending on GetUserNameA |
+| Guardrails    | hostname        | C, C#                    | Terminate execution depending on GetComputerNameA |
+|               | username        | C, C#                    | Terminate execution depending on GetUserNameA |
 | Transformer   | AESEncrypt      | All                      | AES Encryption |
 |               | TinyAES         | C                        | AES Encryption without libraries |
 |               | XOREncrypt      | All                      | XOR Encryption |

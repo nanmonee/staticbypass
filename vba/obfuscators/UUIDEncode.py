@@ -33,7 +33,6 @@ class UUIDEncode:
 Private Function {self.name}(UUIDs)
     Dim arrayLength as Long
     Dim outArray() As Byte
-    Dim octets() As string
 
     arrayLength = UBound(UUIDs) - LBound(UUIDs) + 1
     Redim outArray(arrayLength * 16)
