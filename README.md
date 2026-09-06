@@ -112,9 +112,9 @@ pip install -r requirements.txt
 | Template      | shellcoderunner | All                      | Simple shellcode runner using CreateThread |
 |               | processstomp    | C, C#, PS, Rust, Go, VBA | Process hollowing via overwriting entrypoint |
 |               | spawnandinject  | All                      | Spawn process and inject into remote thread |
+|               | rundll          | C, Go                    | Spawn and inject packaged as a DLL |
 |               | service         | C                        | Template for running executable as service |
 |               | processinject   | C                        | Search for explorer.exe and create a remote thread |
-|               | delayedhollow   | C                        | Process hollowing with delay |
 |               | hellsgate       | C                        | Dynamic API resolution using HellsGate technique |
 |               | threadhijack    | C                        | Hijack running thread in existing process |
 |               | bzip2           | C                        | Process hollowing using legitimate bzip2 code as cover |

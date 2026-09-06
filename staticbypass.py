@@ -16,11 +16,8 @@ def parse_module_args(argument_string: str) -> tuple[str, dict]:
     arguments = {}
     if (len(split) != 1):
         for item in split[1:]:
-            if '=' in item:
-                key, _, value = item.partition('=')
-                arguments[key] = value
-            else:
-                arguments[item] = True
+            key, _, value = item.partition('=')
+            arguments[key] = value
     return module, arguments
 
 def main() -> None:
