@@ -37,7 +37,7 @@ unsigned char * {self.name}(const unsigned char *uuids[])
     UUID binaryUUID;
     unsigned char* out = malloc(size*16);
     for (int i=0; i<size; i++){{
-        UuidFromStringA(uuids[i], &binaryUUID);
+        UuidFromStringA((RPC_CSTR)uuids[i], &binaryUUID);
         out[i*16] = binaryUUID.Data1 & 0xff;
         out[i*16 + 1] = binaryUUID.Data1 >> 8 & 0xff;
         out[i*16 + 2] = binaryUUID.Data1 >> 16 & 0xff;
