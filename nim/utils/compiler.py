@@ -9,7 +9,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     print(f'Writing source code to {sourcefile}')
     open(sourcefile,'w').write(code)
     env_copy = os.environ.copy()
-    result = subprocess.run(['nim', 'c', '-d:mingw'] + compilerOptions + [f'-o:{outfile}', '-d:release', sourcefile], env=env_copy, check=True)
+    result = subprocess.run(['nim', 'c', '-d:mingw'] + compilerOptions + [f'-o:{output}', '-d:release', sourcefile], env=env_copy, check=True)
     if result.returncode == 0:
-        print(f'Payload saved to {outfile}')
+        print(f'Payload saved to {output}')
     return outfile
