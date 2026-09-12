@@ -1,13 +1,15 @@
 import subprocess
+from pathlib import Path
 
 def compile(code: str, output: str, compilerOptions: list[str]) -> str:
-    filename = output.rsplit('.', 2)[0]
+    p = Path(output)
+    source = f'{p.parent}/{p.stem}'
     if '-shared' in compilerOptions:
-        sourcefile = f'{filename}.c'
-        outfile = f'{filename}.dll'
+        sourcefile = f'{source}.c'
+        outfile = f'{source}.dll'
     else:
-        sourcefile = f'{filename}.c'
-        outfile = f'{filename}.exe'
+        sourcefile = f'{source}.c'
+        outfile = f'{source}.exe'
     print(f'Writing source code to {sourcefile}')
     open(sourcefile,'w').write(code)
     result = subprocess.run(['x86_64-w64-mingw32-gcc', sourcefile, '-o', outfile, '--static'] + compilerOptions, check=True)

@@ -16,7 +16,7 @@ class main:
 
 {codeblocks}
 
-function main(): void {{
+async function main(): void {{
     {template}
 }}
 

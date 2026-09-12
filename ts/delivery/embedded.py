@@ -19,8 +19,24 @@ class embedded:
         return shellcodestring.format(shellcode=f'{self.name}()')
 
     def codeblock(self) -> str:
-        return f"""
+        if self.type == 'bytes':
+            return f"""
 function {self.name}(): Uint8Array {{
+    {self.shellcode}
+    return obfuscated;
+}}
+"""
+
+        elif self.type == 'str':
+            return f"""
+function {self.name}(): string {{
+    {self.shellcode}
+    return obfuscated;
+}}
+"""
+        elif self.type == 'list':
+            return f"""
+function {self.name}(): string[] {{
     {self.shellcode}
     return obfuscated;
 }}

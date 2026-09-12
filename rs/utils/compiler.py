@@ -6,13 +6,13 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     outfilename = output.rsplit('.', 2)[0]
     packagename = outfilename.split('/')[-1]
     outfolder = outfilename
-    lib = 'crate-type = ["bin"]'
+    lib = ''
     if '.dll' in output:
         outfile = f'{outfilename}.dll'
-        lib = 'crate-type = ["cdylib"]'
+        lib = '[lib]\ncrate-type = ["cdylib"]'
         srcfile = f'{outfolder}/src/lib.rs'
     else:
-        outfile = f'{outfilename}.dll'
+        outfile = f'{outfilename}.exe'
         srcfile = f'{outfolder}/src/main.rs'
     os.makedirs(f'{outfolder}/src/', exist_ok=True)
     open(srcfile, 'w').write(code)
@@ -25,7 +25,6 @@ edition = "2021"
 [dependencies]
 {'\n'.join(compilerOptions)}
 
-[lib]
 {lib}
 
 [profile.release]
