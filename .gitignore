@@ -22,3 +22,6 @@ output.dll
 dllmain.c
 output.h
 output.ts
+bun.lock
+node_modules
+package.json
