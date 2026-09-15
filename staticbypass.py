@@ -25,7 +25,7 @@ def main() -> None:
     parser.add_argument('-e', "--transformers", type=str, nargs='*', required=False, help='Transformers encrypt or encode the shellcode and is decrypted or decoded at runtime.')
     parser.add_argument('-s', "--shellcode", type=str, required=True, help='Specifies the raw binary shellcode file')
     parser.add_argument('-t', "--template", type=str, required=True, help='Template that the shellcode and deobfuscation code will be placed into.')
-    parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim", "ts"}, required=True, help='Language used to write and compile')
+    parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim", "ts", "js"}, required=True, help='Language used to write and compile')
     parser.add_argument('-f', "--obfuscator", type=str, required=False, help='Obfuscators transform the transformed shellcode bytes into other formats, such as strings.')
     parser.add_argument('-g', "--guardrails", type=str, nargs='*', required=False, help='Guardrails stop execution if some condition is met.')
     parser.add_argument('-b', "--preprocessors", type=str, nargs='*', required=False, help='Preprocessors modify the shellcode but are self decoding.')
@@ -57,6 +57,8 @@ def main() -> None:
         transformers = 'let shellcode = {shellcode};'
     elif args.language == 'ts':
         transformers = 'let shellcode: Uint8Array = {shellcode};'
+    elif args.language == 'js':
+        transformers = 'let shellcode = {shellcode};'
     imports = []
 
     if args.preprocessors:
