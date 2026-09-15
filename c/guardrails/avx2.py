@@ -10,7 +10,7 @@ class avx2:
         return []
 
     def compilerOptions(self) -> list[str]:
-        return []
+        return ['-mavx512cd']
 
     def transformer(self, shellcodestring: str) -> str:
         return f'{self.name}();\n\t' + shellcodestring
