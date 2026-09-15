@@ -25,3 +25,4 @@ output.ts
 bun.lock
 node_modules
 package.json
+output*
