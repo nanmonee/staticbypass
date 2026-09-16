@@ -38,3 +38,6 @@ curl -fsSL https://bun.com/install | bash
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 bun add @bun-win32/kernel32
+
+# Install deno
+curl -fsSL https://deno.land/install.sh | sh
