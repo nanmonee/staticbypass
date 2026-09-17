@@ -1,7 +1,5 @@
 from string import Template
 
-from string import Template
-
 class spawnandinject:
     def __init__(self, arguments):
         self.memoryPermission = 'PAGE_EXECUTE_READ'

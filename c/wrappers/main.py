@@ -1,5 +1,3 @@
-from string import Template
-
 class main:
     def __init__(self, arguments):
         pass

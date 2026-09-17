@@ -1,21 +1,11 @@
-from string import Template
-
 class rundll:
     def __init__(self, arguments):
-        self.memoryPermission = 'PAGE_EXECUTE_READ'
-        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
-        if 'perm' in arguments:
-            if arguments['perm'] == 'rwx':
-                self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
-        if 'target' in arguments:
-            self.target = arguments['target'].replace('\\','\\\\')
+        pass
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
                 "#include <stdio.h>",
-                "#include <stdlib.h>", 
-                "#include <winternl.h>",
-                "#include <tchar.h>"]
+                "#include <stdlib.h>"]
 
     def compilerOptions(self) -> list[str]:
         return ['-luser32',

