@@ -1,10 +1,16 @@
 import random
 import string
-from c.utils.formatters import list_to_c
 
 class dynamic:
     def __init__(self, arguments):
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
+        self.handle = 'LoadLibrary'
+        if 'handle' in arguments:
+            if arguments['handle'] in ['LoadLibrary', 'GetModuleHandleA']:
+                self.handle = arguments['handle']
+            else:
+                print("Handle must be either LoadLibrary or GetModuleHandleA")
+                exit(0)
         self.typedefs = {
             "VirtualAlloc":"typedef LPVOID (WINAPI *VirtualAlloc_t)(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);",
             "CreateThread":"typedef HANDLE (WINAPI *CreateThread_t)(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);",
@@ -44,7 +50,7 @@ Resolver resolver;
 void {self.name}(void) __attribute__((constructor));
 
 void {self.name}(){{
-    HMODULE hModule = LoadLibrary(TEXT("kernel32.dll"));
+    HMODULE hModule = {self.handle}(TEXT("kernel32.dll"));
     {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in self.apicalls])};
 }}
 """
