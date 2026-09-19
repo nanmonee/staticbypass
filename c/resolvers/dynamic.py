@@ -1,5 +1,6 @@
 import random
 import string
+from c.utils.formatters import list_to_c
 
 class dynamic:
     def __init__(self, arguments):
@@ -26,9 +27,17 @@ class dynamic:
         return f"""
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
 
-FARPROC {self.name}(const char *functionName){{
+typedef struct {{
+    {'\n\t'.join([f'{x}_t {x}_resolved;' for x in self.apicalls ])}
+}} Resolver;
+
+Resolver resolver;
+
+void {self.name}(void) __attribute__((constructor));
+
+void {self.name}(){{
     HMODULE hModule = LoadLibrary(TEXT("kernel32.dll"));
-    return GetProcAddress(hModule, functionName);
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in self.apicalls])};
 }}
 """
 
@@ -36,5 +45,5 @@ FARPROC {self.name}(const char *functionName){{
         resolved = {}
         self.apicalls = apicalls
         for apicall in apicalls:
-            resolved[apicall] = f'(({apicall}_t){self.name}("{apicall}"))'
+            resolved[apicall] = f'resolver.{apicall}_resolved'
         return resolved
