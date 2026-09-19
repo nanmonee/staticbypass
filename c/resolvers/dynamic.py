@@ -14,7 +14,15 @@ class dynamic:
             "CreateProcessA":"typedef BOOL (WINAPI *CreateProcessA_t)(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);",
             "CloseHandle":"typedef BOOL (WINAPI *CloseHandle_t)(HANDLE hObject);",
             "WaitForSingleObject":"typedef DWORD (WINAPI *WaitForSingleObject_t)(HANDLE hHandle, DWORD dwMilliseconds);",
-            "VirtualFree":"typedef BOOL (WINAPI *VirtualFree_t)(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType);"
+            "VirtualFree":"typedef BOOL (WINAPI *VirtualFree_t)(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType);",
+            "HeapDestroy":"typedef BOOL (WINAPI *HeapDestroy_t)(HANDLE hHeap);",
+            "HeapFree":"typedef BOOL (WINAPI *HeapFree_t)(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem);",
+            "CreateRemoteThread":"typedef HANDLE (WINAPI *CreateRemoteThread_t)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameters, DWORD dwCreationFlags, LPDWORD lpThreadId);",
+            "VirtualAllocEx":"typedef LPVOID (WINAPI *VirtualAllocEx_t)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);",
+            "QueueUserAPC":"typedef DWORD (WINAPI *QueueUserAPC_t)(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);",
+            "ResumeThread":"typedef DWORD (WINAPI *ResumeThread_t)(HANDLE hThread);",
+            "GetThreadContext":"typedef DWORD (WINAPI *GetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
+            "SetThreadContext":"typedef DWORD (WINAPI *SetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);"
         }
 
     def imports(self) -> list[str]:

@@ -21,7 +21,7 @@ class processinject:
         return []
 
     def codeblocks(self) -> str:
-        return """"""
+        return ''
 
     def apicalls(self) -> list[str]:
         return []

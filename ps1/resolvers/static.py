@@ -11,7 +11,7 @@ class static:
         return []
     
     def codeblocks(self) -> str:
-        return """"""
+        return ''
 
     def resolve(self, apicalls):
         resolved = {}

