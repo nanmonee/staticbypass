@@ -29,6 +29,9 @@ public class Kernel32 {
 Add-Type -TypeDefinition $Kernel32 -ErrorAction SilentlyContinue
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return """
     {transformers}

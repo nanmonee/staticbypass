@@ -17,7 +17,10 @@ class spawnandinject:
         return []
     
     def codeblocks(self) -> str:
-        return """"""
+        return ''
+
+    def apicalls(self) -> list[str]:
+        return []
 
     def template(self) -> str:
         return Template("""

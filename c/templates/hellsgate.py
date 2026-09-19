@@ -257,6 +257,9 @@ PVOID VxMoveMemory(PVOID dest, const PVOID src, SIZE_T len) {
 
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return """
 	PTEB pCurrentTeb = RtlGetThreadEnvironmentBlock();

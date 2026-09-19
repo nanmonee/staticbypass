@@ -57,6 +57,9 @@ function Get-Delegate
 }
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return Template("""
     {transformers}

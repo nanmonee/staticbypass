@@ -47,6 +47,9 @@ class spawnandinject:
 
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return Template("""
 

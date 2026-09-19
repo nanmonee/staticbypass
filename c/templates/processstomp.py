@@ -20,6 +20,9 @@ class processstomp:
 NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/DWORD, PVOID, ULONG, PULONG) = NULL;
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return Template("""
     {transformers}

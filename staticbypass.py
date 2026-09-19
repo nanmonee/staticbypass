@@ -28,6 +28,7 @@ def main() -> None:
     parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim", "ts", "js"}, required=True, help='Language used to write and compile')
     parser.add_argument('-f', "--obfuscator", type=str, required=False, help='Obfuscators transform the transformed shellcode bytes into other formats, such as strings.')
     parser.add_argument('-g', "--guardrails", type=str, nargs='*', required=False, help='Guardrails stop execution if some condition is met.')
+    parser.add_argument('-r', "--resolver", type=str, required=False, default="static", help='Controls how Windows API calls are resolved.')
     parser.add_argument('-b', "--preprocessors", type=str, nargs='*', required=False, help='Preprocessors modify the shellcode but are self decoding.')
     parser.add_argument('-a', "--postprocessors", type=str, nargs='*', required=False, help='Postprocessors obfuscate the resulting exe or script, e.g. packers')
     parser.add_argument('-d', "--delivery", type=str, required=False, default="embedded", help='Delivery defines where the obfuscated shellcode is retrieved')
@@ -114,8 +115,16 @@ def main() -> None:
     compilerOptions += templateObject.compilerOptions()
     codeblocks = templateObject.codeblocks() + codeblocks
     imports = templateObject.imports() + imports
+    apicalls = templateObject.apicalls()
 
-    formattedTemplate = templateObject.template().format(transformers=transformers, shellcodeSize=shellcodeSize)
+    resolver, arguments = parse_module_args(args.resolver)
+    resolverObject = load_module(args.language, 'resolvers', resolver)(arguments)
+    resolved = resolverObject.resolve(apicalls)
+    codeblocks = resolverObject.codeblocks() + codeblocks
+    imports = resolverObject.imports() + imports
+    compilerOptions = resolverObject.compilerOptions() + compilerOptions
+
+    formattedTemplate = templateObject.template().format(transformers=transformers, shellcodeSize=shellcodeSize, **resolved)
 
     # Load wrapper
     wrapper, arguments = parse_module_args(args.wrapper)

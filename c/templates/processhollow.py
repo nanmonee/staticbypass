@@ -21,6 +21,9 @@ class processhollow:
     def compilerOptions(self) -> list[str]:
         return []
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def codeblocks(self) -> str:
         return """
 typedef NTSTATUS(WINAPI* _NtUnmapViewOfSectionFunc)(HANDLE ProcessHandle, PVOID BaseAddress);

@@ -15,7 +15,10 @@ class shellcoderunner:
         return ['windows-sys = { version = "0.61.2", features = ["Win32_System_Memory", "Win32_System_Threading", "Win32_Security", "Win32_Foundation"] }']
 
     def codeblocks(self) -> str:
-        return """"""
+        return ''
+
+    def apicalls(self) -> list[str]:
+        return []
 
     def template(self) -> str:
         return """

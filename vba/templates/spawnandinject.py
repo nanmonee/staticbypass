@@ -61,6 +61,9 @@ Private Type PROCESS_INFORMATION
 End Type
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return Template("""
     Dim si As STARTUPINFOA

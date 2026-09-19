@@ -36,6 +36,9 @@ class processstomp:
         static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, Int32 nSize, out IntPtr lpNumberOfBytesWritten);
 """
 
+    def apicalls(self) -> list[str]:
+        return []
+
     def template(self) -> str:
         return Template("""
             STARTUPINFO si = new STARTUPINFO();

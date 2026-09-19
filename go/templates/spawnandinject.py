@@ -18,7 +18,10 @@ class spawnandinject:
         return ["golang.org/x/sys/windows"]
 
     def codeblocks(self) -> str:
-        return """"""
+        return ''
+
+    def apicalls(self) -> list[str]:
+        return []
 
     def template(self) -> str:
         return Template("""
