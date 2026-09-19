@@ -29,11 +29,14 @@ class dynamic:
             "ResumeThread":"typedef DWORD (WINAPI *ResumeThread_t)(HANDLE hThread);",
             "GetThreadContext":"typedef DWORD (WINAPI *GetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
             "SetThreadContext":"typedef DWORD (WINAPI *SetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
-            "NtAllocateVirtualMemory":"typedef NTSTATUS (WINAPI *NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);"
+            "NtAllocateVirtualMemory":"typedef NTSTATUS (WINAPI *NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);",
+            "NtCreateThreadEx":"typedef NTSTATUS (WINAPI *NtCreateThreadEx_t)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);"
         }
 
     def imports(self) -> list[str]:
-        return ['#include <windows.h>']
+        return ['#include <windows.h>',
+                "#include <winternl.h>",
+                "#include <ntdef.h>"]
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -47,6 +50,27 @@ class dynamic:
             else:
                 kernel32.append(apicall)
         return f"""
+
+typedef struct _PS_ATTRIBUTE
+{{
+    ULONG_PTR Attribute;
+    SIZE_T Size;
+    union
+    {{
+        ULONG_PTR Value;
+        PVOID ValuePtr;
+    }};
+    PSIZE_T ReturnLength;
+}} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
+        
+
+_Struct_size_bytes_(TotalLength)
+typedef struct _PS_ATTRIBUTE_LIST
+{{
+    SIZE_T TotalLength;
+    PS_ATTRIBUTE Attributes[1];
+}} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
+
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
 
 typedef struct {{
