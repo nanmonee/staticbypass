@@ -311,8 +311,8 @@ PVOID LoadFunction( PBYTE Module, LPSTR FunctionName )
             FunctionAddr = Module + AddrOfFunctions[ AddrOfOrdinals[ I ] ];
 
             if ( 
-                FunctionAddr > Module + NtHeader->OptionalHeader.DataDirectory[ 0 ].VirtualAddress && 
-                FunctionAddr < Module + NtHeader->OptionalHeader.DataDirectory[ 0 ].VirtualAddress + NtHeader->OptionalHeader.DataDirectory[ 0 ].Size
+                (void *)FunctionAddr > (void *)(Module + NtHeader->OptionalHeader.DataDirectory[ 0 ].VirtualAddress) && 
+                (void *)FunctionAddr < (void *)(Module + NtHeader->OptionalHeader.DataDirectory[ 0 ].VirtualAddress + NtHeader->OptionalHeader.DataDirectory[ 0 ].Size)
             ) // Forwarders are inside export table
             {
                 // We can use getProcAddr to resolve forwarders
