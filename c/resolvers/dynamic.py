@@ -44,13 +44,15 @@ class dynamic:
     def codeblocks(self) -> str:
         kernel32 = []
         ntdll = []
+        codeblock = ''
         for apicall in self.apicalls:
             if apicall[0:2] in ['Nt', 'Zw']:
                 ntdll.append(apicall)
             else:
                 kernel32.append(apicall)
-        return f"""
 
+        if 'NtCreateThreadEx' in ntdll:
+            codeblock += """
 typedef struct _PS_ATTRIBUTE
 {{
     ULONG_PTR Attribute;
@@ -70,6 +72,9 @@ typedef struct _PS_ATTRIBUTE_LIST
     SIZE_T TotalLength;
     PS_ATTRIBUTE Attributes[1];
 }} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
+"""
+
+        codeblock += f"""
 
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
 
@@ -82,12 +87,23 @@ Resolver resolver;
 void {self.name}(void) __attribute__((constructor));
 
 void {self.name}(){{
-    HMODULE hModule = {self.handle}(TEXT("kernel32.dll"));
-    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in kernel32])};
-    hModule = {self.handle}(TEXT("ntdll.dll"));
-    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in ntdll])};
+"""
+        if len(kernel32) > 0:
+            codeblock += f"""
+    HMODULE kernel32Module = {self.handle}(TEXT("kernel32.dll"));
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(kernel32Module, "{x}");' for x in kernel32])};
+"""
+
+        if len(ntdll) > 0:
+            codeblock += f"""
+    HMODULE ntdllModule = {self.handle}(TEXT("ntdll.dll"));
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(ntdllModule, "{x}");' for x in ntdll])};
+"""
+
+        codeblock += """
 }}
 """
+        return codeblock
 
     def resolve(self, apicalls):
         resolved = {}
