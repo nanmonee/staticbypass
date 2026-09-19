@@ -54,24 +54,24 @@ class dynamic:
         if 'NtCreateThreadEx' in ntdll:
             codeblock += """
 typedef struct _PS_ATTRIBUTE
-{{
+{
     ULONG_PTR Attribute;
     SIZE_T Size;
     union
-    {{
+    {
         ULONG_PTR Value;
         PVOID ValuePtr;
-    }};
+    };
     PSIZE_T ReturnLength;
-}} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
+} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
         
 
 _Struct_size_bytes_(TotalLength)
 typedef struct _PS_ATTRIBUTE_LIST
-{{
+{
     SIZE_T TotalLength;
     PS_ATTRIBUTE Attributes[1];
-}} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
+} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
 """
 
         codeblock += f"""
@@ -100,7 +100,7 @@ void {self.name}(){{
     {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(ntdllModule, "{x}");' for x in ntdll])};
 """
 
-        codeblock += """
+        codeblock += f"""
 }}
 """
         return codeblock

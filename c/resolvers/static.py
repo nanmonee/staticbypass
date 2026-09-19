@@ -50,8 +50,8 @@ typedef struct _PS_ATTRIBUTE_LIST
     PS_ATTRIBUTE Attributes[1];
 }} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
 """
-
-        codeblock += f"""
+        if len(ntdll) > 0:
+            codeblock += f"""
 
 {'\n'.join([value for key,value in self.typedefs.items() if key in ntdll ])}
 
@@ -71,7 +71,7 @@ void {self.name}(){{
     {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(ntdllHandle, "{x}");' for x in ntdll])};
 """
 
-        codeblock += f"""
+            codeblock += f"""
 }}
 """
         return codeblock
