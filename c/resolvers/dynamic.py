@@ -28,7 +28,8 @@ class dynamic:
             "QueueUserAPC":"typedef DWORD (WINAPI *QueueUserAPC_t)(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);",
             "ResumeThread":"typedef DWORD (WINAPI *ResumeThread_t)(HANDLE hThread);",
             "GetThreadContext":"typedef DWORD (WINAPI *GetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
-            "SetThreadContext":"typedef DWORD (WINAPI *SetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);"
+            "SetThreadContext":"typedef DWORD (WINAPI *SetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
+            "NtAllocateVirtualMemory":"typedef NTSTATUS (WINAPI *NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);"
         }
 
     def imports(self) -> list[str]:
@@ -38,6 +39,13 @@ class dynamic:
         return []
     
     def codeblocks(self) -> str:
+        kernel32 = []
+        ntdll = []
+        for apicall in self.apicalls:
+            if apicall[0:2] in ['Nt', 'Zw']:
+                ntdll.append(apicall)
+            else:
+                kernel32.append(apicall)
         return f"""
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
 
@@ -51,7 +59,9 @@ void {self.name}(void) __attribute__((constructor));
 
 void {self.name}(){{
     HMODULE hModule = {self.handle}(TEXT("kernel32.dll"));
-    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in self.apicalls])};
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in kernel32])};
+    hModule = {self.handle}(TEXT("ntdll.dll"));
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)GetProcAddress(hModule, "{x}");' for x in ntdll])};
 }}
 """
 
