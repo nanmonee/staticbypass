@@ -1,7 +1,7 @@
 import random
 import string
 
-class pebwalk:
+class pebwalkhash:
     def __init__(self, arguments):
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         self.handle = 'LoadLibrary'
@@ -235,7 +235,30 @@ typedef struct _MY_LDR_DATA_TABLE_ENTRY
     LARGE_INTEGER LoadTime;
 } MY_LDR_DATA_TABLE_ENTRY, *PMY_LDR_DATA_TABLE_ENTRY;
 
-PVOID LoadModulePeb( LPWSTR ModuleName )
+UINT_PTR HashString( LPVOID String, BOOLEAN IsWide )
+{
+    ULONG Hash = 5381;
+    PUCHAR Ptr = String;
+
+    do
+    {
+        UCHAR character = *Ptr;
+        if ( !*Ptr && !IsWide )
+            break;
+
+        if ( character >= 'a' )
+            character -= 0x20;
+
+        Hash = ( ( Hash << 5 ) + Hash ) + character; 
+        if ( IsWide && ( !*Ptr && !*++Ptr ) )
+            break;
+
+        ++Ptr;
+    } while ( TRUE );
+    return Hash;
+} 
+
+PVOID LoadModulePeb( UINT_PTR hModuleHash )
 {
 
     MY_PPEB PPEB_PTR = (MY_PPEB)__readgsqword( 0x60 );
@@ -245,22 +268,16 @@ PVOID LoadModulePeb( LPWSTR ModuleName )
     WCHAR  SearchModuleLower[ MAX_PATH ]  = { 0 };
     WCHAR  PebModuleLower   [ MAX_PATH ]  = { 0 };
 
-    // Zero a buffer to contain the lowercased module to find
-    RtlSecureZeroMemory( SearchModuleLower, MAX_PATH );
-    memcpy( SearchModuleLower, ModuleName, wcslen( ModuleName ) * 2 ); // wcslen returns char count, widestr == double  bytes
-    CharLowerBuffW( SearchModuleLower, wcslen( ModuleName ) );
     do
     {
         // Zero a buffer and lowercase the found module name
-        RtlSecureZeroMemory( PebModuleLower, MAX_PATH );
         PMY_LDR_DATA_TABLE_ENTRY mod = (PMY_LDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(
             Module, MY_LDR_DATA_TABLE_ENTRY, InLoadOrderLinks
         );
-        memcpy( PebModuleLower, mod->BaseDllName.Buffer, mod->BaseDllName.Length );
-        CharLowerBuffW( PebModuleLower, mod->BaseDllName.Length );
+        DWORD ModuleHash = HashString(mod->BaseDllName.Buffer, TRUE);
 
         // If the lowercased strings match, return the address of the DLL
-        if ( !( wcscmp( SearchModuleLower, PebModuleLower) ) ){
+        if ( ModuleHash == hModuleHash ){
             return mod->DllBase;
         }
         Module = Module->Flink;
@@ -270,7 +287,7 @@ PVOID LoadModulePeb( LPWSTR ModuleName )
 }
 
 
-PVOID LoadFunction( PBYTE Module, LPSTR FunctionName )
+PVOID LoadFunction( PBYTE Module, UINT_PTR FunctionHash )
 {
     PIMAGE_NT_HEADERS       NtHeader         = NULL;
     PIMAGE_EXPORT_DIRECTORY ExpDirectory     = NULL;
@@ -279,13 +296,7 @@ PVOID LoadFunction( PBYTE Module, LPSTR FunctionName )
     PWORD                   AddrOfOrdinals   = NULL;
     PVOID                   FunctionAddr     = NULL;
     LPSTR                   FoundName        = NULL;
-    CHAR       LowerFoundName   [ MAX_PATH ] = { 0 };
-    CHAR       LowerFunctionName[ MAX_PATH ] = { 0 };
-
-    // Zero a buffer to contain the function to resolve, lowercased
-    RtlSecureZeroMemory( LowerFunctionName, MAX_PATH );
-    memcpy( LowerFunctionName, FunctionName, strlen( FunctionName ) );
-    CharLowerBuffA( LowerFunctionName, strlen( FunctionName ) );
+    PCHAR FunctionName = NULL;
 
     NtHeader         = (PIMAGE_NT_HEADERS)(Module + ( ( PIMAGE_DOS_HEADER ) Module )->e_lfanew);
     ExpDirectory     = (PIMAGE_EXPORT_DIRECTORY)(Module + NtHeader->OptionalHeader.DataDirectory[ IMAGE_DIRECTORY_ENTRY_EXPORT ].VirtualAddress);
@@ -299,13 +310,10 @@ PVOID LoadFunction( PBYTE Module, LPSTR FunctionName )
     for ( DWORD I = 0; I < ExpDirectory->NumberOfNames; I++ )
     {
         // Zero a buffer to contain the found function, lowercased
-        RtlSecureZeroMemory( LowerFoundName, MAX_PATH );
-        FoundName = ( PCHAR ) Module + AddrOfNames[ I ]; // This gets the address of the function's name
-        memcpy( LowerFoundName, FoundName, strlen( FoundName ) );
-        CharLowerBuffA( LowerFoundName, strlen( FoundName ) );
+        FunctionName = ( PCHAR ) Module + AddrOfNames[ I ];
 
         // Check if the lowercased strings match
-        if ( !strcmp( LowerFoundName, LowerFunctionName ) )
+        if ( HashString( FunctionName, FALSE ) == FunctionHash )
         {
             // If they match, resolve the address of the function's code
             FunctionAddr = Module + AddrOfFunctions[ AddrOfOrdinals[ I ] ];
@@ -366,14 +374,14 @@ void {self.name}(){{
 """
         if len(kernel32) > 0:
             codeblock += f"""
-    PVOID kernelHandle = LoadModulePeb(L"kernel32.dll");
-    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)LoadFunction(kernelHandle, "{x}");' for x in kernel32])};
+    PVOID kernelHandle = LoadModulePeb({self.hash_string('kernel32.dll')});
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)LoadFunction(kernelHandle, {self.hash_string(x, False)});' for x in kernel32])};
 """
 
         if len(ntdll) > 0:
             codeblock += f"""
-    PVOID ntdllHandle = LoadModulePeb(L"ntdll.dll");
-    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)LoadFunction(ntdllHandle, "{x}");' for x in ntdll])};
+    PVOID ntdllHandle = LoadModulePeb({self.hash_string('ntdll.dll')});
+    {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)LoadFunction(ntdllHandle, {self.hash_string(x, False)});' for x in ntdll])};
 """
 
         codeblock += f"""
@@ -387,3 +395,25 @@ void {self.name}(){{
         for apicall in apicalls:
             resolved[apicall] = f'resolver.{apicall}_resolved'
         return resolved
+
+    def hash_string(self, functionName, isWide=True ):
+        # The hash value (5381 in this case) has to be the same for the Python script and the C code
+        hash = 5381
+        # Convert the input string to uppercase for case insensitivity
+        functionName = functionName.upper()
+
+        for x in range(0, len(functionName), 1):
+            # If isWide is False or it's the first character
+            if x == 0 or not isWide:
+                # Incorporate the ordinal value of the character into hash calculation
+                hash = (( hash << 5 ) + hash ) + ord(functionName[x])
+
+            if isWide:
+                # Only perform hash calculation without including ordinal value of character
+                hash = (( hash << 5 ) + hash )
+
+                # Check if it's the end of the string for wide strings
+                if x == len(functionName):
+                    hash = (( hash << 5 ) + hash )
+
+        return hash & 0xFFFFFFFF 
