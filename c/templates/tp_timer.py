@@ -589,9 +589,6 @@ HANDLE GetHandle( DWORD PID, LPWSTR HandleName, SIZE_T Access )
     }}
     printf( "Payload executed\\n" );
 
-    Sleep(10000000000000);
-
-
     if ( hFactory ) {{
         CloseHandle( hFactory );
     }}
