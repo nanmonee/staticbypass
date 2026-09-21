@@ -25,4 +25,8 @@ typedefs = {
     "NtQueryInformationProcess": "typedef NTSTATUS (WINAPI *NtQueryInformationProcess_t)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);",
     "NtUnmapViewOfSection":"typedef NTSTATUS (WINAPI *NtUnmapViewOfSection_t)(HANDLE ProcessHandle, PVOID BaseAddress);",
     "ReadProcessMemory": "typedef BOOL (WINAPI *ReadProcessMemory_t)(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesRead);",
+    "CreateToolhelp32Snapshot": "typedef HANDLE (WINAPI *CreateToolhelp32Snapshot_t)(DWORD dwFlags, DWORD th32ProcessID);",
+    "Process32First":"typedef BOOL (WINAPI *Process32First_t)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);",
+    "Process32Next":"typedef BOOL (WINAPI *Process32Next_t)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);",
+    "OpenProcess":"typedef HANDLE (WINAPI *OpenProcess_t)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);",
 }
