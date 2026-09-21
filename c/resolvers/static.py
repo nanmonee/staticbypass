@@ -1,5 +1,6 @@
 import random
 import string
+from c.utils.typedefs import typedefs
 
 class static:
     def __init__(self, arguments):
@@ -10,12 +11,7 @@ class static:
                 self.handle = arguments['handle']
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
-        self.typedefs = {
-            "NtAllocateVirtualMemory":"typedef NTSTATUS (WINAPI *NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);",
-            "NtCreateThreadEx":"typedef NTSTATUS (WINAPI *NtCreateThreadEx_t)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);",
-            "NtWriteVirtualMemory":"typedef NTSTATUS (WINAPI *NtWriteVirtualMemory_t)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);",
-            "NtWaitForSingleObject":"typedef NTSTATUS (WINAPI *NtWaitForSingleObject_t)(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);"
-        }
+        self.typedefs = typedefs
 
     def imports(self) -> list[str]:
         return ['#include <winternl.h>']

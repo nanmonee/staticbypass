@@ -1,5 +1,6 @@
 import random
 import string
+from c.utils.typedefs import typedefs
 
 class dynamic:
     def __init__(self, arguments):
@@ -11,29 +12,7 @@ class dynamic:
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
                 exit(0)
-        self.typedefs = {
-            "VirtualAlloc":"typedef LPVOID (WINAPI *VirtualAlloc_t)(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);",
-            "CreateThread":"typedef HANDLE (WINAPI *CreateThread_t)(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);",
-            "HeapAlloc":"typedef LPVOID (WINAPI *HeapAlloc_t)(HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes);",
-            "HeapCreate":"typedef HANDLE (WINAPI *HeapCreate_t)(DWORD flOptions, SIZE_T dwInitialSize, SIZE_T dwMaximumSize);",
-            "WriteProcessMemory":"typedef BOOL (WINAPI *WriteProcessMemory_t)(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);",
-            "CreateProcessA":"typedef BOOL (WINAPI *CreateProcessA_t)(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);",
-            "CloseHandle":"typedef BOOL (WINAPI *CloseHandle_t)(HANDLE hObject);",
-            "WaitForSingleObject":"typedef DWORD (WINAPI *WaitForSingleObject_t)(HANDLE hHandle, DWORD dwMilliseconds);",
-            "VirtualFree":"typedef BOOL (WINAPI *VirtualFree_t)(LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType);",
-            "HeapDestroy":"typedef BOOL (WINAPI *HeapDestroy_t)(HANDLE hHeap);",
-            "HeapFree":"typedef BOOL (WINAPI *HeapFree_t)(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem);",
-            "CreateRemoteThread":"typedef HANDLE (WINAPI *CreateRemoteThread_t)(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameters, DWORD dwCreationFlags, LPDWORD lpThreadId);",
-            "VirtualAllocEx":"typedef LPVOID (WINAPI *VirtualAllocEx_t)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);",
-            "QueueUserAPC":"typedef DWORD (WINAPI *QueueUserAPC_t)(PAPCFUNC pfnAPC, HANDLE hThread, ULONG_PTR dwData);",
-            "ResumeThread":"typedef DWORD (WINAPI *ResumeThread_t)(HANDLE hThread);",
-            "GetThreadContext":"typedef DWORD (WINAPI *GetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
-            "SetThreadContext":"typedef DWORD (WINAPI *SetThreadContext_t)(HANDLE hThread, LPCONTEXT lpContext);",
-            "NtAllocateVirtualMemory":"typedef NTSTATUS (WINAPI *NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);",
-            "NtCreateThreadEx":"typedef NTSTATUS (WINAPI *NtCreateThreadEx_t)(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList);",
-            "NtWriteVirtualMemory":"typedef NTSTATUS (WINAPI *NtWriteVirtualMemory_t)(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten);",
-            "NtWaitForSingleObject":"typedef NTSTATUS (WINAPI *NtWaitForSingleObject_t)(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout);"
-        }
+        self.typedefs = typedefs
 
     def imports(self) -> list[str]:
         return ['#include <windows.h>',

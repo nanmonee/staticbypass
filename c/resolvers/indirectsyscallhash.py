@@ -4,6 +4,7 @@ import tempfile
 import os
 import subprocess
 
+
 class indirectsyscallhash:
     def __init__(self, arguments):
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
@@ -14,12 +15,6 @@ class indirectsyscallhash:
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
                 exit(0)
-        self.functionsignatures = {
-            "NtAllocateVirtualMemory":"NTSTATUS NtAllocateVirtualMemory_t(HANDLE ProcessHandle, PVOID *BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect)",
-            "NtCreateThreadEx":"NTSTATUS NtCreateThreadEx_t(PHANDLE ThreadHandle, ACCESS_MASK DesiredAccess, POBJECT_ATTRIBUTES ObjectAttributes, HANDLE ProcessHandle, LPTHREAD_START_ROUTINE StartRoutine, PVOID Argument, ULONG CreateFlags, SIZE_T ZeroBits, SIZE_T StackSize, SIZE_T MaximumStackSize, PPS_ATTRIBUTE_LIST AttributeList)",
-            "NtWriteVirtualMemory":"NTSTATUS NtWriteVirtualMemory_t(HANDLE ProcessHandle, PVOID BaseAddress, PVOID Buffer, SIZE_T NumberOfBytesToWrite, PSIZE_T NumberOfBytesWritten)",
-            "NtWaitForSingleObject":"NTSTATUS NtWaitForSingleObject_t(HANDLE Handle, BOOLEAN Alertable, PLARGE_INTEGER Timeout)",
-        }
         fd, file_path = tempfile.mkstemp(suffix='.asm')
         self.outfd, self.outfile_path = tempfile.mkstemp(suffix='.o')
         with os.fdopen(fd, 'w') as f:

