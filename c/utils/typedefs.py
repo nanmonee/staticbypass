@@ -34,5 +34,6 @@ typedefs = {
     'RtlInitUnicodeString':'typedef VOID (WINAPI *RtlInitUnicodeString_t)(PUNICODE_STRING DestinationString, PCWSTR SourceString);',
     'RtlDosPathNameToNtPathName_U':'typedef BOOLEAN (WINAPI *RtlDosPathNameToNtPathName_U_t)(PCWSTR DosName, PUNICODE_STRING NtName, PCWSTR *PartName, PRTL_RELATIVE_NAME_U RelativeName);',
     'NtProtectVirtualMemory':'typedef NTSTATUS (WINAPI *NtProtectVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG NewProtection, PULONG OldProtection);',
-    'NtFreeVirtualMemory':'typedef NTSTATUS (WINAPI *NtFreeVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG FreeType);'
+    'NtFreeVirtualMemory':'typedef NTSTATUS (WINAPI *NtFreeVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG FreeType);',
+    'NtQueueApcThread':'typedef NTSTATUS (WINAPI *NtQueueApcThread_t)(HANDLE ThreadHandle, PVOID ApcRoutine, PVOID ApcRoutineContext, PVOID ApcStatusBlock, ULONG ApcReserved);'
 }
