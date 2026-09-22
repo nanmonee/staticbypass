@@ -20,8 +20,7 @@ class AESEncrypt:
 
     def imports(self) -> list[str]:
         return ["#include <bcrypt.h>", 
-                "#include <string.h>", 
-                "#pragma comment(lib, \"bcrypt.lib\")"]
+                "#include <string.h>"]
 
     def compilerOptions(self) -> list[str]:
         return ['-lbcrypt']

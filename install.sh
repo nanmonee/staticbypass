@@ -2,7 +2,7 @@
 
 # Install prequisites
 sudo apt update
-sudo apt install -y mingw-w64 osslsigncode libz-mingw-w64-dev fpc libicu-dev 
+sudo apt install -y mingw-w64 osslsigncode libz-mingw-w64-dev fpc libicu-dev mingw-w64-tools
 
 # Install go
 wget https://go.dev/dl/go1.27.1.linux-amd64.tar.gz -O /tmp/go1.27.1.linux-amd64.tar.gz

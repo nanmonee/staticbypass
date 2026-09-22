@@ -28,5 +28,11 @@ typedefs = {
     "CreateToolhelp32Snapshot": "typedef HANDLE (WINAPI *CreateToolhelp32Snapshot_t)(DWORD dwFlags, DWORD th32ProcessID);",
     "Process32First":"typedef BOOL (WINAPI *Process32First_t)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);",
     "Process32Next":"typedef BOOL (WINAPI *Process32Next_t)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);",
-    "OpenProcess":"typedef HANDLE (WINAPI *OpenProcess_t)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);",
+    "OpenProcess":"typedef HANDLE (WINAPI *OpenProcess_t)(DWORD PRTL_RELATIVE_NAME_U dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);",
+    "NtCreateUserProcess":"typedef NTSTATUS (WINAPI *NtCreateUserProcess_t)(PHANDLE ProcessHandle, PHANDLE ThreadHandle, ACCESS_MASK ProcessDesiredAccess, ACCESS_MASK ThreadDesiredAccess, PCOBJECT_ATTRIBUTES ProcessObjectAttributes, PCOBJECT_ATTRIBUTES ThreadObjectAttributes, ULONG ProcessFlags, ULONG ThreadFlags, PRTL_USER_PROCESS_PARAMETERS ProcessParameters, PPS_CREATE_INFO CreateInfo, PPS_ATTRIBUTE_LIST AttributeList);",
+    'RtlCreateProcessParametersEx':'typedef NTSTATUS (WINAPI *RtlCreateProcessParametersEx_t)(PRTL_USER_PROCESS_PARAMETERS *ProcessParameters, PCUNICODE_STRING ImagePathName, PCUNICODE_STRING DllPath, PCUNICODE_STRING CurrentDirectory, PCUNICODE_STRING CommandLine, PVOID Environment, PCUNICODE_STRING WindowTitle, PCUNICODE_STRING DesktopInfo, PCUNICODE_STRING ShellInfo, PCUNICODE_STRING RuntimeData, ULONG Flags);',
+    'RtlInitUnicodeString':'typedef VOID (WINAPI *RtlInitUnicodeString_t)(PUNICODE_STRING DestinationString, PCWSTR SourceString);',
+    'RtlDosPathNameToNtPathName_U':'typedef BOOLEAN (WINAPI *RtlDosPathNameToNtPathName_U_t)(PCWSTR DosName, PUNICODE_STRING NtName, PCWSTR *PartName, PRTL_RELATIVE_NAME_U RelativeName);',
+    'NtProtectVirtualMemory':'typedef NTSTATUS (WINAPI *NtProtectVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG NewProtection, PULONG OldProtection);',
+    'NtFreeVirtualMemory':'typedef NTSTATUS (WINAPI *NtFreeVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG FreeType);'
 }

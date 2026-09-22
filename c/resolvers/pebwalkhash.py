@@ -15,9 +15,7 @@ class pebwalkhash:
         self.typedefs = typedefs
 
     def imports(self) -> list[str]:
-        return ['#include <windows.h>',
-                "#include <winternl.h>",
-                "#include <ntdef.h>"]
+        return ['#include <windows.h>']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -27,7 +25,7 @@ class pebwalkhash:
         ntdll = []
         codeblock = ''
         for apicall in self.apicalls:
-            if apicall[0:2] in ['Nt', 'Zw']:
+            if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
                 ntdll.append(apicall)
             else:
                 kernel32.append(apicall)

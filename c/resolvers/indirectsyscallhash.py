@@ -115,7 +115,7 @@ Do_Call:
         ntdll = []
         codeblock = ''
         for apicall in self.apicalls:
-            if apicall[0:2] in ['Nt', 'Zw']:
+            if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
                 ntdll.append(apicall)
 
         codeblock += """

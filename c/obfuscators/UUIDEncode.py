@@ -9,7 +9,6 @@ class UUIDEncode:
 
     def imports(self) -> list[str]:
         return ['#include <rpcdce.h>', 
-                '#pragma comment (lib, "Rpcrt4.lib")', 
                 "#include <rpc.h>"]
 
     def compilerOptions(self) -> list[str]:

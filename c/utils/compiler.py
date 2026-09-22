@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+import sys
 
 def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     p = Path(output)
@@ -12,7 +13,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         outfile = f'{source}.exe'
     print(f'Writing source code to {sourcefile}')
     open(sourcefile,'w').write(code)
-    result = subprocess.run(['x86_64-w64-mingw32-gcc', sourcefile, '-o', outfile, '--static'] + compilerOptions, check=True)
+    result = subprocess.run(['x86_64-w64-mingw32-gcc', sourcefile, '-o', outfile, '--static', f'-I{Path(sys.modules['__main__'].__file__).resolve().parent}/c/includes/'] + compilerOptions, check=True)
     if result.returncode == 0:
         print(f'Payload saved to {outfile}')
     return outfile

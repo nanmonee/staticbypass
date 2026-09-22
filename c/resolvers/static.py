@@ -1,7 +1,6 @@
 import random
 import string
 from c.utils.typedefs import typedefs
-
 class static:
     def __init__(self, arguments):
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
@@ -12,9 +11,10 @@ class static:
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
         self.typedefs = typedefs
+        self.importList = []
 
     def imports(self) -> list[str]:
-        return ['#include <winternl.h>']
+        return self.importList
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -23,31 +23,14 @@ class static:
         ntdll = []
         codeblock = ''
         for apicall in self.apicalls:
-            if apicall[0:2] in ['Nt', 'Zw']:
+            if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
                 ntdll.append(apicall)
 
         if 'NtCreateThreadEx' in ntdll:
             codeblock += f"""
-typedef struct _PS_ATTRIBUTE
-{{
-    ULONG_PTR Attribute;
-    SIZE_T Size;
-    union
-    {{
-        ULONG_PTR Value;
-        PVOID ValuePtr;
-    }};
-    PSIZE_T ReturnLength;
-}} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
-        
-
-_Struct_size_bytes_(TotalLength)
-typedef struct _PS_ATTRIBUTE_LIST
-{{
-    SIZE_T TotalLength;
-    PS_ATTRIBUTE Attributes[1];
-}} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
+typedef const OBJECT_ATTRIBUTES *PCOBJECT_ATTRIBUTES;
 """
+
         if len(ntdll) > 0:
             codeblock += f"""
 
@@ -78,7 +61,7 @@ void {self.name}(){{
         resolved = {}
         self.apicalls = apicalls
         for apicall in apicalls:
-            if apicall[0:2] in ['Nt', 'Zw']:
+            if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
                 resolved[apicall] = f'resolver.{apicall}_resolved'
             else:
                 resolved[apicall] = apicall

