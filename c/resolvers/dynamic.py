@@ -15,7 +15,8 @@ class dynamic:
         self.typedefs = typedefs
 
     def imports(self) -> list[str]:
-        return ['#include <windows.h>']
+        return ['#include <windows.h>',
+                '#include "spawnandinject.h"']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -29,29 +30,6 @@ class dynamic:
                 ntdll.append(apicall)
             else:
                 kernel32.append(apicall)
-
-        if 'NtCreateThreadEx' in ntdll:
-            codeblock += """
-typedef struct _PS_ATTRIBUTE
-{
-    ULONG_PTR Attribute;
-    SIZE_T Size;
-    union
-    {
-        ULONG_PTR Value;
-        PVOID ValuePtr;
-    };
-    PSIZE_T ReturnLength;
-} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
-        
-
-_Struct_size_bytes_(TotalLength)
-typedef struct _PS_ATTRIBUTE_LIST
-{
-    SIZE_T TotalLength;
-    PS_ATTRIBUTE Attributes[1];
-} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
-"""
 
         codeblock += f"""
 

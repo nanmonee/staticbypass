@@ -11,10 +11,10 @@ class static:
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
         self.typedefs = typedefs
-        self.importList = []
 
     def imports(self) -> list[str]:
-        return self.importList
+        return ['#include <windows.h>',
+                '#include "spawnandinject.h"']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -25,11 +25,6 @@ class static:
         for apicall in self.apicalls:
             if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
                 ntdll.append(apicall)
-
-        if 'NtCreateThreadEx' in ntdll:
-            codeblock += f"""
-typedef const OBJECT_ATTRIBUTES *PCOBJECT_ATTRIBUTES;
-"""
 
         if len(ntdll) > 0:
             codeblock += f"""

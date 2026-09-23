@@ -199,7 +199,7 @@ HellDescent:
         os.unlink(file_path)
 
     def imports(self) -> list[str]:
-        return ['#include <windows.h>',"#include <assert.h>"]
+        return ['#include <windows.h>']
 
     def compilerOptions(self) -> list[str]:
         return [self.outfile_path]
