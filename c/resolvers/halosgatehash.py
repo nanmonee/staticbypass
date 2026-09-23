@@ -232,8 +232,12 @@ HellDescent:
         ntdll = []
         codeblock = ''
         for apicall in self.apicalls:
-            if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
+            if apicall[0:2] == ['Nt']:
                 ntdll.append(apicall)
+            elif apicall[0:2] in ['Zw', 'Rt']:
+                codeblock += f"""
+{self.typedefs[apicall]}
+"""
 
         codeblock += f"""
 extern VOID HellsGate(WORD wSystemCall);
@@ -306,13 +310,15 @@ __attribute__((constructor)) void {self.name}(){{
         resolved = {}
         self.apicalls = apicalls
         for apicall in apicalls:
-            if 'Nt' not in apicall:
-                resolved[apicall] = apicall
-            else:
+            if apicall[0:2] == 'Nt':
                 resolved[apicall] = f"""
     DWORD {apicall}_ssn = findSyscallNumber(getApiAddr({len(apicall)}, {self.hashstring(apicall)}, ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));
     HellsGate({apicall}_ssn);
     HellDescent"""
+            elif apicall[0:2] in ['Rt', 'Zw']:
+                resolved[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'
+            else:
+                resolved[apicall] = apicall
         return resolved
 
     def hashstring(self, functionName) -> int:
