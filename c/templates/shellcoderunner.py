@@ -118,7 +118,7 @@ class shellcoderunner:
             self.waitCode = """
     LARGE_INTEGER li = {{ 0 }};
     li.QuadPart = -1;
-    {NtWaitForSingleObject}(hThread, FALSE, &li);
+    {NtWaitForSingleObject}(hThread, FALSE, NULL);
 """
             self.apicallsList += ['NtWaitForSingleObject']
 
