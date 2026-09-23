@@ -165,13 +165,17 @@ class spawnandinject:
 """
             self.apicallsList += ['NtQueueApcThread', 'ResumeThread']
 
-        self.wait = 'WaitForSingleObject'
         if 'wait' in arguments:
             if arguments['wait'] in ['WaitForSingleObject', 'NtWaitForSingleObject', 'None']:
                 self.wait = arguments['wait']
             else:
                 print('Wait argument must be WaitForSingleObject, NtWaitForSingleObject, or None')
                 exit(0)
+        else:
+            if self.execution in ['NtCreateThreadEx', 'CreateRemoteThread']:
+                self.wait = 'WaitForSingleObject'
+            else:
+                self.wait = 'None'
         if self.wait == 'WaitForSingleObject':
             self.waitCode = """
     {WaitForSingleObject}(newThread, 500);
