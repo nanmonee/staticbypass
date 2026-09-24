@@ -115,7 +115,6 @@ def main() -> None:
     compilerOptions += templateObject.compilerOptions()
     codeblocks = templateObject.codeblocks() + codeblocks
     imports = templateObject.imports() + imports
-    apicalls = templateObject.apicalls()
     templateCode = templateObject.template()
 
     resolver, arguments = parse_module_args(args.resolver)

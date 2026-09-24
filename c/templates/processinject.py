@@ -23,9 +23,6 @@ class processinject:
     def codeblocks(self) -> str:
         return ''
 
-    def apicalls(self) -> list[str]:
-        return ['CreateToolhelp32Snapshot', 'Process32First', 'Process32Next', 'CloseHandle', 'OpenProcess', 'VirtualAllocEx', 'WriteProcessMemory', 'CreateRemoteThread', 'WaitForSingleObject']
-
     def template(self) -> str:
         return Template("""
     int pid = 0;

@@ -5,7 +5,6 @@ from pathlib import Path
 
 class tp_timer:
     def __init__(self, arguments):
-        self.apicallsList = []
         self.memoryPermission = 'PAGE_EXECUTE_READ'
         self.target = 'explorer.exe'
         if 'target' in arguments:
@@ -124,9 +123,6 @@ HANDLE GetHandle( DWORD PID, LPWSTR HandleName, SIZE_T Access )
 }
 
 """
-
-    def apicalls(self) -> list[str]:
-        return self.apicallsList
 
     def template(self) -> str:
         return Template("""

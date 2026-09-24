@@ -18,9 +18,6 @@ class processstomp:
     def codeblocks(self) -> str:
         return ''
 
-    def apicalls(self) -> list[str]:
-        return ['NtQueryInformationProcess', 'CreateProcessA', 'ReadProcessMemory', 'WriteProcessMemory', 'ResumeThread', 'CloseHandle']
-
     def template(self) -> str:
         return Template("""
     {transformers}

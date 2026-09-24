@@ -21,9 +21,6 @@ class processhollow:
     def compilerOptions(self) -> list[str]:
         return []
 
-    def apicalls(self) -> list[str]:
-        return ['NtUnmapViewOfSection', 'VirtualAllocEx', 'CreateProcessA', 'GetThreadContext', 'SetThreadContext', 'ReadProcessMemory', 'WriteProcessMemory', 'ResumeThread']
-
     def codeblocks(self) -> str:
         return """
 typedef struct RELOCATION_BLOCK {

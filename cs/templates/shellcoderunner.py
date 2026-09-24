@@ -26,9 +26,6 @@ class shellcoderunner:
         static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
 """
 
-    def apicalls(self) -> list[str]:
-        return []
-
     def template(self) -> str:
         return """
             {transformers}
