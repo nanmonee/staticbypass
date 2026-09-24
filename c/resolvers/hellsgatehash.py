@@ -65,12 +65,7 @@ HellDescent:
         ntdll = []
         codeblock = """
 extern VOID HellsGate(WORD wSystemCall);
-extern VOID HellDescent(...);
-
-PTEB pCurrentTeb = NULL;
-PPEB pCurrentPeb = NULL;
-PLDR_DATA_TABLE_ENTRY pLdrDataEntry = NULL;
-PIMAGE_EXPORT_DIRECTORY pImageExportDirectory = NULL;
+extern NTSTATUS HellDescent(...);
 
 DWORD64 djb2(PBYTE str) {
 	DWORD64 dwHash = 0x7734773477347734;
@@ -145,30 +140,36 @@ DWORD GetSSN(PVOID pModuleBase, PIMAGE_EXPORT_DIRECTORY pImageExportDirectory, D
 }
 """
         for apicall in self.apicalls:
-            if apicall[0:2] == ['Nt']:
+            if apicall[0:2] == 'Nt':
                 ntdll.append(apicall)
             elif apicall[0:2] in ['Zw', 'Rt']:
                 codeblock += f"""
 {self.typedefs[apicall]}
 """
 
-
         codeblock += f"""
 NTSTATUS status;
 
+typedef struct {{
+    {'\n\t'.join([f'DWORD {x}_ssn;' for x in ntdll ])}
+}} Resolver;
+
+Resolver resolver;
+
 __attribute__((constructor)) void {self.name}(){{
 
+    PTEB pCurrentTeb = NULL;
     __asm__ ("mov %%gs:0x30, %0" : "=r" (pCurrentTeb));
-	pCurrentPeb = pCurrentTeb->ProcessEnvironmentBlock;
+	PPEB pCurrentPeb = pCurrentTeb->ProcessEnvironmentBlock;
 	if (!pCurrentPeb || !pCurrentTeb || pCurrentPeb->OSMajorVersion != 0xA)
 		return;
-
 	// Get NTDLL module 
-	pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)((PBYTE)pCurrentPeb->Ldr->InMemoryOrderModuleList.Flink->Flink - 0x10);
+	PLDR_DATA_TABLE_ENTRY pLdrDataEntry = (PLDR_DATA_TABLE_ENTRY)((PBYTE)pCurrentPeb->Ldr->InMemoryOrderModuleList.Flink->Flink - 0x10);
 
 	// Get the EAT of NTDLL
-	pImageExportDirectory = NULL;
+	PIMAGE_EXPORT_DIRECTORY pImageExportDirectory = NULL;
 	GetImageExportDirectory(pLdrDataEntry->DllBase, &pImageExportDirectory);
+    {'\n\t'.join([f'resolver.{apicall}_ssn = GetSSN(pLdrDataEntry->DllBase, pImageExportDirectory, {hex(self.hash_string(apicall))});' for apicall in ntdll])}
 }}
 """
         return codeblock
@@ -179,9 +180,8 @@ __attribute__((constructor)) void {self.name}(){{
         for apicall in apicalls:
             if apicall[0:2] == 'Nt':
                 resolved[apicall] = f"""
-    DWORD {apicall}_ssn = GetSSN(pLdrDataEntry->DllBase, pImageExportDirectory, {hex(self.hash_string(apicall))});
-    printf("%s ssn: %d\\n", "{apicall}", {apicall}_ssn);
-    HellsGate({apicall}_ssn);
+    HellsGate(resolver.{apicall}_ssn);
+    printf("%d\\n", resolver.{apicall}_ssn);
     HellDescent"""
             elif apicall[0:2] in ['Rt', 'Zw']:
                 resolved[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'

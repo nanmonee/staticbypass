@@ -36,7 +36,6 @@ class spawnandinject:
             parsed = PureWindowsPath(self.target)
             curdir = str(parsed.parent).replace('\\','\\\\')
             image = str(parsed.name).replace('\\','\\\\')
-            print(image)
             self.spawnCode = Template("""
     UNICODE_STRING image = RTL_CONSTANT_STRING(L"$target");
     UNICODE_STRING cmdline = RTL_CONSTANT_STRING(L"$image");
@@ -194,6 +193,26 @@ class spawnandinject:
         elif self.wait == 'None':
             self.waitCode = ''
 
+        self.close = 'CloseHandle'
+        if 'close' in arguments:
+            if arguments['close'] in ['CloseHandle', 'NtClose']:
+                self.close = arguments['close']
+            else:
+                print('Close argument must be CloseHandle, or NtClose')
+                exit(0)
+        if self.close == 'CloseHandle':
+            self.closeCode = """
+    {CloseHandle}(hThread);
+    {CloseHandle}(hProcess);
+"""
+            self.apicallsList += ['CloseHandle']
+        elif self.close == 'NtClose':
+            self.closeCode = """
+    {NtClose}(hThread);
+    {NtClose}(hProcess);
+"""
+            self.apicallsList += ['NtClose']
+
     def imports(self) -> list[str]:
         return ["#include <windows.h>",
                 "#include <stdio.h>", 
@@ -211,16 +230,12 @@ class spawnandinject:
 
     def template(self) -> str:
         return Template("""
-    {transformers}
-
     $spawn
-
     $allocation
+    {transformers}
     $write
     $protect
     $execution
     $wait
-
-    {CloseHandle}(hThread);
-    {CloseHandle}(hProcess);
-""").substitute(execution=self.executionCode, spawn=self.spawnCode, allocation=self.allocationCode, write=self.writeCode, protect=self.protectCode, wait=self.waitCode)
+    $close
+""").substitute(execution=self.executionCode, spawn=self.spawnCode, allocation=self.allocationCode, write=self.writeCode, protect=self.protectCode, wait=self.waitCode, close=self.closeCode)
