@@ -116,15 +116,14 @@ def main() -> None:
     codeblocks = templateObject.codeblocks() + codeblocks
     imports = templateObject.imports() + imports
     apicalls = templateObject.apicalls()
+    templateCode = templateObject.template()
 
     resolver, arguments = parse_module_args(args.resolver)
     resolverObject = load_module(args.language, 'resolvers', resolver)(arguments)
-    resolved = resolverObject.resolve(apicalls)
+    formattedTemplate = resolverObject.template(templateCode, transformers, shellcodeSize)
     codeblocks = resolverObject.codeblocks() + codeblocks
     imports = resolverObject.imports() + imports
     compilerOptions = resolverObject.compilerOptions() + compilerOptions
-
-    formattedTemplate = templateObject.template().format(transformers=transformers, shellcodeSize=shellcodeSize, **resolved)
 
     # Load wrapper
     wrapper, arguments = parse_module_args(args.wrapper)

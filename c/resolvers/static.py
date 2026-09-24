@@ -52,12 +52,16 @@ void {self.name}(){{
 """
         return codeblock
 
+    def template(self, templateCode, transformers, shellcodeSize):
+        apicalls = [field_name for _, field_name, _, _ in string.Formatter().parse(templateCode) if field_name is not None and field_name not in ['shellcodeSize', 'transformers']]
+        self.resolve(apicalls)
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.resolved)
+
     def resolve(self, apicalls):
-        resolved = {}
+        self.resolved = {}
         self.apicalls = apicalls
         for apicall in apicalls:
             if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
-                resolved[apicall] = f'resolver.{apicall}_resolved'
+                self.resolved[apicall] = f'resolver.{apicall}_resolved'
             else:
-                resolved[apicall] = apicall
-        return resolved
+                self.resolved[apicall] = apicall

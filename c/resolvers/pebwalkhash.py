@@ -13,6 +13,7 @@ class pebwalkhash:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
                 exit(0)
         self.typedefs = typedefs
+        self.apicalls = {}
 
     def imports(self) -> list[str]:
         return ['#include <windows.h>',
@@ -59,8 +60,8 @@ UINT_PTR HashString( LPVOID String, BOOLEAN IsWide )
 PVOID LoadModulePeb( UINT_PTR hModuleHash )
 {
 
-    MY_PPEB PPEB_PTR = (MY_PPEB)__readgsqword( 0x60 );
-    PLIST_ENTRY Module      = ( ( MY_PPEB ) PPEB_PTR )->Ldr->InLoadOrderModuleList.Flink; 
+    PPEB PPEB_PTR = (PPEB)__readgsqword( 0x60 );
+    PLIST_ENTRY Module      = ( ( PPEB ) PPEB_PTR )->Ldr->InLoadOrderModuleList.Flink; 
     PLIST_ENTRY FirstModule = Module;
 
     WCHAR  SearchModuleLower[ MAX_PATH ]  = { 0 };
@@ -69,8 +70,8 @@ PVOID LoadModulePeb( UINT_PTR hModuleHash )
     do
     {
         // Zero a buffer and lowercase the found module name
-        PMY_LDR_DATA_TABLE_ENTRY mod = (PMY_LDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(
-            Module, MY_LDR_DATA_TABLE_ENTRY, InLoadOrderLinks
+        PLDR_DATA_TABLE_ENTRY mod = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(
+            Module, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks
         );
         DWORD ModuleHash = HashString(mod->BaseDllName.Buffer, TRUE);
 
@@ -187,12 +188,16 @@ void {self.name}(){{
 """
         return codeblock
 
-    def resolve(self, apicalls):
-        resolved = {}
-        self.apicalls = apicalls
-        for apicall in apicalls:
-            resolved[apicall] = f'resolver.{apicall}_resolved'
-        return resolved
+    def template(self, templateCode, transformers, shellcodeSize):
+        for _, field_name, _, _ in string.Formatter().parse(templateCode):
+            if field_name is not None and field_name not in ['shellcodeSize', 'transformers']:
+                self.apicalls[field_name] = ''
+        self.resolve()
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.apicalls)
+
+    def resolve(self):
+        for apicall in self.apicalls:
+            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
 
     def hash_string(self, functionName, isWide=True ):
         # The hash value (5381 in this case) has to be the same for the Python script and the C code

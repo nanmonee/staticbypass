@@ -18,6 +18,7 @@ class hellsgatehash:
         fd, file_path = tempfile.mkstemp(suffix='.asm')
         self.outfd, self.outfile_path = tempfile.mkstemp(suffix='.o')
         self.typedefs = typedefs
+        self.apicalls = {}
         with os.fdopen(fd, 'w') as f:
             inline_assembly = """
 default rel
@@ -174,20 +175,23 @@ __attribute__((constructor)) void {self.name}(){{
 """
         return codeblock
 
-    def resolve(self, apicalls):
-        resolved = {}
-        self.apicalls = apicalls
-        for apicall in apicalls:
+    def template(self, templateCode, transformers, shellcodeSize):
+        for _, field_name, _, _ in string.Formatter().parse(templateCode):
+            if field_name is not None and field_name not in ['shellcodeSize', 'transformers']:
+                self.apicalls[field_name] = ''
+        self.resolve()
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.apicalls)
+
+    def resolve(self):
+        for apicall in self.apicalls:
             if apicall[0:2] == 'Nt':
-                resolved[apicall] = f"""
+                self.apicalls[apicall] = f"""
     HellsGate(resolver.{apicall}_ssn);
-    printf("%d\\n", resolver.{apicall}_ssn);
     HellDescent"""
             elif apicall[0:2] in ['Rt', 'Zw']:
-                resolved[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'
+                self.apicalls[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'
             else:
-                resolved[apicall] = apicall
-        return resolved
+                self.apicalls[apicall] = apicall
     
     def hash_string(self, functionName):
         hash = 0x7734773477347734

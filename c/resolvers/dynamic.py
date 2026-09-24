@@ -12,6 +12,7 @@ class dynamic:
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
                 exit(0)
+        self.apicalls = {}
         self.typedefs = typedefs
 
     def imports(self) -> list[str]:
@@ -62,9 +63,13 @@ void {self.name}(){{
 """
         return codeblock
 
-    def resolve(self, apicalls):
-        resolved = {}
-        self.apicalls = apicalls
-        for apicall in apicalls:
-            resolved[apicall] = f'resolver.{apicall}_resolved'
-        return resolved
+    def template(self, templateCode, transformers, shellcodeSize):
+        for _, field_name, _, _ in string.Formatter().parse(templateCode):
+            if field_name is not None and field_name not in ['shellcodeSize', 'transformers']:
+                self.apicalls[field_name] = ''
+        self.resolve()
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.apicalls)
+
+    def resolve(self):
+        for apicall in self.apicalls:
+            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
