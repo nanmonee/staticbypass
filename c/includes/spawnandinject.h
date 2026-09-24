@@ -30,6 +30,17 @@ typedef struct _CURDIR
 #define PS_ATTRIBUTE_IMAGE_NAME  PsAttributeValue(PsAttributeImageName, FALSE, TRUE,  FALSE)
 #define PS_ATTRIBUTE_CLIENT_ID   PsAttributeValue(PsAttributeClientId,  TRUE,  FALSE, FALSE)
 
+char _RTL_CONSTANT_STRING_type_check(const void *s);
+#define _RTL_CONSTANT_STRING_remove_const_macro(s) (s)
+
+#define RTL_CONSTANT_STRING(s) \
+{ \
+    sizeof( s ) - sizeof( (s)[0] ), \
+    sizeof( s ) / (sizeof(_RTL_CONSTANT_STRING_type_check(s))), \
+    _RTL_CONSTANT_STRING_remove_const_macro(s) \
+}
+
+
 typedef struct _CLIENT_ID
 {
     HANDLE UniqueProcess;
