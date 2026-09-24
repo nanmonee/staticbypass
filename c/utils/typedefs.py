@@ -35,5 +35,8 @@ typedefs = {
     'RtlDosPathNameToNtPathName_U':'typedef BOOLEAN (WINAPI *RtlDosPathNameToNtPathName_U_t)(PCWSTR DosName, PUNICODE_STRING NtName, PCWSTR *PartName, PRTL_RELATIVE_NAME_U RelativeName);',
     'NtProtectVirtualMemory':'typedef NTSTATUS (WINAPI *NtProtectVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG NewProtection, PULONG OldProtection);',
     'NtFreeVirtualMemory':'typedef NTSTATUS (WINAPI *NtFreeVirtualMemory_t)(HANDLE ProcessHandle, PVOID *BaseAddress, PSIZE_T RegionSize, ULONG FreeType);',
-    'NtQueueApcThread':'typedef NTSTATUS (WINAPI *NtQueueApcThread_t)(HANDLE ThreadHandle, PVOID ApcRoutine, PVOID ApcRoutineContext, PVOID ApcStatusBlock, ULONG ApcReserved);'
+    'NtQueueApcThread':'typedef NTSTATUS (WINAPI *NtQueueApcThread_t)(HANDLE ThreadHandle, PVOID ApcRoutine, PVOID ApcRoutineContext, PVOID ApcStatusBlock, ULONG ApcReserved);',
+    'NtQueryObject':'typedef NTSTATUS (WINAPI *NtQueryObject_t)(HANDLE Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, PVOID ObjectInformation, ULONG ObjectInformationLength, PULONG ReturnLength);',
+    'NtQueryInformationWorkerFactory':'typedef NTSTATUS (WINAPI *NtQueryInformationWorkerFactory_t)(HANDLE WorkerFactoryHandle, WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, PVOID WorkerFactoryInformation, ULONG WorkerFactoryInformationLength, PULONG ReturnLength);',
+    'NtSetTimer2':'typedef NTSTATUS (WINAPI *NtSetTimer2_t)(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);'
 }

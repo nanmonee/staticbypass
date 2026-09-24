@@ -133,30 +133,6 @@ PVOID LoadFunction( PBYTE Module, UINT_PTR FunctionHash )
 }
 """
 
-
-        if 'NtCreateThreadEx' in ntdll:
-            codeblock += """
-typedef struct _PS_ATTRIBUTE
-{
-    ULONG_PTR Attribute;
-    SIZE_T Size;
-    union
-    {
-        ULONG_PTR Value;
-        PVOID ValuePtr;
-    };
-    PSIZE_T ReturnLength;
-} PS_ATTRIBUTE, *PPS_ATTRIBUTE;
-        
-
-_Struct_size_bytes_(TotalLength)
-typedef struct _PS_ATTRIBUTE_LIST
-{
-    SIZE_T TotalLength;
-    PS_ATTRIBUTE Attributes[1];
-} PS_ATTRIBUTE_LIST, *PPS_ATTRIBUTE_LIST;
-"""
-
         codeblock += f"""
 
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
@@ -166,6 +142,8 @@ typedef struct {{
 }} Resolver;
 
 Resolver resolver;
+
+NTSTATUS status;
 
 void {self.name}(void) __attribute__((constructor));
 
@@ -197,7 +175,10 @@ void {self.name}(){{
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
+            if apicall[0:2] == 'Nt':
+                self.apicalls[apicall] = f'status = resolver.{apicall}_resolved'
+            else:
+                self.apicalls[apicall] = f'resolver.{apicall}_resolved'
 
     def hash_string(self, functionName, isWide=True ):
         # The hash value (5381 in this case) has to be the same for the Python script and the C code

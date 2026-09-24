@@ -258,6 +258,8 @@ EXTERN_C DWORD compExplorer(
 	IN PVOID explorerWString
 );
 
+NTSTATUS status;
+
 PVOID ntdll = NULL;
 PVOID ntdllExportTable = NULL;
 
@@ -292,4 +294,4 @@ __attribute__((constructor)) void {self.name}(){{
                 self.resolved[apicall] = f"""
     DWORD {apicall}_ssn = findSyscallNumber(getApiAddr({len(apicall)}, "{apicall}", ntdll, ntdllExAddrTbl, ntdllExNamePtrTbl, ntdllExOrdinalTbl));
     HellsGate({apicall}_ssn);
-    HellDescent"""
+    status = HellDescent"""

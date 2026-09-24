@@ -1,4 +1,3 @@
-#include "winternl.h"
 #include "windows.h"
 #include "tpstructs.h"
 

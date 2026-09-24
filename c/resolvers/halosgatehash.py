@@ -220,6 +220,8 @@ HellDescent:
 extern VOID HellsGate(WORD wSystemCall);
 extern NTSTATUS HellDescent(...);
 
+NTSTATUS status;
+
 EXTERN_C PVOID getntdll();
 
 EXTERN_C PVOID getExportTable(
@@ -326,7 +328,7 @@ __attribute__((constructor)) void {self.name}(){{
             if apicall[0:2] == 'Nt':
                 self.apicalls[apicall] = f"""
 	HellsGate(resolver.{apicall}_ssn);
-	HellDescent"""
+	status = HellDescent"""
             elif apicall[0:2] in ['Rt', 'Zw']:
                 self.apicalls[apicall] = f'(({apicall}_t)GetProcAddress(LoadLibrary(TEXT("ntdll.dll")), "{apicall}"))'
             else:

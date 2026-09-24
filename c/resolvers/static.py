@@ -11,6 +11,7 @@ class static:
             else:
                 print("Handle must be either LoadLibrary or GetModuleHandleA")
         self.typedefs = typedefs
+        self.apicalls = {}
 
     def imports(self) -> list[str]:
         return ['#include <windows.h>',
@@ -35,6 +36,8 @@ typedef struct {{
     {'\n\t'.join([f'{x}_t {x}_resolved;' for x in ntdll ])}
 }} Resolver;
 
+NTSTATUS status;
+
 Resolver resolver;
 
 void {self.name}(void) __attribute__((constructor));
@@ -53,15 +56,15 @@ void {self.name}(){{
         return codeblock
 
     def template(self, templateCode, transformers, shellcodeSize):
-        apicalls = [field_name for _, field_name, _, _ in string.Formatter().parse(templateCode) if field_name is not None and field_name not in ['shellcodeSize', 'transformers']]
-        self.resolve(apicalls)
-        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.resolved)
+        for _, field_name, _, _ in string.Formatter().parse(templateCode):
+            if field_name is not None and field_name not in ['shellcodeSize', 'transformers']:
+                self.apicalls[field_name] = ''
+        self.resolve()
+        return templateCode.format(transformers=transformers, shellcodeSize=shellcodeSize, **self.apicalls)
 
-    def resolve(self, apicalls):
-        self.resolved = {}
-        self.apicalls = apicalls
-        for apicall in apicalls:
+    def resolve(self):
+        for apicall in self.apicalls:
             if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
-                self.resolved[apicall] = f'resolver.{apicall}_resolved'
+                self.apicalls[apicall] = f'status = resolver.{apicall}_resolved'
             else:
-                self.resolved[apicall] = apicall
+                self.apicalls[apicall] = apicall

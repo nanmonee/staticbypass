@@ -128,6 +128,8 @@ PVOID LoadFunction( PBYTE Module, LPSTR FunctionName )
 
 {'\n'.join([value for key,value in self.typedefs.items() if key in self.apicalls ])}
 
+NTSTATUS status;
+
 typedef struct {{
     {'\n\t'.join([f'{x}_t {x}_resolved;' for x in self.apicalls ])}
 }} Resolver;
@@ -164,4 +166,7 @@ void {self.name}(){{
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
+            if apicall[0:2] == 'Nt':
+                self.apicalls[apicall] = f'status = resolver.{apicall}_resolved'
+            else:
+                self.apicalls[apicall] = f'resolver.{apicall}_resolved'

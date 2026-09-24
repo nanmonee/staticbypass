@@ -72,4 +72,7 @@ void {self.name}(){{
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
+            if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
+                self.resolved[apicall] = f'status = resolver.{apicall}_resolved'
+            else:
+                self.apicalls[apicall] = f'resolver.{apicall}_resolved'
