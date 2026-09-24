@@ -159,7 +159,6 @@ class shellcoderunner:
     def template(self) -> str:
         return Template("""
     {transformers}
-
     $allocation
     $copy
     $protect

