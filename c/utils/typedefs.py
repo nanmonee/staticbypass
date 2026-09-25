@@ -38,5 +38,6 @@ typedefs = {
     'NtQueueApcThread':'typedef NTSTATUS (WINAPI *NtQueueApcThread_t)(HANDLE ThreadHandle, PVOID ApcRoutine, PVOID ApcRoutineContext, PVOID ApcStatusBlock, ULONG ApcReserved);',
     'NtQueryObject':'typedef NTSTATUS (WINAPI *NtQueryObject_t)(HANDLE Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, PVOID ObjectInformation, ULONG ObjectInformationLength, PULONG ReturnLength);',
     'NtQueryInformationWorkerFactory':'typedef NTSTATUS (WINAPI *NtQueryInformationWorkerFactory_t)(HANDLE WorkerFactoryHandle, WORKERFACTORYINFOCLASS WorkerFactoryInformationClass, PVOID WorkerFactoryInformation, ULONG WorkerFactoryInformationLength, PULONG ReturnLength);',
-    'NtSetTimer2':'typedef NTSTATUS (WINAPI *NtSetTimer2_t)(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);'
+    'NtSetTimer2':'typedef NTSTATUS (WINAPI *NtSetTimer2_t)(HANDLE TimerHandle, PLARGE_INTEGER DueTime, PLARGE_INTEGER Period, PT2_SET_PARAMETERS Parameters);',
+    'GetModuleHandleA':'typedef HMODULE (WINAPI *GetModuleHandleA_t)(LPCSTR lpModuleName);'
 }

