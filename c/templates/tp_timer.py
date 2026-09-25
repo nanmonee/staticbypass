@@ -16,11 +16,11 @@ class tp_timer:
                 "#include <stdio.h>", 
                 "#include <stdlib.h>", 
                 "#include <tlhelp32.h>",
-                '#include "poolinject.h"',
-                '#include "tpstructs.h"']
+                '#include "tpstructs.h"',
+                '#include "spawnandinject.h"']
 
     def compilerOptions(self) -> list[str]:
-        return [f'-I{Path(sys.modules['__main__'].__file__).resolve().parent}/c/includes/']
+        return []
     
     def codeblocks(self) -> str:
         return ''
