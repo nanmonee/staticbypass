@@ -944,3 +944,28 @@ typedef struct _WORKER_FACTORY_BASIC_INFORMATION
 #define WORKER_FACTORY_READY_WORKER         0x0010
 #define WORKER_FACTORY_SHUTDOWN             0x0020
 #define WORKER_FACTORY_ALL_ACCESS           0xf003f
+
+typedef struct _IO_STATUS_BLOCK {
+    union {
+        NTSTATUS Status;
+        PVOID    Pointer;
+    };
+    ULONG_PTR Information;
+} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+
+#define InitializeObjectAttributes(p, n, a, r, s) { \
+    (p)->Length = sizeof(OBJECT_ATTRIBUTES); \
+    (p)->RootDirectory = r; \
+    (p)->Attributes = a; \
+    (p)->ObjectName = n; \
+    (p)->SecurityDescriptor = s; \
+    (p)->SecurityQualityOfService = NULL; \
+    }
+
+#define OBJ_CASE_INSENSITIVE                0x00000040L
+
+typedef enum _SECTION_INHERIT
+{
+    ViewShare = 1, // The mapped view of the section will be mapped into any child processes created by the process.
+    ViewUnmap = 2  // The mapped view of the section will not be mapped into any child processes created by the process.
+} SECTION_INHERIT;
