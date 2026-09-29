@@ -34,28 +34,27 @@ class pebwalkhash:
 
         codeblock += """
 
-UINT_PTR HashString( LPVOID String, BOOLEAN IsWide )
+DWORD HashString(LPVOID String, BOOL IsWide)
 {
-    ULONG Hash = 5381;
+    DWORD hash = 0x811C9DC5;
     PUCHAR Ptr = String;
-
     do
     {
         UCHAR character = *Ptr;
-        if ( !*Ptr && !IsWide )
+        if (!*Ptr && !IsWide)
             break;
 
-        if ( character >= 'a' )
-            character -= 0x20;
+        hash = ((hash ^ character) * 0x01000193) & 0xffffffff;
 
-        Hash = ( ( Hash << 5 ) + Hash ) + character; 
-        if ( IsWide && ( !*Ptr && !*++Ptr ) )
+        // Use Ptr+1 to peek instead of ++Ptr which advances the pointer
+        if (IsWide && (!*Ptr && !*(Ptr + 1)))
             break;
 
         ++Ptr;
-    } while ( TRUE );
-    return Hash;
-} 
+    } while (TRUE);
+
+    return hash;
+}
 
 PVOID LoadModulePeb( UINT_PTR hModuleHash )
 {
@@ -73,6 +72,8 @@ PVOID LoadModulePeb( UINT_PTR hModuleHash )
         PLDR_DATA_TABLE_ENTRY mod = (PLDR_DATA_TABLE_ENTRY)CONTAINING_RECORD(
             Module, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks
         );
+        wprintf(L"%ls\\n", mod->BaseDllName.Buffer);
+        printf("%llu\\n", HashString(mod->BaseDllName.Buffer, TRUE));
         DWORD ModuleHash = HashString(mod->BaseDllName.Buffer, TRUE);
 
         // If the lowercased strings match, return the address of the DLL
@@ -151,7 +152,7 @@ void {self.name}(){{
 """
         if len(kernel32) > 0:
             codeblock += f"""
-    PVOID kernelHandle = LoadModulePeb({self.hash_string('kernel32.dll')});
+    PVOID kernelHandle = LoadModulePeb({self.hash_string('KERNEL32.DLL')});
     {'\n\t'.join([f'resolver.{x}_resolved = ({x}_t)LoadFunction(kernelHandle, {self.hash_string(x, False)});' for x in kernel32])};
 """
 
@@ -180,24 +181,17 @@ void {self.name}(){{
             else:
                 self.apicalls[apicall] = f'resolver.{apicall}_resolved'
 
-    def hash_string(self, functionName, isWide=True ):
-        # The hash value (5381 in this case) has to be the same for the Python script and the C code
-        hash = 5381
-        # Convert the input string to uppercase for case insensitivity
-        functionName = functionName.upper()
+    def hash_string(self, functionName: str, is_wide: bool = True) -> int:
+        hash = 0x811C9DC5
 
-        for x in range(0, len(functionName), 1):
-            # If isWide is False or it's the first character
-            if x == 0 or not isWide:
-                # Incorporate the ordinal value of the character into hash calculation
-                hash = (( hash << 5 ) + hash ) + ord(functionName[x])
+        if is_wide:
+            # Encode as UTF-16LE to replicate the raw byte layout C sees
+            data = functionName.encode('utf-16-le')
+        else:
+            data = functionName.encode('ascii')
 
-            if isWide:
-                # Only perform hash calculation without including ordinal value of character
-                hash = (( hash << 5 ) + hash )
+        for byte in data:
+            hash = ((hash ^ byte) * 0x01000193) & 0xFFFFFFFF
 
-                # Check if it's the end of the string for wide strings
-                if x == len(functionName):
-                    hash = (( hash << 5 ) + hash )
-
-        return hash & 0xFFFFFFFF 
+        print(f"{functionName}: {hash}")
+        return hash
