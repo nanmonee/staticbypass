@@ -44,6 +44,8 @@ Resolver resolver;
 
 void {self.name}(void) __attribute__((constructor));
 
+NTSTATUS status;
+
 void {self.name}(){{
 """
         if len(kernel32) > 0:
@@ -73,6 +75,6 @@ void {self.name}(){{
     def resolve(self):
         for apicall in self.apicalls:
             if apicall[0:2] in ['Nt', 'Zw', 'Rt']:
-                self.resolved[apicall] = f'status = resolver.{apicall}_resolved'
+                self.apicalls[apicall] = f'status = resolver.{apicall}_resolved'
             else:
                 self.apicalls[apicall] = f'resolver.{apicall}_resolved'
