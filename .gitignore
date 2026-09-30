@@ -17,7 +17,6 @@ output.pas
 output.o
 libimpoutput.a
 output.nim
-bin/ResourceHacker.ini
 output.dll
 dllmain.c
 output.h

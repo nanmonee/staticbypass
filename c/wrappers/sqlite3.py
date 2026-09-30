@@ -200151,10 +200151,4 @@ void fiddle_exec(const char * zSql){{
 }}
 #endif
 
-int wmain(int argc, char **argv){{
-  main(argc, argv);
-  return 0;
-}}
-
-
 """

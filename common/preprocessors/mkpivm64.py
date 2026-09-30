@@ -11,9 +11,9 @@ class mkpivm64:
             if arguments['mode'] == 'pack':
                 self.arguments.append('--pack')
         if platform.system() == 'Linux':
-            self.executable = './bin/mkpivm64'
+            self.executable = './common/bin/mkpivm64'
         elif platform.system() == 'Windows':
-            self.executable = './bin/mkpivm64.exe'
+            self.executable = './common/bin/mkpivm64.exe'
 
     def apply(self, shellcode: bytes) -> bytes:
         fd, filename = tempfile.mkstemp()
