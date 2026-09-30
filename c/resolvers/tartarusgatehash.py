@@ -53,7 +53,10 @@ HellDescent:
 """
             f.write(inline_assembly)
         result = subprocess.run(['nasm', '-f', 'win64', file_path, '-o', self.outfile_path])
+        if result.returncode == 0:
+            print(f'Tartarus Gate Object File saved to {self.outfile_path}')
         os.unlink(file_path)
+        os.close(self.outfd)
 
     def imports(self) -> list[str]:
         return ['#include <windows.h>',

@@ -864,29 +864,6 @@ typedef enum _WORKERFACTORYINFOCLASS
     MaxWorkerFactoryInfoClass
 } WORKERFACTORYINFOCLASS, *PWORKERFACTORYINFOCLASS;
 
-typedef struct _T2_SET_PARAMETERS_V0
-{
-    /**
-     * Structure version. Must be set to zero.
-     */
-    ULONG Version;
-    /**
-     * Reserved.
-     */
-    ULONG Reserved;
-    /**
-     * Maximum tolerable delay (in 100-ns units) for timer coalescing.
-     * - Set to 0 for **no coalescing** (strict wake-up).
-     * - Set to a positive value to allow the kernel to delay the timer
-     *   by up to this amount for power efficiency.
-     * Example:
-     *   If NoWakeTolerance = 0 --> High-resolution, best precision, min jitter, zero coalescing, low power savings.
-     *   If NoWakeTolerance > 0 --> Normal-resolution, allow up to this value of coalescing, normal power savings.
-     *   If NoWakeTolerance = -1 --> Low-resolution, worst precision, max jitter, max coalescing, max power savings.
-     */
-    LONGLONG NoWakeTolerance;
-} T2_SET_PARAMETERS, *PT2_SET_PARAMETERS;
-
 typedef struct _PROCESS_HANDLE_TABLE_ENTRY_INFO
 {
     HANDLE HandleValue;
@@ -969,3 +946,5 @@ typedef enum _SECTION_INHERIT
     ViewShare = 1, // The mapped view of the section will be mapped into any child processes created by the process.
     ViewUnmap = 2  // The mapped view of the section will not be mapped into any child processes created by the process.
 } SECTION_INHERIT;
+
+#define FILE_NON_DIRECTORY_FILE 0x00000040

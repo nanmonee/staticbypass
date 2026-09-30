@@ -1,6 +1,7 @@
 import tempfile
 import subprocess
 import os
+import platform
 
 class mkpivm64:
 
@@ -9,13 +10,17 @@ class mkpivm64:
         if 'mode' in arguments:
             if arguments['mode'] == 'pack':
                 self.arguments.append('--pack')
+        if platform.system() == 'Linux':
+            self.executable = './bin/mkpivm64'
+        elif platform.system() == 'Windows':
+            self.executable = './bin/mkpivm64.exe'
 
     def apply(self, shellcode: bytes) -> bytes:
         fd, filename = tempfile.mkstemp()
         with os.fdopen(fd, 'wb') as f:
             f.write(shellcode)
         outtf, outfilename = tempfile.mkstemp()
-        result = subprocess.run(['./bin/mkpivm64'] + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
+        result = subprocess.run([self.executable] + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
         if result.returncode == 0:
             output = os.fdopen(outtf, 'rb').read()
         os.remove(filename)
