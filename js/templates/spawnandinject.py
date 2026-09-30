@@ -52,7 +52,6 @@ class spawnandinject:
     }});
 
     const si = new Uint8Array(104);
-    new DataView(si.buffer).setUint32(0, 104, true);
     const pi = new Uint8Array(24);
     const cmdline = Buffer.from('$target', 'utf8');
 
