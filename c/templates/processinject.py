@@ -1,9 +1,6 @@
-from string import Template
-from pathlib import Path, PureWindowsPath
-import sys
 from c.utils.functions import *
 
-class spawnandinject:
+class processinject:
     def __init__(self, arguments):
         self.memoryPermission = 'PAGE_EXECUTE_READ'
         if 'perm' in arguments:
