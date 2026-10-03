@@ -15,6 +15,13 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     cmdopts = []
 
     if 'dotnet' in compilerOptions:
+        result = subprocess.run(['dotnet', '--version'], capture_output=True, text=True, check=True)
+        if result.returncode == 0:
+            sdkversion = result.stdout.split('.')[0]
+        else:
+            print('dotnet not installed or not on PATH')
+            exit(0)
+
         custom_env = os.environ.copy()
         custom_env['TERM'] = 'dumb'
         cmdopts = []
@@ -31,12 +38,16 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
             outfile = f'{p.with_suffix("")}.exe'
             sourcefile = f'{sourcefolder}/Program.cs'
         open(sourcefile,'w').write(code)
-        print(f'Writing source code to Program.cs')
+        print(f'Writing source code to {sourcefile}')
         result = subprocess.run(['dotnet', 'publish', '-c', 'Release', '-r','win-x64'] + cmdopts, env=custom_env, cwd=sourcefolder, check=True)
         if 'dll' in compilerOptions:
-            shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{p.stem}.dll', outfile)
+            if platform.system() == 'Windows':
+                shutil.copy(f'{sourcefolder}/bin/Release/net{sdkversion}.0/win-x64/publish/{p.stem}.dll', outfile)
+            else:
+                print("Building native .NET DLLs is only supported on Windows")
+                exit(0)
         else:
-            shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{p.stem}.exe', outfile)
+            shutil.copy(f'{sourcefolder}/bin/Release/net{sdkversion}.0/win-x64/publish/{p.stem}.exe', outfile)
         if result.returncode == 0:
             print(f'Output saved to {outfile}')
         return outfile
