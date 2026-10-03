@@ -2,35 +2,56 @@ import subprocess
 import shutil
 import os
 from pathlib import Path
+import platform
 
 def compile(code: str, output: str, compilerOptions: list[str]) -> str:
     p = Path(output)
-    sourcefolder = f'{p.parent}/{p.stem}'
-    shutil.rmtree(sourcefolder, ignore_errors=True)
-    custom_env = os.environ.copy()
-    custom_env['TERM'] = 'dumb'
-    cmdopts = []
-    if p.suffix == '.dll':
-        result = subprocess.run(['dotnet', 'new', 'classlib', '-o', p.stem],env=custom_env, cwd=p.parent, check=True)
-        outfile = f'{p.parent}/{p.stem}.dll'
-    elif p.suffix == '.csproj':
-        open(output,'w').write(code)
-        print(f'Writing source code to {output}')
-        return output
-    else:
-        result = subprocess.run(['dotnet', 'new', 'console', '-o', p.stem],env=custom_env, cwd=p.parent, check=True)
-        cmdopts += ['-p:PublishSingleFile=true']
-        outfile = f'{p.parent}/{p.stem}.exe'
-    open(f'{sourcefolder}/Program.cs','w').write(code)
-    print(f'Writing source code to Program.cs')
-    for package in compilerOptions:
-        subprocess.run(['dotnet', 'add', 'package', package], env=custom_env, cwd=sourcefolder, check=True)
-    result = subprocess.run(['dotnet', 'publish', '-c', 'Release', '-r','win-x64', '--self-contained', 'true'] + cmdopts, env=custom_env, cwd=sourcefolder, check=True)
-    if p.suffix == '.dll':
-        shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{p.stem}.dll', outfile)
-    else:
-        shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{p.stem}.exe', outfile)
 
-    if result.returncode == 0:
-        print(f'Managed dll saved to {outfile}')
-    return outfile
+    if 'csproj' in compilerOptions:
+        open(f'{p.with_suffix("")}.csproj','w').write(code)
+        print(f'Writing csproj to {output}')
+        return output
+
+    cmdopts = []
+
+    if 'dotnet' in compilerOptions:
+        custom_env = os.environ.copy()
+        custom_env['TERM'] = 'dumb'
+        cmdopts = []
+        shutil.rmtree(p.stem)
+        sourcefolder = f'{p.stem}'
+        if 'dll' in compilerOptions:
+            result = subprocess.run(['dotnet', 'new', 'classlib', '-o', p.stem],env=custom_env, cwd=p.parent, check=True)
+            cmdopts += ['-p:PublishAot=true', '-p:NativeLib=Shared']
+            outfile = f'{p.with_suffix("")}.dll'
+            sourcefile = f'{sourcefolder}/Class1.cs'
+        else:
+            result = subprocess.run(['dotnet', 'new', 'console', '-o', p.stem],env=custom_env, cwd=p.parent, check=True)
+            cmdopts += ['-p:PublishSingleFile=true', '--self-contained', 'true']
+            outfile = f'{p.with_suffix("")}.exe'
+            sourcefile = f'{sourcefolder}/Program.cs'
+        open(sourcefile,'w').write(code)
+        print(f'Writing source code to Program.cs')
+        result = subprocess.run(['dotnet', 'publish', '-c', 'Release', '-r','win-x64'] + cmdopts, env=custom_env, cwd=sourcefolder, check=True)
+        if 'dll' in compilerOptions:
+            shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{p.stem}.dll', outfile)
+        else:
+            shutil.copy(f'{sourcefolder}/bin/Release/net6.0/win-x64/publish/{p.stem}.exe', outfile)
+        if result.returncode == 0:
+            print(f'Output saved to {outfile}')
+        return outfile
+    else:
+        if 'dll' in compilerOptions:
+            cmdopts = [f'/out:{p.with_suffix("")}.dll', '/target:library']
+            outfile = f'{p.with_suffix("")}.dll'
+        else:
+            cmdopts = [f'/out:{p.with_suffix("")}.exe']
+            outfile = f'{p.with_suffix("")}.exe'
+        print(f'Writing code to {p.parent}/{p.stem}.cs')
+        open(f'{p.parent}/{p.stem}.cs','w').write(code)
+        if platform.system() == 'Linux':
+            result = subprocess.run(['mcs', f'{p.parent}/{p.stem}.cs'] + cmdopts, check=True)
+        else:
+            result = subprocess.run(['csc.exe', f'{p.parent}/{p.stem}.cs'] + cmdopts, check=True)
+        if result.returncode == 0:
+            print(f'Output saved to {outfile}')

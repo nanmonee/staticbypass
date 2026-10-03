@@ -10,7 +10,7 @@ class msbuild:
                 'using Microsoft.Build.Framework;',]
 
     def compilerOptions(self) -> list[str]:
-        return []
+        return ['csproj']
 
     def template(self) -> str:
         return """

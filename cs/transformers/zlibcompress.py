@@ -9,7 +9,8 @@ class zlibcompress:
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
 
     def imports(self) -> list[str]:
-        return ['using System.IO.Compression;']
+        return ['using System.IO;',
+                'using System.IO.Compression;']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -27,13 +28,13 @@ class zlibcompress:
         return f"""
         public static byte[] {self.name}(byte[] compressed)
         {{
-            using (var inputstream = new MemoryStream(compressed)) 
+            using (var inputstream = new MemoryStream(compressed.Skip(2).Take(compressed.Length-4).ToArray()))
             {{
-                using (var zlibstream = new ZLibStream(inputstream, CompressionMode.Decompress)) 
+                using (var deflateStream = new DeflateStream(inputstream, CompressionMode.Decompress)) 
                 {{
                     using (var outputstream = new MemoryStream())
                     {{
-                        zlibstream.CopyTo(outputstream);
+                        deflateStream.CopyTo(outputstream);
                         return outputstream.ToArray();
                     }}
                 }}
