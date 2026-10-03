@@ -28,6 +28,9 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         shutil.rmtree(p.stem)
         sourcefolder = f'{p.stem}'
         if 'dll' in compilerOptions:
+            if platform.system() != 'Windows':
+                print("Building native .NET DLLs is only supported on Windows")
+                exit(0)
             result = subprocess.run(['dotnet', 'new', 'classlib', '-o', p.stem],env=custom_env, cwd=p.parent, check=True)
             cmdopts += ['-p:PublishAot=true', '-p:NativeLib=Shared']
             outfile = f'{p.with_suffix("")}.dll'
@@ -41,11 +44,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         print(f'Writing source code to {sourcefile}')
         result = subprocess.run(['dotnet', 'publish', '-c', 'Release', '-r','win-x64'] + cmdopts, env=custom_env, cwd=sourcefolder, check=True)
         if 'dll' in compilerOptions:
-            if platform.system() == 'Windows':
                 shutil.copy(f'{sourcefolder}/bin/Release/net{sdkversion}.0/win-x64/publish/{p.stem}.dll', outfile)
-            else:
-                print("Building native .NET DLLs is only supported on Windows")
-                exit(0)
         else:
             shutil.copy(f'{sourcefolder}/bin/Release/net{sdkversion}.0/win-x64/publish/{p.stem}.exe', outfile)
         if result.returncode == 0:
