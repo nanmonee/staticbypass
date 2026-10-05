@@ -1,4 +1,5 @@
 import string
+from cs.utils.typedefs import typedefs
 
 class static:
     def __init__(self, arguments):
@@ -11,7 +12,19 @@ class static:
         return []
     
     def codeblocks(self) -> str:
-        return ''
+        codeblock = ''
+        for apicall in self.apicalls:
+            if apicall[0:2] in ['Nt', 'Zw']:
+                codeblock += f"""
+        [DllImport("ntdll.dll", CallingConvention = CallingConvention.StdCall)]
+        private static extern {typedefs[apicall]}
+"""
+            else:
+                codeblock += f"""
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        private static extern {typedefs[apicall]}
+"""
+        return codeblock
 
     def template(self, templateCode, transformers, shellcodeSize):
         for _, field_name, _, _ in string.Formatter().parse(templateCode):
@@ -22,4 +35,4 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
+            self.apicalls[apicall] = f'{apicall}'
