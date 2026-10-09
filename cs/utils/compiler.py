@@ -65,3 +65,4 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
             result = subprocess.run(['csc.exe', f'{p.parent}/{p.stem}.cs'] + cmdopts, check=True)
         if result.returncode == 0:
             print(f'Output saved to {outfile}')
+        return outfile

