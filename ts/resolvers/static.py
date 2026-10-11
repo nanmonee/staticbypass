@@ -5,7 +5,8 @@ class static:
         self.apicalls = {}
 
     def imports(self) -> list[str]:
-        return []
+        return ['import Kernel32 from "@bun-win32/kernel32";', 
+                'import Ntdll from "@bun-win32/ntdll";']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -22,4 +23,7 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = apicall
+            if apicall[0:2] in ['Nt', 'Rt', 'Zw']:
+                self.apicalls[apicall] = f'Ntdll.{apicall}'
+            else:
+                self.apicalls[apicall] = f'Kernel32.{apicall}'

