@@ -48,6 +48,14 @@ class shellcoderunner:
                 print('Wait argument must be WaitForSingleObject or NtWaitForSingleObject')
                 exit(0)
 
+        self.close = 'CloseHandle'
+        if 'close' in arguments:
+            if arguments['close'] in ['CloseHandle', 'NtClose']:
+                self.close = arguments['close']
+            else:
+                print('Close argument must be CloseHandle, or NtClose')
+                exit(0)
+
     def imports(self) -> list[str]:
         return ['import Kernel32 from "@bun-win32/kernel32";', 
                 'import { toArrayBuffer, ptr } from "bun:ffi";',
@@ -133,6 +141,15 @@ class shellcoderunner:
         elif self.wait == 'NtWaitForSingleObject':
             template += """
     {NtWaitForSingleObject}(hThread, 0xFFFFFFFF);
+"""
+
+        if self.close == 'CloseHandle':
+            template += """
+    {CloseHandle}(hThread);
+"""
+        elif self.close == 'NtClose':
+            template += """
+    {NtClose}(hThread);
 """
 
         return template
