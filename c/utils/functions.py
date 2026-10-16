@@ -227,6 +227,11 @@ def FindProcess(target):
     thEntry.dwSize = sizeof(thEntry);
     HANDLE Snap = {CreateToolhelp32Snapshot}(TH32CS_SNAPTHREAD, 0);
 
+    if (!{Thread32First}(Snap, &thEntry)) {{
+        CloseHandle(Snap);
+        return 0;
+    }}
+
     while ({Thread32Next}(Snap, &thEntry))
     {{
         if (thEntry.th32OwnerProcessID == pid)
