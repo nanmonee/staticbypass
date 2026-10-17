@@ -152,4 +152,18 @@ class shellcoderunner:
     {NtClose}(hThread);
 """
 
+        if self.allocation == 'VirtualAlloc':
+            template += """
+    {VirtualFree}(address);
+"""
+        elif self.allocation == 'HeapAlloc':
+            template += """
+    {HeapFree}(hHeap, 0, address);
+    {HeapDestroy}(hHeap);
+"""
+        elif self.allocation == 'NtAllocateVirtualMemory':
+            template += """
+    {NtFreeVirtualMemory}(-1n, address);
+"""
+
         return template
