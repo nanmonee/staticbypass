@@ -212,7 +212,16 @@ class spawnandinject:
 """
         elif self.wait == 'NtWaitForSingleObject':
             template += """
-    {NtWaitForSingleObject}(newThread, 500);
+    {NtWaitForSingleObject}(newThread, 0);
+"""
+
+        if self.allocate == 'VirtualAllocEx':
+            template += """
+    {VirtualFree}(address, 0, MemoryAllocationType.MEM_RELEASE) ;
+"""
+        elif self.allocate == 'NtAllocateVirtualMemory':
+            template += """
+    {NtFreeVirtualMemory}(-1n, address);
 """
 
         return template
