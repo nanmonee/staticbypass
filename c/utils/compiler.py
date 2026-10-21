@@ -22,7 +22,7 @@ def compile(code: str, output: str, compilerOptions: list[str]) -> str:
         outfile = f'{source}.exe'
     print(f'Writing source code to {sourcefile}')
     open(sourcefile,'w').write(code)
-    result = subprocess.run([compiler, sourcefile, '-o', outfile, '-mwindows', f'-I{Path(sys.modules['__main__'].__file__).resolve().parent}/c/includes/'] + compilerOptions, check=True)
+    result = subprocess.run([compiler, sourcefile, '-o', outfile, f'-I{Path(sys.modules['__main__'].__file__).resolve().parent}/c/includes/'] + compilerOptions, check=True)
     if result.returncode == 0:
         print(f'Payload saved to {outfile}')
     else:

