@@ -88,6 +88,65 @@ pip install -r requirements.txt
 
 ## Currently Implemented
 
+<details>
+  <summary>C</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+| Guardrails    | hostname        | Terminate execution depending on GetComputerNameA |
+|               | username        | Terminate execution depending on GetUserNameA |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | TinyAES         | AES Encryption without libraries |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | Rotate          |Rotate each byte by n bits |
+|               | Shuffle         | Shuffle bytes reversibly |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+|               | Brainfuck       | Convert bytes into a brainfuck string (slow) |
+|               | Whitespace      | Convert bytes into tabs and spaces |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | processstomp    | Process hollowing via overwriting entrypoint |
+|               | processinject   | Spawn process and inject into remote thread |
+|               | processhollow   | Spawn process, unmap and write new PE |
+|               | processinject   | Search for explorer.exe and create a remote thread |
+| Resolvers     | static          | Static function resolution |
+|               | dynamic         | Dynamic function resolution using GetProcAddress |
+|               | pebwalk         | PEB walk |
+|               | pebwalkhash     | PEB walk using hashes instead of strings |
+|               | hellsgatehash   | Indirect syscalls using Hells Gate |
+|               | halosgatehash   | Indirect syscalls using Halos Gate |
+|               | tartarusgatehash| Indirect syscalls using Tartarus Gate |
+|               | tartarusgatehashrap | Indirect syscalls using Tartarus Gate with Return Address Patching |
+| Wrappers      | main            | Default wrapper |
+|               | rundll          | Execute code on DLL load |
+|               | service         | Run executable as service |
+|               | bzip2           | bzip2 code |
+|               | sqlite3         | sqlite3 code |
+|               | rect_pack       | rect pack code |
+| Postprocessor | strip           | Strip symbols from executable |
+|               | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+
+</details>
+
 
 | Category      | Name            | Languages                | Description | Options |
 |:-------------:|:---------------:|:------------------------:|:-----------:|:-------:|
