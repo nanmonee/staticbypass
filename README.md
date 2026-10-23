@@ -67,9 +67,8 @@ python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shell
 - Add more templates e.g. early bird apc injection, heap allocation
 - Refactor code
 - Add arguments to compiler
-- Add guardrails
 - Finish install script
-- Add better windows support
+- Increase windows support
 
 ## Installation
 ### Install pre-reqs
@@ -103,13 +102,15 @@ pip install -r requirements.txt
 |               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
 |               | RC4             | Self-decrypting RC4 shellcode stub |
 |               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
 | Guardrails    | hostname        | Terminate execution depending on GetComputerNameA |
 |               | username        | Terminate execution depending on GetUserNameA |
 | Transformer   | AESEncrypt      | AES Encryption |
 |               | TinyAES         | AES Encryption without libraries |
 |               | XOREncrypt      | XOR Encryption |
 |               | RC4Encrypt      | RC4 Encryption |
-|               | Rotate          |Rotate each byte by n bits |
+|               | Rotate          | Rotate each byte by n bits |
 |               | Shuffle         | Shuffle bytes reversibly |
 |               | zlibcompress    | Compression with zlib |
 | Obfuscator    | Base64Encode    | Base64 Encode |
@@ -121,11 +122,15 @@ pip install -r requirements.txt
 |               | EmojiEncode     | Convert bytes into emoji |
 |               | Brainfuck       | Convert bytes into a brainfuck string (slow) |
 |               | Whitespace      | Convert bytes into tabs and spaces |
-| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | NetBIOSEncode   | Encode bytes using NETBIOS name encoding  |
+| Template      | shellcoderunner | Shellcode execution in-process using various methods |
 |               | processstomp    | Process hollowing via overwriting entrypoint |
-|               | processinject   | Spawn process and inject into remote thread |
+|               | processinject   | Spawn or inject into process via various methods |
 |               | processhollow   | Spawn process, unmap and write new PE |
-|               | processinject   | Search for explorer.exe and create a remote thread |
+|               | tp_timer        | TP_TIMER injection |
+|               | modulestomp     | Load module and stomp its code |
+|               | earlycascade    | Early cascade injection |
+|               | carokann        | Process injection using CaroKann (requires carokann pre-processor) |
 | Resolvers     | static          | Static function resolution |
 |               | dynamic         | Dynamic function resolution using GetProcAddress |
 |               | pebwalk         | PEB walk |
@@ -147,54 +152,394 @@ pip install -r requirements.txt
 
 </details>
 
+<details>
+  <summary>CS</summary>
 
-| Category      | Name            | Languages                | Description | Options |
-|:-------------:|:---------------:|:------------------------:|:-----------:|:-------:|
-| Delivery      | embedded        | All                      | Shellcode stored within the executable |
-|               | webdelivery     | All                      | Download string, raw bytes, or list from specified URL |
-|               | regkey          | C#, PS                   | Retrieve shellcode from registry key |
-|               | embedtext       | VBA                      | Store shellcode string inside Word document |
-| Pre-processor | mkpivm64        | All                      | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
-|               | donut           | All                      | Convert executable to shellcode |
-|               | xorencrypt      | All                      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
-|               | rotate          | All                      | Rotate shellcode with self-decoding stub (requires RWX) |
-|               | ARX             | All                      | XOR encrypt shellcode with ARX key generation |
-|               | LCG             | All                      | XOR encrypt shellcode with LCG Subtraction key generation |
-|               | RC4             | All                      | Self-decrypting RC4 shellcode stub |
-|               | SBOX            | All                      | XOR encrypt shellcode with SBOX and LCG Addition key generation |
-| Guardrails    | hostname        | C, C#                    | Terminate execution depending on GetComputerNameA |
-|               | username        | C, C#                    | Terminate execution depending on GetUserNameA |
-| Transformer   | AESEncrypt      | All                      | AES Encryption |
-|               | TinyAES         | C                        | AES Encryption without libraries |
-|               | XOREncrypt      | All                      | XOR Encryption |
-|               | RC4Encrypt      | All                      | RC4 Encryption |
-|               | RSAEncrypt      | C#                       | RSA Encryption |
-|               | Rotate          | C                        | Rotate each byte by n bits |
-|               | Shuffle         | C                        | Shuffle bytes reversibly |
-|               | zlibcompress    | C, C#, Go, Rust, Pascal, PS, Nim | Compression with zlib |
-| Obfuscator    | Base64Encode    | All                      | Base64 Encode |
-|               | DictObfuscate   | All                      | Convert bytes into randomly picked dictionary words |
-|               | IPv4Obfuscate   | All                      | Convert bytes into IPv4 addresses |
-|               | IPv6Obfuscate   | All                      | Convert bytes into IPv6 addresses |
-|               | MACObfuscate    | All                      | Convert bytes into MAC addresses |
-|               | UUIDEncode      | All                      | Convert bytes into UUIDv4 strings |
-|               | EmojiEncode     | C, C#, PS, Rust, Nim, Go, Pas | Convert bytes into emoji |
-|               | Brainfuck       | C                        | Convert bytes into a brainfuck string (slow) |
-|               | Whitespace      | C                        | Convert bytes into tabs and spaces |
-| Template      | shellcoderunner | All                      | Simple shellcode runner using CreateThread |
-|               | processstomp    | C, C#, PS, Rust, Go, VBA | Process hollowing via overwriting entrypoint |
-|               | spawnandinject  | All                      | Spawn process and inject into remote thread |
-|               | processhollow   | C                        | Spawn process, unmap and write new PE |
-|               | rundll          | C, Go                    | Spawn and inject packaged as a DLL |
-|               | service         | C                        | Template for running executable as service |
-|               | processinject   | C                        | Search for explorer.exe and create a remote thread |
-|               | hellsgate       | C                        | Dynamic API resolution using HellsGate technique |
-|               | threadhijack    | C                        | Hijack running thread in existing process |
-|               | bzip2           | C                        | Process hollowing using legitimate bzip2 code as cover |
-|               | sqlite3         | C                        | Process hollowing using legitimate sqlite3 code as cover |
-| Postprocessor | strip           | C, C#, Rust, Pascal, Nim | Strip symbols from executable |
-|               | sign            | C, Rust, Go, Pascal, Nim | Sign executable with self-signed certificate |
-|               | sigthief        | C, Rust, Go, Pascal, Nim | Steal certificate chain from another file |
-|               | resourcecopy    | C, Rust, Go, Pascal, Nim | Copy resources from another executable |
-|               | obfell          | PS                       | PowerShell obfuscator by @Jael-G |
-|               | junkpile        | PS                       | PowerShell obfuscator by @bobby-tablez |
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+|               | regkey          | Retrieve shellcode from registry key |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | NOPmask         | Payload encryption by @whoamiamleo |'
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Guardrails    | hostname        | Terminate execution depending on GetComputerNameA |
+|               | username        | Terminate execution depending on GetUserNameA |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | RSAEncrypt      | RSA Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | processstomp    | Process hollowing via overwriting entrypoint |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+|               | asynccallback   | Asynchronous callback execution using EnumUILanguagesA |
+| Resolvers     | static          | Static function resolution |
+|               | dynamic         | Dynamic function resolution using GetProcAddress |
+| Wrappers      | main            | Default wrapper |
+|               | rundll          | Execute code on DLL load |
+|               | msbuild         | Execute csharp code as part of msbuild .csproj file |
+|               | installutil     | Compile to dll that you can execute through InstallUtil |
+|               | dotnet2js       | Create managed dll for converting into .js and .hta files using DotNetToJs |
+| Postprocessor | strip           | Strip symbols from executable |
+|               | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+|               | dotnettojscript | Convert managed dll to .js, .hta, or .xsl files for execution using wscript.exe, and mshta.exe |
+
+</details>
+
+<details>
+  <summary>Go</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | processstomp    | Process hollowing via overwriting entrypoint |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+|               | carokann        | Process injection using CaroKann (requires carokann preprocessor) |
+| Resolvers     | static          | Static function resolution |
+|               | dynamic         | Dynamic function resolution using GetProcAddress |
+| Wrappers      | main            | Default wrapper |
+|               | rundll          | Execute code on DLL load |
+| Postprocessor | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+
+</details>
+
+<details>
+  <summary>Rust</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Guardrails    | hostname        | Terminate execution depending on GetComputerNameA |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | processstomp    | Process hollowing via overwriting entrypoint |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+|               | rundll          | Execute code on DLL load |
+|               | zoxide          | zoxide |
+| Postprocessor | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+|               | strip           | Strip symbols from executable |
+
+</details>
+
+<details>
+  <summary>Nim</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+| Resolvers     | static          | Static function resolution |
+|               | dynamic         | Dynamic function resolution using GetProcAddress |
+| Wrappers      | main            | Default wrapper |
+|               | rundll          | Execute code on DLL load |
+| Postprocessor | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+|               | strip           | Strip symbols from executable |
+
+</details>
+
+<details>
+  <summary>TypeScript</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+|               | carokann        | Process injection using CaroKann (requires carokann preprocessor) |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+| Postprocessor | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+|               | strip           | Strip symbols from executable |
+
+</details>
+
+<details>
+  <summary>JavaScript</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+
+</details>
+
+<details>
+  <summary>Java</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+
+</details>
+
+<details>
+  <summary>Pascal</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+| Postprocessor | sign            | Sign executable with self-signed certificate |
+|               | sigthief        | Steal certificate chain from another file |
+|               | resourcecopy    | Copy resources from another executable |
+|               | strip           | Strip symbols from executable |
+</details>
+
+<details>
+  <summary>PowerShell</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+|               | regkey          | Retrieve shellcode from registry key |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+|               | zlibcompress    | Compression with zlib |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+|               | EmojiEncode     | Convert bytes into emoji |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+|               | processstomp    | Process hollowing via overwriting entrypoint |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+| Postprocessor | obfell          | PowerShell obfuscator by @Jael-G |
+|               | junkpile        | PowerShell obfuscator by @bobby-tablez |
+
+</details>
+
+<details>
+  <summary>VBA</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+|               | webdelivery     | Download string, raw bytes, or list from specified URL |
+|               | embedtext       | Store shellcode string inside Word document |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | AESEncrypt      | AES Encryption |
+|               | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+| Obfuscator    | Base64Encode    | Base64 Encode |
+|               | DictObfuscate   | Convert bytes into randomly picked dictionary words |
+|               | IPv4Obfuscate   | Convert bytes into IPv4 addresses |
+|               | IPv6Obfuscate   | Convert bytes into IPv6 addresses |
+|               | MACObfuscate    | Convert bytes into MAC addresses |
+|               | UUIDEncode      | Convert bytes into UUIDv4 strings |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
+|               | processstomp    | Process hollowing via overwriting entrypoint |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+
+</details>
