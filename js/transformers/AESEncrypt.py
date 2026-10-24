@@ -55,6 +55,6 @@ async function {self.name}(encrypted) {{
         key,
         encrypted,   
     );
-    return decryptedData;
+    return new Uint8Array(decryptedData);
 }}
 """

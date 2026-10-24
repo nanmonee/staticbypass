@@ -1,4 +1,5 @@
 import string
+from js.utils.typedefs import typedefs
 
 class static:
     def __init__(self, arguments):
@@ -11,7 +12,13 @@ class static:
         return []
     
     def codeblocks(self) -> str:
-        return ''
+        apicalls = ','
+        return f"""
+const kernel32Path = "C:\\\\Windows\\\\System32\\\\kernel32.dll";
+const kernel32 = Deno.dlopen(kernel32Path, {{
+    {',\n\t'.join([typedefs[apicall] for apicall in self.apicalls])}
+}})
+"""
 
     def template(self, templateCode, transformers, shellcodeSize):
         for _, field_name, _, _ in string.Formatter().parse(templateCode):
@@ -22,4 +29,4 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = f'resolver.{apicall}_resolved'
+            self.apicalls[apicall] = f'kernel32.symbols.{apicall}'

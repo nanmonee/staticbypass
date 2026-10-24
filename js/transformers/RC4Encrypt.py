@@ -14,7 +14,7 @@ class RC4Encrypt:
             self.key = os.urandom(16)
 
     def imports(self) -> list[str]:
-        return ['import { createDecipheriv } from "node:crypto";']
+        return []
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -31,7 +31,7 @@ class RC4Encrypt:
         return f"""
 function {self.name}(encrypted) {{
     {bytes_to_js(self.key, 'key')}
-    let decrypted = new Uint8Array(encrypted.length)
+    const decrypted = new Uint8Array(encrypted.length);
     const s = new Uint8Array(256);
         for (let i = 0; i < 256; i++) {{
         s[i] = i;
@@ -61,7 +61,6 @@ function {self.name}(encrypted) {{
         const t = (s[i] + s[j]) % 256;
         decrypted[k] = encrypted[k] ^ s[t];
     }}
-
     return decrypted;
 }}
 """
