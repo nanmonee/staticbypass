@@ -1,11 +1,12 @@
 import string
+from vba.utils.typedefs import typedefs
 
 class static:
     def __init__(self, arguments):
         self.apicalls = {}
 
     def imports(self) -> list[str]:
-        return []
+        return [typedefs[apicall] for apicall in self.apicalls]
 
     def compilerOptions(self) -> list[str]:
         return []
