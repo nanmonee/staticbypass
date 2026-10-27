@@ -1,4 +1,5 @@
 import string
+from java.utils.typedefs import typedefs, ffis
 
 class static:
     def __init__(self, arguments):
@@ -8,10 +9,23 @@ class static:
         return []
 
     def compilerOptions(self) -> list[str]:
-        return []
+        return [ffis[apicall] for apicall in self.apicalls]
     
     def codeblocks(self) -> str:
-        return ''
+        codeblock = """
+    private static final Linker LINKER = Linker.nativeLinker();
+    private static final MemoryLayout C_INT     = LINKER.canonicalLayouts().get("int");
+    private static final MemoryLayout C_LONG_LONG     = LINKER.canonicalLayouts().get("long long");
+    private static final MemoryLayout C_POINTER = LINKER.canonicalLayouts().get("void*");
+    private static final MemoryLayout C_BOOL = LINKER.canonicalLayouts().get("bool");
+    public static Arena arena = Arena.ofConfined();
+    public static SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32.dll", arena);
+"""
+        for apicall in self.apicalls:
+            codeblock += f"""
+    public static MethodHandle {apicall} = LINKER.downcallHandle(kernel32.find("{apicall}").orElseThrow(),FunctionDescriptor.of({typedefs[apicall]}));
+"""
+        return codeblock
 
     def template(self, templateCode, transformers, shellcodeSize):
         for _, field_name, _, _ in string.Formatter().parse(templateCode):
@@ -22,4 +36,4 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = apicall
+            self.apicalls[apicall] = f'{apicall}.invokeExact'

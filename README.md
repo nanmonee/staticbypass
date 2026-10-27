@@ -90,7 +90,7 @@ pip install -r requirements.txt
 <details>
   <summary>C</summary>
 
-| Category      | Name            | Description | 
+| Category      | Name            | Description |
 |:-------------:|:---------------:|:-----------:|
 | Delivery      | embedded        | Shellcode stored within the executable |
 |               | webdelivery     | Download string, raw bytes, or list from specified URL |
