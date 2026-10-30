@@ -406,7 +406,8 @@ pip install -r requirements.txt
 
 | Category      | Name            | Description | 
 |:-------------:|:---------------:|:-----------:|
-| Delivery      | embedded        | Shellcode stored within the executable |
+| Delivery      | embedded        | Shellcode stored within the executable (may fail to compile for large shellcodes) |
+|               | resource        | Stores shellcode as a resource file (handles large shellcodes) |
 | Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
 |               | donut           | Convert executable to shellcode |
 |               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
