@@ -10,6 +10,8 @@ class mkpivm64:
         if 'mode' in arguments:
             if arguments['mode'] == 'pack':
                 self.arguments.append('--pack')
+            elif arguments['mode'] == 'rx':
+                self.arguments.append('--rx')
         if platform.system() == 'Linux':
             self.executable = './common/bin/mkpivm64'
         elif platform.system() == 'Windows':

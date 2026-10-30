@@ -8,13 +8,6 @@ from c.utils.typedefs import typedefs
 class tartarusgatehash:
     def __init__(self, arguments):
         self.name = ''.join(random.SystemRandom().choice(string.ascii_lowercase) for _ in range(16))
-        self.handle = 'LoadLibrary'
-        if 'handle' in arguments:
-            if arguments['handle'] in ['LoadLibrary', 'GetModuleHandleA']:
-                self.handle = arguments['handle']
-            else:
-                print("Handle must be either LoadLibrary or GetModuleHandleA")
-                exit(0)
         fd, file_path = tempfile.mkstemp(suffix='.asm')
         self.outfd, self.outfile_path = tempfile.mkstemp(suffix='.o')
         self.typedefs = typedefs
