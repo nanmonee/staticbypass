@@ -10,7 +10,8 @@
 
 ## Usage
 ```
-python3 staticbypass.py -h
+┌──(kali㉿kali)-[~/staticbypass]
+└─$ python3 staticbypass.py -h
 usage: staticbypass.py [-h] [-e [TRANSFORMERS ...]] -s SHELLCODE -t TEMPLATE -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java} [-f OBFUSCATOR] [-g [GUARDRAILS ...]] [-r RESOLVER] [-b [PREPROCESSORS ...]] [-a [POSTPROCESSORS ...]] [-d DELIVERY] [-w WRAPPER] [-o OUTPUT]
 
 options:
@@ -40,6 +41,21 @@ options:
   -o OUTPUT, --output OUTPUT
                         Output file name
 ```
+### Print module options
+```
+┌──(kali㉿kali)-[~/staticbypass]
+└─$ python3 staticbypass.py -l c -s ~/shellcode.bin -e XOREncrypt RC4Encrypt -f DictObfuscate -t shellcoderunner,h
+shellcoderunner options: 
+  allocate={'NtAllocateVirtualMemory', 'HeapAlloc', 'VirtualAlloc', 'VirtualAllocEx'} Function used for allocating memory
+  execute={'NtCreateThreadEx', 'CreateThread'} Function used for executing shellcode
+  copy={'memcpy', 'NtWriteVirtualMemory', 'WriteProcessMemory'} Function used for copying memory
+  protect={'NtProtectVirtualMemory', 'VirtualProtect'} Function used for changing memory protections
+  wait={'WaitForSingleObject', 'NtWaitForSingleObject'} Function used for waiting for execution to finish
+  close={'NtClose', 'CloseHandle'} Function used for closing handles after use
+  perm={'rx', 'rwx'} Protection of memory when shellcode executess
+```
+
+
 
 ## Examples
 ```
