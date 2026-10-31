@@ -12,7 +12,7 @@ class shellcoderunner:
         parser.add_argument(name='protect', default='VirtualProtect', help='Function used for changing memory protections', choices={'VirtualProtect', 'NtProtectVirtualMemory'})
         parser.add_argument(name='wait', default='WaitForSingleObject', help='Function used for waiting for execution to finish', choices={'WaitForSingleObject', 'NtWaitForSingleObject'})
         parser.add_argument(name='close', default='CloseHandle', help='Function used for closing handles after use', choices={'CloseHandle', 'NtClose'})
-        parser.add_argument(name='perm', default='rx', help='Protection of memory when shellcode executes', choices={'rx', 'rwx'})
+        parser.add_argument(name='perm', default='rx', help='Protection of memory when shellcode executes', choices={'rx': 'PAGE_EXECUTE_READ', 'rwx':'PAGE_EXECUTE_READWRITE'})
         self.args = parser.parse_args(arguments)        
 
         if self.args['perm'] == 'rx':

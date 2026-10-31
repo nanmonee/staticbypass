@@ -25,13 +25,21 @@ class ArgumentParser:
 
         for flag in self.flags:
             if flag.name in arguments:
-                if flag.choices != {}:
+                if flag.choices:
                     if arguments[flag.name] not in flag.choices:
                         print(f'Invalid Argument: {arguments[flag.name]} not in {flag.choices}')
                         self.print_help()
-                parsed[flag.name] = arguments[flag.name]
+                    if type(flag.choices) == dict:
+                        parsed[flag.name] = flag.choices[arguments[flag.name]]
+                    else:
+                        parsed[flag.name] = arguments[flag.name]
+                else:
+                    parsed[flag.name] = arguments[flag.name]
             else:
-                parsed[flag.name] = flag.default
+                if type(flag.choices) == dict:
+                    parsed[flag.name] = flag.choices[flag.default]
+                else:
+                    parsed[flag.name] = flag.default
         """
         while i < len(argv):
             if argv[i] in ['help', 'h']:
