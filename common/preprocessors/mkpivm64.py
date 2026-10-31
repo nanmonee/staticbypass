@@ -2,16 +2,14 @@ import tempfile
 import subprocess
 import os
 import platform
+from common.utils.argumentparser import ArgumentParser
 
 class mkpivm64:
 
     def __init__(self, arguments: dict) -> None:
-        self.arguments = []
-        if 'mode' in arguments:
-            if arguments['mode'] == 'pack':
-                self.arguments.append('--pack')
-            elif arguments['mode'] == 'rx':
-                self.arguments.append('--rx')
+        parser = ArgumentParser(modulename=self.__class__.__name__)
+        parser.add_argument(name='mode', default='rwx', help='mkpivm64 mode. Default requires RWX memory', choices={'rwx':'', 'pack': '--pack', 'rx': '--rx'})
+        self.args = parser.parse_args(arguments)
         if platform.system() == 'Linux':
             self.executable = './common/bin/mkpivm64'
         elif platform.system() == 'Windows':
@@ -22,7 +20,7 @@ class mkpivm64:
         with os.fdopen(fd, 'wb') as f:
             f.write(shellcode)
         outtf, outfilename = tempfile.mkstemp()
-        result = subprocess.run([self.executable] + self.arguments + [f'{filename}', '-o', f'{outfilename}'])
+        result = subprocess.run([self.executable, self.args['mode'], f'{filename}', '-o', f'{outfilename}'])
         if result.returncode == 0:
             output = os.fdopen(outtf, 'rb').read()
         os.remove(filename)
