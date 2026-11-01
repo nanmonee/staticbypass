@@ -41,7 +41,20 @@ options:
   -o OUTPUT, --output OUTPUT
                         Output file name
 ```
-### Print module options
+
+## List Modules
+```
+┌──(kali㉿kali)-[~/staticbypass]
+└─$ python3 staticbypass.py -l ts -s ~/shellcode.bin -e XOREncrypt RC4Encrypt -f list -t shellcoderunner
+Available obfuscators for ts:
+  ts/obfuscators/IPv6Obfuscate.py
+  ts/obfuscators/MACObfuscate.py
+  ts/obfuscators/IPv4Obfuscate.py
+  ts/obfuscators/Base64Encode.py
+  ts/obfuscators/DictObfuscate.py
+```
+
+## Module options
 ```
 ┌──(kali㉿kali)-[~/staticbypass]
 └─$ python3 staticbypass.py -l c -s ~/shellcode.bin -e XOREncrypt RC4Encrypt -f DictObfuscate -t shellcoderunner,h
@@ -54,8 +67,6 @@ shellcoderunner options:
   close={'NtClose', 'CloseHandle'} Function used for closing handles after use
   perm={'rx', 'rwx'} Protection of memory when shellcode executess
 ```
-
-
 
 ## Examples
 ```
