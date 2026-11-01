@@ -5,7 +5,7 @@ from common.utils.argumentparser import ArgumentParser
 class shellcoderunner:
     def __init__(self, arguments):
 
-        parser = ArgumentParser(modulename='shellcoderunner')
+        parser = ArgumentParser(modulename=self.__class__.__name__)
         parser.add_argument(name='allocate', default='VirtualAlloc', help='Function used for allocating memory', choices={'VirtualAlloc', 'HeapAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx'})
         parser.add_argument(name='execute', default='CreateThread', help='Function used for executing shellcode', choices={'CreateThread', 'NtCreateThreadEx'})
         parser.add_argument(name='copy', default='memcpy', help='Function used for copying memory', choices={'memcpy', 'WriteProcessMemory', 'NtWriteVirtualMemory'})
@@ -14,12 +14,6 @@ class shellcoderunner:
         parser.add_argument(name='close', default='CloseHandle', help='Function used for closing handles after use', choices={'CloseHandle', 'NtClose'})
         parser.add_argument(name='perm', default='rx', help='Protection of memory when shellcode executes', choices={'rx': 'PAGE_EXECUTE_READ', 'rwx':'PAGE_EXECUTE_READWRITE'})
         self.args = parser.parse_args(arguments)        
-
-        if self.args['perm'] == 'rx':
-            self.memoryPermission = 'PAGE_EXECUTE_READ'
-        else:
-            self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
-
 
     def imports(self) -> list[str]:
         return ["#include <windows.h>", 
@@ -53,9 +47,9 @@ class shellcoderunner:
             template += WriteProcessMemory('(HANDLE)-1', 'buffer', 'shellcode', '{shellcodeSize}')
 
         if self.args['protect'] == 'VirtualProtect':
-            template += VirtualProtect('buffer', '{shellcodeSize}', self.memoryPermission)
+            template += VirtualProtect('buffer', '{shellcodeSize}', self.args['perm'])
         elif self.args['protect'] == 'NtProtectVirtualMemory':
-            template += NtProtectVirtualMemory('(HANDLE)-1', 'buffer', '{shellcodeSize}', self.memoryPermission)
+            template += NtProtectVirtualMemory('(HANDLE)-1', 'buffer', '{shellcodeSize}', self.args['perm'])
 
         if self.args['execute'] == 'CreateThread':
             template += CreateThread('hThread', 'buffer')

