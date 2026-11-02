@@ -26,7 +26,4 @@ node_modules
 package.json
 output*
 deno.lock
-reachability-metadata.json
-MessageBoxDemo.java
-build/
 output.hta

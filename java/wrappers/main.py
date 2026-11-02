@@ -14,7 +14,7 @@ class main:
         return """
 {imports}
 
-public class MessageBoxDemo {{
+public class Output {{
 
     {codeblocks}
 
