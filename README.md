@@ -591,6 +591,7 @@ pip install -r requirements.txt
 |               | NOPmask         | Payload encryption by @whoamiamleo |
 |               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
 | Template      | shellcoderunner | Simple shellcode runner using CreateThread |
+|               | spawnandinject  | Spawn process and inject into remote thread |
 | Resolvers     | static          | Static function resolution |
 | Wrappers      | main            | Default wrapper |
 
