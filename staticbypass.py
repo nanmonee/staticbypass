@@ -77,7 +77,7 @@ def main() -> None:
     elif args.language == 'java':
         transformers = 'byte[] shellcode = {shellcode};'
     elif args.language == 'lua':
-        transformers = 'local shellcode = {shellcode};'
+        transformers = 'local shellcode = {shellcode}'
     imports = []
 
     if args.preprocessors:

@@ -1,5 +1,5 @@
 import string
-from js.utils.typedefs import typedefs
+from lua.utils.typedefs import typedefs
 
 class static:
     def __init__(self, arguments):
@@ -12,7 +12,15 @@ class static:
         return []
     
     def codeblocks(self) -> str:
-        return f""""""
+        codeblock = f"""
+local kernel32 = c.Library("kernel32.dll") 
+local ntdll = c.Library("ntdll.dll") 
+"""
+
+        for apicall in self.apicalls:
+            codeblock += f'kernel32.{apicall} = "{typedefs[apicall]}"\n'
+
+        return codeblock
 
     def template(self, templateCode, transformers, shellcodeSize):
         for _, field_name, _, _ in string.Formatter().parse(templateCode):
@@ -23,4 +31,7 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            self.apicalls[apicall] = apicall
+            if apicall[0:2] in ['Nt', 'Zw']:
+                self.apicalls[apicall] = f'ntdll.{apicall}'
+            else:
+                self.apicalls[apicall] = f'kernel32.{apicall}'
