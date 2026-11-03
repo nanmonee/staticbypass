@@ -4,6 +4,7 @@
 - Takes in a raw shellcode or executable file, applies encryptors and obfuscators, formats it, places it into a template, and compiles it
 - Supports C, C#, PowerShell, VBA, Rust, Go, Pascal, and Nim
 - Supports Typescript using Bun, Javascript using Deno, and Java using GraalVM
+- Supports Lua via LuaRT
 - Automates placing VBA code into a word document
 - Supports AES, XOR, and RC4 encryption, and Dictionary, UUID, IPv4, IPv6, and MAC address obfuscation
 - Designed to bypass static and possible dynamic detection methods
@@ -12,7 +13,7 @@
 ```
 ┌──(kali㉿kali)-[~/staticbypass]
 └─$ python3 staticbypass.py -h
-usage: staticbypass.py [-h] [-e [TRANSFORMERS ...]] -s SHELLCODE -t TEMPLATE -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java} [-f OBFUSCATOR] [-g [GUARDRAILS ...]] [-r RESOLVER] [-b [PREPROCESSORS ...]] [-a [POSTPROCESSORS ...]] [-d DELIVERY] [-w WRAPPER] [-o OUTPUT]
+usage: staticbypass.py [-h] [-e [TRANSFORMERS ...]] -s SHELLCODE -t TEMPLATE -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java,lua} [-f OBFUSCATOR] [-g [GUARDRAILS ...]] [-r RESOLVER] [-b [PREPROCESSORS ...]] [-a [POSTPROCESSORS ...]] [-d DELIVERY] [-w WRAPPER] [-o OUTPUT]
 
 options:
   -h, --help            show this help message and exit
@@ -22,7 +23,7 @@ options:
                         Specifies the raw binary shellcode file
   -t TEMPLATE, --template TEMPLATE
                         Template that the shellcode and deobfuscation code will be placed into.
-  -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java}, --language {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java}
+  -l {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java,lua}, --language {rs,vba,c,pas,nim,cs,ts,js,go,ps1,java,lua}
                         Language used to write and compile
   -f OBFUSCATOR, --obfuscator OBFUSCATOR
                         Obfuscators transform the transformed shellcode bytes into other formats, such as strings.
@@ -568,6 +569,28 @@ pip install -r requirements.txt
 | Template      | shellcoderunner | Simple shellcode runner using CreateThread |
 |               | spawnandinject  | Spawn process and inject into remote thread |
 |               | processstomp    | Process hollowing via overwriting entrypoint |
+| Resolvers     | static          | Static function resolution |
+| Wrappers      | main            | Default wrapper |
+
+</details>
+
+<details>
+  <summary>Lua</summary>
+
+| Category      | Name            | Description | 
+|:-------------:|:---------------:|:-----------:|
+| Delivery      | embedded        | Shellcode stored within the executable |
+| Pre-processor | mkpivm64        | Virtualize shellcode for obfuscation (requires template with RWX) by @D7EAD |
+|               | donut           | Convert executable to shellcode |
+|               | xorencrypt      | XOR encrypt shellcode with self-decrypting stub (requires RWX) |
+|               | rotate          | Rotate shellcode with self-decoding stub (requires RWX) |
+|               | ARX             | XOR encrypt shellcode with ARX key generation |
+|               | LCG             | XOR encrypt shellcode with LCG Subtraction key generation |
+|               | RC4             | Self-decrypting RC4 shellcode stub |
+|               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
+|               | NOPmask         | Payload encryption by @whoamiamleo |
+|               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Template      | shellcoderunner | Simple shellcode runner using CreateThread |
 | Resolvers     | static          | Static function resolution |
 | Wrappers      | main            | Default wrapper |
 

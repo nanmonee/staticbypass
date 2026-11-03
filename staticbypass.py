@@ -26,7 +26,7 @@ def main() -> None:
     parser.add_argument('-e', "--transformers", type=str, nargs='*', required=False, help='Transformers encrypt or encode the shellcode and is decrypted or decoded at runtime.')
     parser.add_argument('-s', "--shellcode", type=str, required=True, help='Specifies the raw binary shellcode file')
     parser.add_argument('-t', "--template", type=str, required=True, help='Template that the shellcode and deobfuscation code will be placed into.')
-    parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim", "ts", "js", "java"}, required=True, help='Language used to write and compile')
+    parser.add_argument('-l', "--language", type=str, choices={"c","cs","ps1","vba", "rs", "go", "pas", "nim", "ts", "js", "java", "lua"}, required=True, help='Language used to write and compile')
     parser.add_argument('-f', "--obfuscator", type=str, required=False, help='Obfuscators transform the transformed shellcode bytes into other formats, such as strings.')
     parser.add_argument('-g', "--guardrails", type=str, nargs='*', required=False, help='Guardrails stop execution if some condition is met.')
     parser.add_argument('-r', "--resolver", type=str, required=False, default="static", help='Controls how Windows API calls are resolved.')
@@ -76,6 +76,8 @@ def main() -> None:
         transformers = 'let shellcode = {shellcode};'
     elif args.language == 'java':
         transformers = 'byte[] shellcode = {shellcode};'
+    elif args.language == 'lua':
+        transformers = 'local shellcode = {shellcode};'
     imports = []
 
     if args.preprocessors:
