@@ -103,7 +103,7 @@ class shellcoderunner:
 """
         elif self.args['wait'] == 'NtWaitForSingleObject':
             template += """
-    {NtWaitForSingleObject}(hThread, 0xFFFFFFFF);
+    {NtWaitForSingleObject}(hThread, 0, null);
 """
 
         if self.args['close'] == 'CloseHandle':
@@ -126,7 +126,7 @@ class shellcoderunner:
 """
         elif self.args['allocate'] == 'NtAllocateVirtualMemory':
             template += """
-    {NtFreeVirtualMemory}(-1n, address);
+    {NtFreeVirtualMemory}(-1n, address, 0, MemoryAllocationType.MEM_RELEASE);
 """
 
         return template
