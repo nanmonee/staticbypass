@@ -590,6 +590,9 @@ pip install -r requirements.txt
 |               | SBOX            | XOR encrypt shellcode with SBOX and LCG Addition key generation |
 |               | NOPmask         | Payload encryption by @whoamiamleo |
 |               | carokann        | XOR encryption with key 0x01020304 for use with the carokann template |
+| Transformer   | XOREncrypt      | XOR Encryption |
+|               | RC4Encrypt      | RC4 Encryption |
+| Obfuscator    | DictObfuscate   | Convert bytes into randomly picked dictionary words |
 | Template      | shellcoderunner | Simple shellcode runner using CreateThread |
 |               | spawnandinject  | Spawn process and inject into remote thread |
 | Resolvers     | static          | Static function resolution |
