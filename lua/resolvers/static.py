@@ -18,7 +18,11 @@ local ntdll = c.Library("ntdll.dll")
 """
 
         for apicall in self.apicalls:
-            codeblock += f'kernel32.{apicall} = "{typedefs[apicall]}"\n'
+            if apicall[0:2] in ['Nt', 'Zw']:
+                codeblock += f'ntdll.{apicall} = "{typedefs[apicall]}"\n'
+            else:
+                codeblock += f'kernel32.{apicall} = "{typedefs[apicall]}"\n'
+
 
         return codeblock
 

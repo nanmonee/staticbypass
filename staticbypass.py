@@ -51,6 +51,7 @@ def main() -> None:
             exit(0)
 
     shellcode = open(args.shellcode, 'rb').read()
+    shellcodeSize = len(shellcode)
 
     compilerOptions = []
     codeblocks = ''
@@ -77,7 +78,7 @@ def main() -> None:
     elif args.language == 'java':
         transformers = 'byte[] shellcode = {shellcode};'
     elif args.language == 'lua':
-        transformers = 'local shellcode = {shellcode}'
+        transformers = f'local shellcode = c.Array("c", 1, {shellcodeSize})({{shellcode}})'
     imports = []
 
     if args.preprocessors:
@@ -85,8 +86,6 @@ def main() -> None:
             preprocessorItem, arguments = parse_module_args(preprocessor)
             preprocessorObject = load_module('common', 'preprocessors', preprocessorItem)(arguments)
             shellcode = preprocessorObject.apply(shellcode)
-
-    shellcodeSize = len(shellcode)
 
     if args.transformers:
         for transformer in args.transformers:
