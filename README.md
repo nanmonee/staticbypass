@@ -164,10 +164,12 @@ pip install -r requirements.txt
 |               | dynamic         | Dynamic function resolution using GetProcAddress |
 |               | pebwalk         | PEB walk |
 |               | pebwalkhash     | PEB walk using hashes instead of strings |
-|               | hellsgatehash   | Indirect syscalls using Hells Gate |
-|               | halosgatehash   | Indirect syscalls using Halos Gate |
-|               | tartarusgatehash| Indirect syscalls using Tartarus Gate |
-|               | tartarusgatehashrap | Indirect syscalls using Tartarus Gate with Return Address Patching |
+|               | hellsgatehash   | Dynamic syscall resolution using Hells Gate |
+|               | hellsgateindirect   | Dynamic syscall resolution using Hells Gate and indirect syscalls |
+|               | halosgatehash   | Dynamic syscall resolution using Halos Gate |
+|               | tartarusgatehash| Dynamic syscall resolution using Tartarus Gate |
+|               | tartarusgatehashrap | Dynamic syscall resolution using Tartarus Gate with Return Address Patching |
+|               | tartarusgatehashrapindirect | Dynamic syscall resolution using Tartarus Gate with Return Address Patching and indirect syscalls |
 | Wrappers      | main            | Default wrapper |
 |               | rundll          | Execute code on DLL load |
 |               | service         | Run executable as service |
