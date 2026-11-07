@@ -7,4 +7,6 @@ typedefs = {
     'VirtualAllocEx':'VirtualAllocEx: { parameters: ["pointer", "pointer", "usize", "u32", "u32"], result: "pointer", }',
     'CreateRemoteThread':'CreateRemoteThread: { parameters: ["pointer", "pointer", "usize", "pointer", "pointer", "u32", "pointer"], result: "pointer", }',
     'CloseHandle':'CloseHandle: { parameters: ["pointer"], result: "i32", }',
+    'VirtualProtect':'VirtualProtect: { parameters: ["pointer", "usize", "u32", "buffer"], result: "i32", }',
+    'VirtualProtectEx':'VirtualProtectEx: { parameters: ["pointer", "pointer", "usize", "u32", "buffer"], result: "i32", }',
 }

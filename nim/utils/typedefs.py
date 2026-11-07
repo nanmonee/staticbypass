@@ -6,5 +6,8 @@ typedefs = {
     "VirtualAllocEx":"type VirtualAllocEx_t = proc(hProcess: HANDLE, lpAddress: pointer, dwSize: SIZE_T, flAllocationType: DWORD, flProtect: DWORD): pointer {.stdcall.}",
     "WriteProcessMemory":"type WriteProcessMemory_t = proc(hProcess: HANDLE, lpBaseAddress: pointer, lpBuffer: pointer, nSize: SIZE_T, lpNumberOfBytesWritten: pointer): bool {.stdcall.}",
     "CreateRemoteThread":"type CreateRemoteThread_t = proc(hProcess: HANDLE, lpThreadAttributes: LPSECURITY_ATTRIBUTES, dwStackSize: SIZE_T, lpStartAddress: LPTHREAD_START_ROUTINE, lpParameter: pointer, dwCreationFlags: DWORD, lpThreadId: pointer): pointer {.stdcall.}",
-    "CloseHandle":"type CloseHandle_t = proc(hObject: HANDLE): bool {.stdcall.}"
+    "CloseHandle":"type CloseHandle_t = proc(hObject: HANDLE): bool {.stdcall.}",
+    "VirtualProtect":"type VirtualProtect_t = proc(lpAddress: pointer, dwSize: SIZE_T, flAllocationType: DWORD, lpflOldProtect: PDWORD): pointer {.stdcall.}",
+    "VirtualProtectEx":"type VirtualProtectEx_t = proc(hProcess: HANDLE, lpAddress: pointer, dwSize: SIZE_T, flAllocationType: DWORD, lpflOldProtect: PDWORD): pointer {.stdcall.}",
+
 }
