@@ -11,6 +11,6 @@ typedefs = {
     "ReadProcessMemory":"bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, ulong dwSize, out IntPtr lpNumberOfBytesRead);",
     "ZwQueryInformationProcess":"int ZwQueryInformationProcess(IntPtr hProcess, int procInformationClass, ref PROCESS_BASIC_INFORMATION procInformation, uint ProcInfoLen, ref uint retlen);",
     "VirtualProtect":"bool VirtualProtect(IntPtr lpAddress, ulong dwSize, uint flNewProtect, out IntPtr lpflOldProtect);",
-    "VirtualProtectEx":"bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, ulong dwSize, uint flNewProtect, out IntPtr lpflOldProtect);"
-
+    "VirtualProtectEx":"bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, ulong dwSize, uint flNewProtect, out IntPtr lpflOldProtect);",
+    "NtAllocateVirtualMemory":"uint NtAllocateVirtualMemory(IntPtr ProcessHandle, out IntPtr BaseAddress, uint ZeroBits, ref IntPtr RegionSize, uint AllocationType, uint Protect);"
 }
