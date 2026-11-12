@@ -12,5 +12,10 @@ typedefs = {
     "ZwQueryInformationProcess":"int ZwQueryInformationProcess(IntPtr hProcess, int procInformationClass, ref PROCESS_BASIC_INFORMATION procInformation, uint ProcInfoLen, ref uint retlen);",
     "VirtualProtect":"bool VirtualProtect(IntPtr lpAddress, ulong dwSize, uint flNewProtect, out IntPtr lpflOldProtect);",
     "VirtualProtectEx":"bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, ulong dwSize, uint flNewProtect, out IntPtr lpflOldProtect);",
-    "NtAllocateVirtualMemory":"uint NtAllocateVirtualMemory(IntPtr ProcessHandle, out IntPtr BaseAddress, uint ZeroBits, ref IntPtr RegionSize, uint AllocationType, uint Protect);"
+    "NtAllocateVirtualMemory":"uint NtAllocateVirtualMemory(IntPtr ProcessHandle, out IntPtr BaseAddress, uint ZeroBits, ref IntPtr RegionSize, uint AllocationType, uint Protect);",
+    "NtWriteVirtualMemory":"uint NtWriteVirtualMemory(IntPtr ProcessHandle, IntPtr BaseAddress, byte[] lpBuffer, ref IntPtr NumberOfBytesToWrite, out IntPtr NumberOfBytesWritten);",
+    "NtProtectVirtualMemory":"uint NtProtectVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, ref IntPtr RegionSize, uint NewProtection, out IntPtr OldProtection);",
+    "NtCreateThreadEx":"uint NtCreateThreadEx(out IntPtr ThreadHandle, uint DesiredAccess, IntPtr ObjectAttributes, IntPtr ProcessHandle, IntPtr StartRoutine, IntPtr Argument, uint CreateFlags, ulong ZeroBits, ulong StackSize, ulong MaximumStackSize, IntPtr AttributeList);",
+    "NtWaitForSingleObject":"uint NtWaitForSingleObject(IntPtr Handle, bool Alertable, IntPtr Timeout);"
+
 }
