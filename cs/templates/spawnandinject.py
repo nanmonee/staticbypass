@@ -26,9 +26,7 @@ class spawnandinject:
             self.args['target'] = self.args['target'].replace('\\','\\\\')
 
         # Override wait option
-        if self.args['execute'] in ['NtCreateThreadEx', 'CreateRemoteThread']:
-            self.args['wait'] = 'WaitForSingleObject'
-        else:
+        if self.args['execute'] not in ['NtCreateThreadEx', 'CreateRemoteThread']:
             self.args['wait'] = 'None'
 
     def imports(self) -> list[str]:
