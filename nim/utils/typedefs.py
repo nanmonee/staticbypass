@@ -15,3 +15,11 @@ typedefs = {
     "NtProtectVirtualMemory":"type NtProtectVirtualMemory_t = proc(ProcessHandle: HANDLE, BaseAddress: pointer, RegionSize: pointer, NewProtection: ULONG, OldProtection: pointer): NTSTATUS {.stdcall.}",
     "NtWaitForSingleObject":"type NtWaitForSingleObject_t = proc(Handle: HANDLE, Alertable: BOOLEAN, Timeout: pointer): NTSTATUS {.stdcall.}",
 }
+
+bindings = {
+    "NtAllocateVirtualMemory":'proc NtAllocateVirtualMemory(ProcessHandle: HANDLE, BaseAddress: pointer, ZeroBits: pointer, RegionSize: pointer, AllocationType: ULONG, Protect: ULONG): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+    "NtWriteVirtualMemory":'proc NtWriteVirtualMemory(ProcessHandle: HANDLE, BaseAddress: pointer, Buffer: pointer, NumberOfBytesToWrite: uint64, NumberOfBytesWritten: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+    "NtCreateThreadEx":'proc NtCreateThreadEx(ThreadHandle: pointer, DesiredAccess: DWORD, ObjectAttributes: pointer, ProcessHandle: HANDLE, StartRoutine: pointer, Argument: pointer, CreateFlags: ULONG, ZeroBits: uint64, StackSize: uint64, MaximumStackSize: uint64, AttributeList: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+    "NtProtectVirtualMemory":'proc NtProtectVirtualMemory(ProcessHandle: HANDLE, BaseAddress: pointer, RegionSize: pointer, NewProtection: ULONG, OldProtection: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+    "NtWaitForSingleObject":'proc NtWaitForSingleObject(Handle: HANDLE, Alertable: BOOLEAN, Timeout: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+}

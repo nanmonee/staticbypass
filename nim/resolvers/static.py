@@ -1,5 +1,5 @@
 import string
-from nim.utils.typedefs import typedefs
+from nim.utils.typedefs import bindings
 
 class static:
     def __init__(self, arguments):
@@ -15,9 +15,7 @@ class static:
         codeblock = ''
         for apicall in self.apicalls:
             if apicall[0:2] in ['Nt','Zw']:
-                codeblock += f"""
-{typedefs[apicall]}
-"""
+                codeblock += f'{bindings[apicall]}\n'
         return codeblock
 
     def template(self, templateCode, transformers, shellcodeSize):
@@ -29,7 +27,4 @@ class static:
 
     def resolve(self):
         for apicall in self.apicalls:
-            if apicall[0:2] in ['Nt','Zw']:
-                self.apicalls[apicall] = f'(cast[{apicall}_t](GetProcAddress(LoadLibrary("ntdll.dll"), "{apicall}")))'
-            else:
-                self.apicalls[apicall] = apicall
+            self.apicalls[apicall] = apicall
