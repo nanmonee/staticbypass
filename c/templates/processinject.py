@@ -27,9 +27,7 @@ class processinject:
             self.args['target'] = self.args['target'].replace('\\','\\\\')
 
         # Override wait option
-        if self.args['execute'] in ['NtCreateThreadEx', 'CreateRemoteThread']:
-            self.args['wait'] = 'WaitForSingleObject'
-        else:
+        if self.args['execute'] not in ['NtCreateThreadEx', 'CreateRemoteThread']:
             self.args['wait'] = 'None'
 
     def imports(self) -> list[str]:
@@ -91,7 +89,7 @@ class processinject:
         if self.args['wait'] == 'WaitForSingleObject':
             template += WaitForSingleObject('newThread', 500)
         elif self.args['wait'] == 'NtWaitForSingleObject':
-            template += NtWaitForSingleObject('newThread', 0)
+            template += NtWaitForSingleObject('newThread', 500)
         elif self.args['wait'] == 'None':
             template += ResumeThread('hThread')
 

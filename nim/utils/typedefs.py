@@ -14,6 +14,9 @@ typedefs = {
     "NtCreateThreadEx":"type NtCreateThreadEx_t = proc(ThreadHandle: pointer, DesiredAccess: DWORD, ObjectAttributes: pointer, ProcessHandle: HANDLE, StartRoutine: pointer, Argument: pointer, CreateFlags: ULONG, ZeroBits: uint64, StackSize: uint64, MaximumStackSize: uint64, AttributeList: pointer): NTSTATUS {.stdcall.}",
     "NtProtectVirtualMemory":"type NtProtectVirtualMemory_t = proc(ProcessHandle: HANDLE, BaseAddress: pointer, RegionSize: pointer, NewProtection: ULONG, OldProtection: pointer): NTSTATUS {.stdcall.}",
     "NtWaitForSingleObject":"type NtWaitForSingleObject_t = proc(Handle: HANDLE, Alertable: BOOLEAN, Timeout: pointer): NTSTATUS {.stdcall.}",
+    "QueueUserAPC":"type QueueUserAPC_t = proc(pfnAPC: PAPCFUNC, hThread: HANDLE, dwData: ULONG_PTR): DWORD {.stdcall.}",
+    "ResumeThread":"type ResumeThread_t = proc(hThread: HANDLE): DWORD {.stdcall.}",
+    "NtQueueApcThread":'proc NtQueueApcThread(ThreadHandle: HANDLE, ApcRoutine: pointer, ApcArgument1: pointer, ApcArgument2: pointer, ApcArgument3: pointer): NTSTATUS {.stdcall.}',
 }
 
 bindings = {
@@ -22,4 +25,6 @@ bindings = {
     "NtCreateThreadEx":'proc NtCreateThreadEx(ThreadHandle: pointer, DesiredAccess: DWORD, ObjectAttributes: pointer, ProcessHandle: HANDLE, StartRoutine: pointer, Argument: pointer, CreateFlags: ULONG, ZeroBits: uint64, StackSize: uint64, MaximumStackSize: uint64, AttributeList: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
     "NtProtectVirtualMemory":'proc NtProtectVirtualMemory(ProcessHandle: HANDLE, BaseAddress: pointer, RegionSize: pointer, NewProtection: ULONG, OldProtection: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
     "NtWaitForSingleObject":'proc NtWaitForSingleObject(Handle: HANDLE, Alertable: BOOLEAN, Timeout: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+    "NtQueueApcThread":'proc NtQueueApcThread(ThreadHandle: HANDLE, ApcRoutine: pointer, ApcArgument1: pointer, ApcArgument2: pointer, ApcArgument3: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
+
 }
