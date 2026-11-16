@@ -38,9 +38,9 @@ def main() -> None:
     args = parser.parse_args()
 
     for flag, arguments in vars(args).items():
-        if not arguments:
+        if not arguments or flag in ['language', 'shellcode', 'output']:
             continue
-        if 'list' in arguments:
+        if arguments == 'list':
             if flag == 'preprocessors':
                 modules = glob(f'common/{flag}*/*.py')
             else:
