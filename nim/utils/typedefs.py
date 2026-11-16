@@ -16,7 +16,9 @@ typedefs = {
     "NtWaitForSingleObject":"type NtWaitForSingleObject_t = proc(Handle: HANDLE, Alertable: BOOLEAN, Timeout: pointer): NTSTATUS {.stdcall.}",
     "QueueUserAPC":"type QueueUserAPC_t = proc(pfnAPC: PAPCFUNC, hThread: HANDLE, dwData: ULONG_PTR): DWORD {.stdcall.}",
     "ResumeThread":"type ResumeThread_t = proc(hThread: HANDLE): DWORD {.stdcall.}",
-    "NtQueueApcThread":'proc NtQueueApcThread(ThreadHandle: HANDLE, ApcRoutine: pointer, ApcArgument1: pointer, ApcArgument2: pointer, ApcArgument3: pointer): NTSTATUS {.stdcall.}',
+    "NtQueueApcThread":'type NtQueueApcThread_t = proc(ThreadHandle: HANDLE, ApcRoutine: pointer, ApcArgument1: pointer, ApcArgument2: pointer, ApcArgument3: pointer): NTSTATUS {.stdcall.}',
+    "SetThreadContext":"type SetThreadContext_t = proc(hThread: HANDLE, lpContext: LPCONTEXT): BOOLEAN {.stdcall.}",
+    "GetThreadContext":"type GetThreadContext_t = proc(hThread: HANDLE, lpContext: LPCONTEXT): BOOLEAN {.stdcall.}",
 }
 
 bindings = {
@@ -26,5 +28,4 @@ bindings = {
     "NtProtectVirtualMemory":'proc NtProtectVirtualMemory(ProcessHandle: HANDLE, BaseAddress: pointer, RegionSize: pointer, NewProtection: ULONG, OldProtection: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
     "NtWaitForSingleObject":'proc NtWaitForSingleObject(Handle: HANDLE, Alertable: BOOLEAN, Timeout: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
     "NtQueueApcThread":'proc NtQueueApcThread(ThreadHandle: HANDLE, ApcRoutine: pointer, ApcArgument1: pointer, ApcArgument2: pointer, ApcArgument3: pointer): NTSTATUS {.stdcall, dynlib: "ntdll", importc.}',
-
 }

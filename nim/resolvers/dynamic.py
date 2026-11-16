@@ -16,9 +16,7 @@ class dynamic:
     def codeblocks(self) -> str:
         codeblock = ''
         for apicall in self.apicalls:
-            codeblock += f"""
-{typedefs[apicall]}
-"""
+            codeblock += f"{typedefs[apicall]}\n"
         return codeblock
 
     def template(self, templateCode, transformers, shellcodeSize):
