@@ -18,5 +18,6 @@ typedefs = {
     "NtCreateThreadEx":"uint NtCreateThreadEx(out IntPtr ThreadHandle, uint DesiredAccess, IntPtr ObjectAttributes, IntPtr ProcessHandle, IntPtr StartRoutine, IntPtr Argument, uint CreateFlags, ulong ZeroBits, ulong StackSize, ulong MaximumStackSize, IntPtr AttributeList);",
     "NtWaitForSingleObject":"uint NtWaitForSingleObject(IntPtr Handle, bool Alertable, IntPtr Timeout);",
     "QueueUserAPC":"uint QueueUserAPC(IntPtr pfnAPC, IntPtr hThread, IntPtr dwData);",
+    "OpenThread":"IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle, int dwThreadId);",
     "NtQueueApcThread":"uint NtQueueApcThread(IntPtr ThreadHandle, IntPtr ApcRoutine, IntPtr ApcArgument1, IntPtr ApcArgument2, IntPtr ApcArgument3);",
 }
