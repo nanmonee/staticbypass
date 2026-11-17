@@ -59,7 +59,7 @@ class shellcoderunner:
         if self.args['wait'] == 'WaitForSingleObject':
             template += WaitForSingleObject('hThread', 'INFINITE')
         elif self.args['wait'] == 'NtWaitForSingleObject':
-            template += NtWaitForSingleObject('hThread', 'INFINITE')
+            template += NtWaitForSingleObject('hThread', 0)
 
         if self.args['close'] == 'CloseHandle':
             template += CloseHandle('hThread')

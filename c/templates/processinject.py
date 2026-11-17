@@ -89,7 +89,7 @@ class processinject:
         if self.args['wait'] == 'WaitForSingleObject':
             template += WaitForSingleObject('newThread', 500)
         elif self.args['wait'] == 'NtWaitForSingleObject':
-            template += NtWaitForSingleObject('newThread', 500)
+            template += NtWaitForSingleObject('newThread', -500000)
         elif self.args['wait'] == 'None':
             template += ResumeThread('hThread')
 

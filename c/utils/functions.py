@@ -77,11 +77,16 @@ def WaitForSingleObject(hHandle, dwMilliseconds):
 """).substitute(hHandle=hHandle, dwMilliseconds=dwMilliseconds)
 
 def NtWaitForSingleObject(hHandle, dwMilliseconds):
-    return Template("""
+    if dwMilliseconds == 0:
+        return Template("""
+    {NtWaitForSingleObject}($hHandle, FALSE, NULL);             
+""").substitute(hHandle=hHandle)
+    else:
+        return Template("""
     LARGE_INTEGER timeout = {{ 0 }};
     timeout.QuadPart = $dwMilliseconds;
     {NtWaitForSingleObject}($hHandle, FALSE, &timeout);             
-""").substitute(hHandle=hHandle, dwMilliseconds=dwMilliseconds*-10000)
+""").substitute(hHandle=hHandle, dwMilliseconds=dwMilliseconds)
 
 def CloseHandle(hHandle):
     return Template ("""
