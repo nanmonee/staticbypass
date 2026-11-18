@@ -9,4 +9,6 @@ typedefs = {
     'CloseHandle':'CloseHandle: { parameters: ["pointer"], result: "i32", }',
     'VirtualProtect':'VirtualProtect: { parameters: ["pointer", "usize", "u32", "buffer"], result: "i32", }',
     'VirtualProtectEx':'VirtualProtectEx: { parameters: ["pointer", "pointer", "usize", "u32", "buffer"], result: "i32", }',
+    'NtAllocateVirtualMemory':'NtAllocateVirtualMemory: { parameters: ["pointer", "buffer", "pointer", "buffer", "u32", "u32"], result: "u32", }',
+
 }
